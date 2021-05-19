@@ -16,15 +16,15 @@ while ($row = $query->fetch_assoc()) {
   );
 }
 
-$sql = 'select name from pet_test_configv2 where name = "type" limit 1 offset '. $data['type'];
+$sql = 'select value from pet_test_configv2 where name = "type" limit 1 offset '. $data['type'];
 $query = $mysqli->query($sql);
 $row = $query->fetch_assoc();
-$data['type'] = $row['name'];
+$data['type'] = $row['value'];
 
-$sql = 'select name from pet_test_configv2 where name = "sampletype" limit 1 offset '. $data['sampletype'];
+$sql = 'select value from pet_test_configv2 where name = "sampletype" limit 1 offset '. $data['sampletype'];
 $query = $mysqli->query($sql);
 $row = $query->fetch_assoc();
-$data['sampletype'] = $row['name'];
+$data['sampletype'] = $row['value'];
 
 $sql = 'select * from pet_users where userid = '. $data['doctor'];
 $query = $mysqli->query($sql);
