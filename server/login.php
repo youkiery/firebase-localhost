@@ -97,8 +97,53 @@ else {
           $config[$row['module']] = $row['type'];
         }
         $result['config'] = $config;
+
         $result['admin'] = 0;
         if ($userid == 1 || $userid == 5) $result['admin'] = 1;
+
+        $sql = 'select * from pet_test_configv2 where name = "serial"';
+        $query = $mysqli->query($sql);
+        $serial = $query->fetch_assoc();
+        if (empty($serial)) {
+          $sql = 'insert into pet_test_configv2 (name, value) values ("serial", "1")';
+          $serial = array('value' => 1);
+        }
+        $result['serial'] = $serial['value'];
+
+        $list = array();
+        $sql = 'select * from pet_test_configv2 where name = "type" order by id asc';
+        $query = $mysqli->query($sql);
+        $index = 0;
+        while ($row = $query->fetch_assoc()) {
+          $list []= array(
+            'id' => $index ++,
+            'name' => $row['value']
+          );
+        }
+        $result['type'] = $list;
+
+        $list = array();
+        $sql = 'select * from pet_test_configv2 where name = "sampletype" order by id asc';
+        $query = $mysqli->query($sql);
+        $index = 0;
+        while ($row = $query->fetch_assoc()) {
+          $list []= array(
+            'id' => $index ++,
+            'name' => $row['value']
+          );
+        }
+        $result['sampletype'] = $list;
+
+        $list = array();
+        $sql = 'select * from pet_test_target where active = 1 order by id asc';
+        $query = $mysqli->query($sql);
+        while ($row = $query->fetch_assoc()) {
+          $list []= array(
+            'id' => $row['id'],
+            'name' => $row['name']
+          );
+        }
+        $result['target'] = $list;
       }
     }
 }

@@ -15,6 +15,7 @@ $module = array(
   'usg' => 0,
   'drug' => 0,
   'target' => 0,
+  'profile' => 0,
 );
 
 while ($row = $query->fetch_assoc()) {
