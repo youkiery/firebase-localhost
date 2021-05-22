@@ -5,10 +5,10 @@ $id = parseGetData('id', '');
 $sql = 'select * from pet_test_profile where id = '. $id;
 $query = $mysqli->query($sql);
 $data = $query->fetch_assoc();
-
-$sql = 'select a.value, b.name, b.unit, b.flag from pet_test_profile_data a inner join pet_test_target b on a.pid = '. $id .' and a.tid = b.id';
+$sql = 'select a.value, b.name, b.unit, b.flag, b.up, b.down from pet_test_profile_data a inner join pet_test_target b on a.pid = '. $id .' and a.tid = b.id';
 $query = $mysqli->query($sql);
 $data['target'] = array();
+$i = 1;
 while ($row = $query->fetch_assoc()) {
   $flag = explode(' - ', $row['flag']);
   $value = floatval($row['value']);
@@ -20,14 +20,24 @@ while ($row = $query->fetch_assoc()) {
     $s = 0; $e = 1;
   }
   $tick = '';
-  if ($value < $s) $tick = 'v';
-  else if ($value > $e) $tick = '^'; 
+  $tar = '';
+  if ($value < $s) {
+    $tick = 'v';
+    $tar = '<b>'. $i . '. '. $row['name'] .' giảm:</b> '. $row['down'];
+    $i ++;
+  }
+  else if ($value > $e) {
+    $tick = '^'; 
+    $tar = '<b>'. $i . '. '. $row['name'] .' tăng:</b> '. $row['up'];
+    $i ++;
+  }
 
   $data['target'] []= array(
     'name' => $row['name'],
     'value' => $row['value'],
     'unit' => $row['unit'],
     'flag' => $row['flag'],
+    'tar' => $tar,
     'tick' => $tick
   );
 }
@@ -65,7 +75,11 @@ $html = str_replace('{samplenumber}', $data['samplenumber'], $html);
 $html = str_replace('{samplesymbol}', $data['samplesymbol'], $html);
 $html = str_replace('{samplestatus}', ($data['samplestatus'] ? 'Đạt yêu cầu' : 'Không đạt yêu cầu'), $html);
 $html = str_replace('{doctor}', $data['doctor'], $html);
-$html = str_replace('{time}', date('d/m/Y', $data['time']), $html);
+$time = $data['time'] / 1000;
+$html = str_replace('{time}', date('d/m/Y', $time), $html);
+$html = str_replace('{DD}', date('d', $time), $html);
+$html = str_replace('{MM}', date('m', $time), $html);
+$html = str_replace('{YYYY}', date('Y', $time), $html);
 
 for ($i = 1; $i <= 18; $i++) { 
   if (!empty($data['target'][$i - 1])) {
@@ -74,7 +88,7 @@ for ($i = 1; $i <= 18; $i++) {
     $html = str_replace('{unit'. $i .'}', $profile['unit'], $html);
     $html = str_replace('{flag'. $i .'}', $profile['tick'], $html);
     $html = str_replace('{range'. $i .'}', $profile['flag'], $html);
-    $html = str_replace('{restar'. $i .'}', '', $html);
+    $html = str_replace('{restar'. $i .'}', $profile['tar'], $html);
 
     if (!empty($profile['tick'])) {
       $html = str_replace('{ret'. $i .'}', $profile['value'], $html);

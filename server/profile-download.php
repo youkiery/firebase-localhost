@@ -14,7 +14,7 @@ if ($zip->open($exportDoc) === TRUE) {
   $query = $mysqli->query($sql);
   $data = $query->fetch_assoc();
   
-  $sql = 'select a.value, b.name, b.unit, b.flag from pet_test_profile_data a inner join pet_test_target b on a.pid = '. $id .' and a.tid = b.id';
+  $sql = 'select a.value, b.name, b.unit, b.flag, b.up, b.down from pet_test_profile_data a inner join pet_test_target b on a.pid = '. $id .' and a.tid = b.id';
   $query = $mysqli->query($sql);
   $data['target'] = array();
   while ($row = $query->fetch_assoc()) {
@@ -28,14 +28,22 @@ if ($zip->open($exportDoc) === TRUE) {
       $s = 0; $e = 1;
     }
     $tick = '';
-    if ($value < $s) $tick = 'v';
-    else if ($value > $e) $tick = '^'; 
-  
+    $tar = '';
+    if ($value < $s) {
+      $tick = 'v';
+      $tar = $row['name'] .' giảm: '. $row['down'];
+    }
+    else if ($value > $e) {
+      $tick = '^'; 
+      $tar = $row['name'] .' tăng: '. $row['up'];
+    }
+    
     $data['target'] []= array(
       'name' => $row['name'],
       'value' => $row['value'],
       'unit' => $row['unit'],
       'flag' => $row['flag'],
+      'tar' => $tar,
       'tick' => $tick
     );
   }
@@ -65,7 +73,7 @@ if ($zip->open($exportDoc) === TRUE) {
   $newContents = str_replace('{age}', $data['age'], $newContents);
   $newContents = str_replace('{gender}', ($data['gender'] ? 'Đực' : 'Cái'), $newContents);
   $newContents = str_replace('{type}', $data['type'], $newContents);
-  $newContents = str_replace('{sampleid}', $data['sampleid'], $newContents);
+  $newContents = str_replace('{sampleid}', $data['id'], $newContents);
   $newContents = str_replace('{serial}', $data['serial'], $newContents);
   $newContents = str_replace('{sampletype}', $data['sampletype'], $newContents);
   $newContents = str_replace('{samplenumber}', $data['samplenumber'], $newContents);
@@ -73,6 +81,9 @@ if ($zip->open($exportDoc) === TRUE) {
   $newContents = str_replace('{samplestatus}', ($data['samplestatus'] ? 'Đạt yêu cầu' : 'Không đạt yêu cầu'), $newContents);
   $newContents = str_replace('{doctor}', $data['doctor'], $newContents);
   $newContents = str_replace('{time}', date('d/m/Y', $data['time']), $newContents);
+  $newContents = str_replace('{DD}', date('d', $data['time']), $newContents);
+  $newContents = str_replace('{MM}', date('m', $data['time']), $newContents);
+  $newContents = str_replace('{YYYY}', date('Y', $data['time']), $newContents);
 
   for ($i = 1; $i <= 18; $i++) { 
     if (!empty($data['target'][$i - 1])) {
@@ -81,7 +92,7 @@ if ($zip->open($exportDoc) === TRUE) {
       $newContents = str_replace('{unit'. $i .'}', $profile['unit'], $newContents);
       $newContents = str_replace('{flag'. $i .'}', $profile['tick'], $newContents);
       $newContents = str_replace('{range'. $i .'}', $profile['flag'], $newContents);
-      $newContents = str_replace('{restar'. $i .'}', '', $newContents);
+      $newContents = str_replace('{restar'. $i .'}', $profile['tar'], $newContents);
 
       if (!empty($profile['tick'])) {
         $newContents = str_replace('{ret'. $i .'}', $profile['value'], $newContents);
@@ -108,7 +119,7 @@ if ($zip->open($exportDoc) === TRUE) {
   $return = $zip->close();
   If ($return==TRUE){
     $result['status'] = 1;
-    $result['link'] = '/export'. $name;
+    $result['link'] = '/export/'. $name;
   }
 } else {
   $result['messenger'] = 'Không thể xuất file';

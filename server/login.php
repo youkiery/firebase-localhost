@@ -138,10 +138,7 @@ else {
         $sql = 'select * from pet_test_target where active = 1 order by id asc';
         $query = $mysqli->query($sql);
         while ($row = $query->fetch_assoc()) {
-          $list []= array(
-            'id' => $row['id'],
-            'name' => $row['name']
-          );
+          $list []= $row;
         }
         $result['target'] = $list;
       }

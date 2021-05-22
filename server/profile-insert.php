@@ -2,7 +2,7 @@
 
 $data = array(
   'customer' => parseGetData('customer', ''),
-  'phone' => parseGetData('customer', ''),
+  'phone' => parseGetData('phone', ''),
   'address' => parseGetData('address', ''),
   'name' => parseGetData('name', ''),
   'weight' => parseGetData('weight', ''),
@@ -51,13 +51,22 @@ foreach ($list as $key) {
 }
 
 $serial = intval($data['serial']) + 1;
-$sql = 'update pet_test_configv2 set value = "'. $serial .'" where name = "serial"';
+$sql = 'select * from pet_test_configv2 where name = "serial"';
+$query = $mysqli->query($sql);
+$config = $query->fetch_assoc();
+if (empty($config)) {
+  $sql = 'insert into pet_test_configv2 (name, value) values("serial", "'. $serial .'")';
+}
+else {
+  $sql = 'update pet_test_configv2 set value = "'. $serial .'" where name = "serial"';
+}
 $mysqli->query($sql);
 
 $data = array(
   'id' => $id,
   'name' => $data['name'],
   'customer' => $data['customer'],
+  'phone' => $data['phone'],
   'time' => $time
 );
 

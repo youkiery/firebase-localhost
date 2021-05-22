@@ -7,8 +7,8 @@ class Target extends Module {
     $this->role = $this->getRole();
   }
 
-  public function init() {
-    $sql = 'select * from pet_test_target where active = 1 order by id asc ';
+  public function init($key = '') {
+    $sql = 'select * from pet_test_target where active = 1 and name like "%'. $key .'%" order by id asc ';
     $query = $this->db->query($sql);
     $list = array();
 
@@ -18,14 +18,14 @@ class Target extends Module {
     return $list;
   }
 
-  public function insert($name) {
-    $sql = 'select * from pet_test_target where name = "'. $name .'"';
+  public function insert($data) {
+    $sql = 'select * from pet_test_target where name = "'. $data['name'] .'"';
     $query = $this->db->query($sql);
     if (empty($row = $query->fetch_assoc())) {
-      $sql = 'insert into pet_test_target (name, number) values("'. $name .'", 0)';
+      $sql = "insert into pet_test_target (name, number, active, unit, intro, flag, up, down, disease, aim) values('$data[name]', 0, 1, '$data[unit]', '$data[intro]', '$data[flag]', '$data[up]', '$data[down]', '$data[disease]', '$data[aim]')";
     }
     else {
-      $sql = 'update pet_test_target set active = 1 where id = '. $row['id'];
+      $sql = "update pet_test_target set name = '$data[name]', active = 1, unit = '$data[unit]', intro = '$data[intro]', flag = '$data[flag]', up = '$data[up]', down = '$data[down]', disease = '$data[disease]', aim = '$data[aim]' where id = $row[id]";
     }
     $query = $this->db->query($sql);
   }

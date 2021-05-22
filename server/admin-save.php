@@ -10,7 +10,6 @@ $data = array(
   'blood' => parseGetData('blood', 0),
   'usg' => parseGetData('usg', 0),
   'drug' => parseGetData('drug', 0),
-  'target' => parseGetData('target', 0),
   'profile' => parseGetData('profile', 0),
 );
 $id = parseGetData('id', 0);
