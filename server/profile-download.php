@@ -119,7 +119,7 @@ if ($zip->open($exportDoc) === TRUE) {
   $return = $zip->close();
   If ($return==TRUE){
     $result['status'] = 1;
-    $result['link'] = '/export/'. $name;
+    $result['link'] = 'http://'. $_SERVER['HTTP_HOST']. '/export/'. $name;
   }
 } else {
   $result['messenger'] = 'Không thể xuất file';

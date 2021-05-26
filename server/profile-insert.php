@@ -50,7 +50,7 @@ foreach ($list as $key) {
   $mysqli->query($sql);
 }
 
-$serial = intval($data['serial']) + 1;
+$serial = floatval($data['serial']) + 1;
 $sql = 'select * from pet_test_configv2 where name = "serial"';
 $query = $mysqli->query($sql);
 $config = $query->fetch_assoc();

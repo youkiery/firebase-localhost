@@ -5,14 +5,40 @@ $id = parseGetData('id', '');
 $sql = 'select * from pet_test_profile where id = '. $id;
 $query = $mysqli->query($sql);
 $data = $query->fetch_assoc();
-
-$sql = 'select a.value, b.name from pet_test_profile_data a inner join pet_test_target b on a.pid = '. $data['id'] .' and a.tid = b.id';
+$sql = 'select a.value, b.name, b.unit, b.flag, b.up, b.down from pet_test_profile_data a inner join pet_test_target b on a.pid = '. $id .' and a.tid = b.id';
 $query = $mysqli->query($sql);
 $data['target'] = array();
+$i = 1;
 while ($row = $query->fetch_assoc()) {
+  $flag = explode(' - ', $row['flag']);
+  $value = floatval($row['value']);
+  if (count($flag) == 2) {
+    $s = floatval($flag[0]);
+    $e = floatval($flag[1]);
+  }
+  else {
+    $s = 0; $e = 1;
+  }
+  $tick = '';
+  $tar = '';
+  if ($value < $s) {
+    $tick = 'v';
+    $tar = '<b>'. $i . '. '. $row['name'] .' giảm:</b> '. $row['down'];
+    $i ++;
+  }
+  else if ($value > $e) {
+    $tick = '^'; 
+    $tar = '<b>'. $i . '. '. $row['name'] .' tăng:</b> '. $row['up'];
+    $i ++;
+  }
+
   $data['target'] []= array(
     'name' => $row['name'],
-    'value' => $row['value']
+    'value' => $row['value'],
+    'unit' => $row['unit'],
+    'flag' => $row['flag'],
+    'tar' => $tar,
+    'tick' => $tick
   );
 }
 
