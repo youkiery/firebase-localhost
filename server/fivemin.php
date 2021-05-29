@@ -20,7 +20,7 @@ class Fivemin extends Module {
     $xtra = '';
     if ($this->thisrole() < 2) $xtra = ' and nhanvien = '. $this->userid;
 
-    $sql = 'select a.*, concat(last_name, " ", first_name) as nhanvien from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where thoigian > '. $first_week . $xtra .' order by thoigian desc';
+    $sql = 'select a.* from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where thoigian > '. $first_week . $xtra .' order by thoigian desc';
     $query = $this->db->query($sql);
 
     $list = array();
@@ -45,9 +45,68 @@ class Fivemin extends Module {
     return $data;
   }
 
-  public function change($id, $status) {
+  public function hoanthanh($filter) {
+    $filter['time'] = $filter['time'] / 1000;
+    $first_week = strtotime('monday this week', $filter['time'] );
+    $xtra = ' and hoanthanh = 0';
+    if ($filter['status']) $xtra = ' and hoanthanh > 0';
+
+    $sql = 'select a.*, concat(last_name, " ", first_name) as hoten from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where nhanvien = '. $filter['nhanvien'] .' and thoigian > '. $first_week .' order by thoigian desc';
+    $query = $this->db->query($sql);
+
+    $list = array();
+    while ($row = $query->fetch_assoc()) {
+      $sql = 'select * from pet_test_5min_hang where idcha = '. $row['id'] . $xtra;
+      $query2 = $this->db->query($sql);
+      while ($hang = $query2->fetch_assoc()) {
+        $list []= array(
+          'nhanvien' => $row['hoten'],
+          'noidung' => $hang['noidung'],
+          'tieuchi' => $hang['tieuchi'],
+          'image' => $hang['hinhanh']
+        );
+      }
+    }
+    return $list;
+  }
+
+  public function thongke($filter) {
+    $filter['time'] = $filter['time'] / 1000;
+    $first_week = strtotime('monday this week', $filter['time'] );
+
+    $sql = 'select a.*, concat(last_name, " ", first_name) as hoten from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where thoigian > '. $first_week .' order by thoigian desc';
+    $query = $this->db->query($sql);
+
+    $data = array();
+    while ($row = $query->fetch_assoc()) {
+      $sql = 'select hoanthanh from pet_test_5min_hang where idcha = '. $row['id'];
+      $query2 = $this->db->query($sql);
+      while ($nhanvien = $query2->fetch_assoc()) {
+        if (empty($data[$row['nhanvien']])) $data[$row['nhanvien']] = array(
+          'nhanvien' => $row['hoten'],
+          'hoanthanh' => 0,
+          'chuahoanthanh' => 0
+        );
+        if ($nhanvien['hoanthanh'] > 0) $data[$row['nhanvien']]['hoanthanh'] ++;
+        else $data[$row['nhanvien']]['chuahoanthanh'] ++;
+      }
+    }
+
+    $list = array();
+    foreach ($data as $key => $row) {
+      $list []= array(
+        'id' => $key,
+        'nhanvien' => $row['nhanvien'],
+        'hoanthanh' => $row['hoanthanh'],
+        'chuahoanthanh' => $row['chuahoanthanh']
+      );
+    }
+    return $list;
+  }
+
+  public function change($id, $status, $image) {
     if ($status) $status = time();
-    $sql = 'update pet_test_5min_hang set hoanthanh = '. $status.' where id = '. $id;
+    $sql = 'update pet_test_5min_hang set hoanthanh = '. $status.', hinhanh = "'. str_replace('@@', '%2F', $image) .'" where id = '. $id;
     $this->db->query($sql);
   }
 
