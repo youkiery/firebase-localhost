@@ -20,7 +20,7 @@ class Fivemin extends Module {
     $xtra = '';
     if ($this->thisrole() < 2) $xtra = ' and nhanvien = '. $this->userid;
 
-    $sql = 'select a.*, concat(last_name, " ", first_name) as nhanvien from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where thoigian > '. $filter['time'] . $xtra .' order by thoigian desc';
+    $sql = 'select a.*, concat(last_name, " ", first_name) as nhanvien from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where thoigian > '. $first_week . $xtra .' order by thoigian desc';
     $query = $this->db->query($sql);
 
     $list = array();
@@ -46,6 +46,7 @@ class Fivemin extends Module {
   }
 
   public function change($id, $status) {
+    if ($status) $status = time();
     $sql = 'update pet_test_5min_hang set hoanthanh = '. $status.' where id = '. $id;
     $this->db->query($sql);
   }
