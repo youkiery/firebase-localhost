@@ -13,7 +13,7 @@ $data = array(
   'disease' => parseGetData('disease', ''),
   'aim' => parseGetData('aim', ''),
 );
-$key = parseGetData('key', ''),
+$key = parseGetData('key', '');
 
 $msg = $target->insert($data);
 $result['status'] = 1;

@@ -55,8 +55,11 @@ function getUserBranch($branch) {
 }
 
 function parseGetData($dataname, $default = '') {
-  global $_GET;
-  return (isset($_GET[$dataname]) && $_GET[$dataname] != '' ? $_GET[$dataname] : $default);
+  global $_GET, $_POST;
+  $result = $default;
+  if (isset($_GET[$dataname]) && $_GET[$dataname] != '') $result = $_GET[$dataname];
+  if (isset($_POST[$dataname]) && $_POST[$dataname] != '') $result = $_POST[$dataname];
+  return addslashes($result);
 }
 
 function totime($time) {

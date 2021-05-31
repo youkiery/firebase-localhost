@@ -4,7 +4,8 @@ require_once(ROOTDIR .'/fivemin.php');
 $fivemin = new Fivemin();
 
 $filter = array(
-  'time' => parseGetData('time', 0)
+  'time' => parseGetData('time', 0),
+  'page' => parseGetData('page', 1)
 );
 
 $data = array(
@@ -19,5 +20,4 @@ $data = array(
 );
 
 $result['status'] = 1;
-$fivemin->insert($data);
-$result['list'] = $fivemin->init($filter);
+$result['data'] = $fivemin->insert($data);

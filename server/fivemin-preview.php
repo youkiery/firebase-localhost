@@ -17,7 +17,7 @@ while ($row = $query->fetch_assoc()) {
     <tr>
       <td>'. ($index++) .'</td>
       <td><b>'. ($row['tieuchi'] .':</b> '. $row['noidung']) .'</td>
-      <td>'. ($row['hoanthanh'] ? date('d/m/Y H:i', $row['hoanthanh']) : 'Chưa hoàn thành') .'</td>
+      <td>'. ($row['hoanthanh'] ? 'HT' : 'Chưa HT') .'</td>
     </tr>
   ';
 }

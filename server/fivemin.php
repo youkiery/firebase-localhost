@@ -15,12 +15,14 @@ class Fivemin extends Module {
   }
 
   public function init($filter) {
-    $filter['time'] = $filter['time'] / 1000;
-    $first_week = strtotime('monday this week', $filter['time'] );
+    $time = strtotime(date('Y/m/d', $filter['time'] / 1000));
+    $three_day = 3 * 60 * 60 * 24;
+    $starttime = $time - (($filter['page'] - 1) * $three_day); 
+    $endtime = $starttime - $three_day;
     $xtra = '';
     if ($this->thisrole() < 2) $xtra = ' and nhanvien = '. $this->userid;
 
-    $sql = 'select a.* from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where thoigian > '. $first_week . $xtra .' order by thoigian desc';
+    $sql = 'select a.* from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where (thoigian between '. $endtime . ' and '. $starttime .') '. $xtra .' order by thoigian desc';
     $query = $this->db->query($sql);
 
     $list = array();
@@ -46,12 +48,14 @@ class Fivemin extends Module {
   }
 
   public function hoanthanh($filter) {
-    $filter['time'] = $filter['time'] / 1000;
-    $first_week = strtotime('monday this week', $filter['time'] );
+    $time = strtotime(date('Y/m/d', $filter['time'] / 1000));
+    $three_day = 3 * 60 * 60 * 24;
+    $starttime = $time - (($filter['page'] - 1) * $three_day); 
+    $endtime = $starttime - $three_day;
     $xtra = ' and hoanthanh = 0';
     if ($filter['status']) $xtra = ' and hoanthanh > 0';
 
-    $sql = 'select a.*, concat(last_name, " ", first_name) as hoten from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where nhanvien = '. $filter['nhanvien'] .' and thoigian > '. $first_week .' order by thoigian desc';
+    $sql = 'select a.*, concat(last_name, " ", first_name) as hoten from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where nhanvien = '. $filter['nhanvien'] .' and (thoigian between '. $endtime . ' and '. $starttime .') order by thoigian desc';
     $query = $this->db->query($sql);
 
     $list = array();
@@ -71,10 +75,12 @@ class Fivemin extends Module {
   }
 
   public function thongke($filter) {
-    $filter['time'] = $filter['time'] / 1000;
-    $first_week = strtotime('monday this week', $filter['time'] );
+    $time = strtotime(date('Y/m/d', $filter['time'] / 1000));
+    $three_day = 3 * 60 * 60 * 24;
+    $starttime = $time - (($filter['page'] - 1) * $three_day); 
+    $endtime = $starttime - $three_day;
 
-    $sql = 'select a.*, concat(last_name, " ", first_name) as hoten from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where thoigian > '. $first_week .' order by thoigian desc';
+    $sql = 'select a.*, concat(last_name, " ", first_name) as hoten from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where (thoigian between '. $endtime . ' and '. $starttime .') order by thoigian desc';
     $query = $this->db->query($sql);
 
     $data = array();
@@ -110,9 +116,25 @@ class Fivemin extends Module {
     $this->db->query($sql);
   }
 
+  public function remove($id) {
+    $sql = 'delete from pet_test_5min_hang where idcha = '. $id;
+    $this->db->query($sql);
+    $sql = 'delete from pet_test_5min where id = '. $id;
+    $this->db->query($sql);
+  }
+
   public function update($data) {
     $sql = "update pet_test_5min set chamsoc = '$data[chamsoc]', tugiac = '$data[tugiac]', giaiphap = '$data[giaiphap]', uytin = '$data[uytin]', ketqua = '$data[ketqua]', dongdoi = '$data[dongdoi]', trachnhiem = '$data[trachnhiem]', tinhyeu = '$data[tinhyeu]' where id = $data[id]";
     $this->db->query($sql);
+  }
+
+  public function getid($id) {
+    $sql = 'select a.* from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where (thoigian between '. $endtime . ' and '. $starttime .') '. $xtra .' order by thoigian desc';
+    $query = $this->db->query($sql);
+
+    $data = $query->fetch_assoc();
+    $data['thoigian'] *= 1000;
+    return $data;
   }
 
   public function insert($data) {
@@ -128,5 +150,6 @@ class Fivemin extends Module {
         $this->db->query($sql);
       }
     }
+    return $this->getid($id);
   }
 }
