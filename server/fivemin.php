@@ -103,9 +103,14 @@ class Fivemin extends Module {
     return $list;
   }
 
-  public function change($id, $status, $image) {
+  public function upload($id, $image) {
+    $sql = 'update pet_test_5min_hang set hinhanh = "'. str_replace('@@', '%2F', $image).'" where id = '. $id;
+    $this->db->query($sql);
+  }
+
+  public function change($id, $status) {
     if ($status) $status = time();
-    $sql = 'update pet_test_5min_hang set hoanthanh = '. $status.', hinhanh = "'. str_replace('@@', '%2F', $image) .'" where id = '. $id;
+    $sql = 'update pet_test_5min_hang set hoanthanh = '. $status.' where id = '. $id;
     $this->db->query($sql);
   }
 
