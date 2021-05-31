@@ -6,8 +6,8 @@ $fivemin = new Fivemin();
 $filter = array(
   'nhanvien' => parseGetData('id', 0),
   'status' => parseGetData('status', 0),
-  'time' => parseGetData('time', 0),
-  'page' => parseGetData('page', 1)
+  'start' => parseGetData('start', 0),
+  'end' => parseGetData('end', 0),
 );
 
 $result['status'] = 1;

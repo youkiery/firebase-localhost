@@ -15,14 +15,10 @@ class Fivemin extends Module {
   }
 
   public function init($filter) {
-    $time = strtotime(date('Y/m/d', $filter['time'] / 1000));
-    $three_day = 3 * 60 * 60 * 24;
-    $starttime = $time - (($filter['page'] - 1) * $three_day); 
-    $endtime = $starttime - $three_day;
     $xtra = '';
-    if ($this->thisrole() < 2) $xtra = ' and nhanvien = '. $this->userid;
+    if ($this->thisrole() < 2) $xtra = ' where nhanvien = '. $this->userid;
 
-    $sql = 'select a.* from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where (thoigian between '. $endtime . ' and '. $starttime .') '. $xtra .' order by thoigian desc';
+    $sql = 'select a.* from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid '. $xtra .' order by thoigian desc limit 10 offset '. ($filter['page'] - 1) * 10;
     $query = $this->db->query($sql);
 
     $list = array();
@@ -48,14 +44,13 @@ class Fivemin extends Module {
   }
 
   public function hoanthanh($filter) {
-    $time = strtotime(date('Y/m/d', $filter['time'] / 1000));
-    $three_day = 3 * 60 * 60 * 24;
-    $starttime = $time - (($filter['page'] - 1) * $three_day); 
-    $endtime = $starttime - $three_day;
+    $starttime = strtotime(date('Y/m/d', $filter['start'] / 1000));
+    $endtime = strtotime(date('Y/m/d', $filter['end'] / 1000)) + 60 * 60 * 24 - 1;
     $xtra = ' and hoanthanh = 0';
     if ($filter['status']) $xtra = ' and hoanthanh > 0';
 
-    $sql = 'select a.*, concat(last_name, " ", first_name) as hoten from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where nhanvien = '. $filter['nhanvien'] .' and (thoigian between '. $endtime . ' and '. $starttime .') order by thoigian desc';
+    $sql = 'select a.*, concat(last_name, " ", first_name) as hoten from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where nhanvien = '. $filter['nhanvien'] .' and (thoigian between '. $starttime. ' and '. $endtime  .') order by thoigian desc';
+    // die($sql);
     $query = $this->db->query($sql);
 
     $list = array();
@@ -75,12 +70,10 @@ class Fivemin extends Module {
   }
 
   public function thongke($filter) {
-    $time = strtotime(date('Y/m/d', $filter['time'] / 1000));
-    $three_day = 3 * 60 * 60 * 24;
-    $starttime = $time - (($filter['page'] - 1) * $three_day); 
-    $endtime = $starttime - $three_day;
+    $starttime = strtotime(date('Y/m/d', $filter['start'] / 1000));
+    $endtime = strtotime(date('Y/m/d', $filter['end'] / 1000)) + 60 * 60 * 24 - 1;
 
-    $sql = 'select a.*, concat(last_name, " ", first_name) as hoten from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where (thoigian between '. $endtime . ' and '. $starttime .') order by thoigian desc';
+    $sql = 'select a.*, concat(last_name, " ", first_name) as hoten from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where (thoigian between '. $starttime. ' and '. $endtime  .') order by thoigian desc';
     $query = $this->db->query($sql);
 
     $data = array();
@@ -128,8 +121,11 @@ class Fivemin extends Module {
     $this->db->query($sql);
   }
 
-  public function getid($id) {
-    $sql = 'select a.* from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where (thoigian between '. $endtime . ' and '. $starttime .') '. $xtra .' order by thoigian desc';
+  public function getid($filter, $id) {
+    $starttime = strtotime(date('Y/m/d', $filter['start'] / 1000));
+    $endtime = strtotime(date('Y/m/d', $filter['end'] / 1000)) + 60 * 60 * 24 - 1;
+
+    $sql = 'select a.* from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where (thoigian between '. $starttime. ' and '. $endtime  .') order by thoigian desc';
     $query = $this->db->query($sql);
 
     $data = $query->fetch_assoc();
@@ -137,7 +133,7 @@ class Fivemin extends Module {
     return $data;
   }
 
-  public function insert($data) {
+  public function insert($data, $filter) {
     $time = time();
     $sql = "insert into pet_test_5min (nhanvien, thoigian) values ($this->userid, ". time() .")";
     $this->db->query($sql);
@@ -150,6 +146,6 @@ class Fivemin extends Module {
         $this->db->query($sql);
       }
     }
-    return $this->getid($id);
+    return $this->getid($data, $filter);
   }
 }

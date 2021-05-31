@@ -4,8 +4,8 @@ require_once(ROOTDIR .'/fivemin.php');
 $fivemin = new Fivemin();
 
 $filter = array(
-  'time' => parseGetData('time', 0),
-  'page' => parseGetData('page', 0),
+  'start' => parseGetData('start', 0),
+  'end' => parseGetData('end', 0),
 );
 
 $result['status'] = 1;
