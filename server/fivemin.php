@@ -15,10 +15,7 @@ class Fivemin extends Module {
   }
 
   public function init($filter) {
-    $xtra = '';
-    if ($this->thisrole() < 2) $xtra = ' where nhanvien = '. $this->userid;
-
-    $sql = 'select a.* from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid '. $xtra .' order by thoigian desc limit 10 offset '. ($filter['page'] - 1) * 10;
+    $sql = 'select a.* from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where nhanvien = '. $this->userid .' order by thoigian desc limit 10 offset '. ($filter['page'] - 1) * 10;
     $query = $this->db->query($sql);
 
     $list = array();
@@ -103,8 +100,8 @@ class Fivemin extends Module {
     return $list;
   }
 
-  public function upload($id, $image) {
-    $sql = 'update pet_test_5min_hang set hinhanh = "'. str_replace('@@', '%2F', $image).'" where id = '. $id;
+  public function upload($id, $image, $lydo, $hoanthanh) {
+    $sql = 'update pet_test_5min_hang set hinhanh = "'. str_replace('@@', '%2F', $image).'", lydo = "'. addslashes($lydo) .'", hoanthanh = "'. ($hoanthanh > 0 ? time() : 0) .'" where id = '. $id;
     $this->db->query($sql);
   }
 
