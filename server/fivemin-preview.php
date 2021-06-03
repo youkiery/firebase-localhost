@@ -13,13 +13,14 @@ $query = $mysqli->query($sql);
 $index = 1;
 
 while ($row = $query->fetch_assoc()) {
-  $html .= '
+  if ($row['noidung'] !== 'undefined' && strlen($row['noidung'])) {
+    $html .= '
     <tr>
       <td>'. ($index++) .'</td>
       <td><b>'. ($row['tieuchi'] .':</b> '. $row['noidung']) .'</td>
       <td>'. ($row['hoanthanh'] ? 'HT' : 'Chưa HT') .'</td>
-    </tr>
-  ';
+    </tr>';
+  }
 }
 
 $result['status'] = 1;

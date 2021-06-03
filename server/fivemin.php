@@ -40,6 +40,16 @@ class Fivemin extends Module {
     return $data;
   }
 
+  public function gopy($gopy, $id) {
+    $sql = 'update pet_test_5min set gopy = "'. $gopy .'" where id = '. $id;
+    $this->db->query($sql);
+    $sql = 'select gopy from pet_test_5min where id = '. $id;
+    $query = $this->db->query($sql);
+    $data = $query->fetch_assoc();
+    return $data['gopy'];
+
+  }
+
   public function hoanthanh($filter) {
     $starttime = strtotime(date('Y/m/d', $filter['start'] / 1000));
     $endtime = strtotime(date('Y/m/d', $filter['end'] / 1000)) + 60 * 60 * 24 - 1;
@@ -52,16 +62,23 @@ class Fivemin extends Module {
 
     $list = array();
     while ($row = $query->fetch_assoc()) {
+      $data = array(
+        'id' => $row['id'],
+        'time' => $row['thoigian'],
+        'gopy' => $row['gopy'],
+        'danhsach' => array()
+      );
       $sql = 'select * from pet_test_5min_hang where idcha = '. $row['id'] . $xtra;
       $query2 = $this->db->query($sql);
       while ($hang = $query2->fetch_assoc()) {
-        $list []= array(
-          'nhanvien' => $row['hoten'],
+        if ($hang['noidung'] !== 'undefined' && strlen($hang['noidung']))
+        $data['danhsach'] []= array(
           'noidung' => $hang['noidung'],
           'tieuchi' => $hang['tieuchi'],
           'image' => $hang['hinhanh']
         );
       }
+      $list []= $data;
     }
     return $list;
   }
@@ -123,11 +140,8 @@ class Fivemin extends Module {
     $this->db->query($sql);
   }
 
-  public function getid($filter, $id) {
-    $starttime = strtotime(date('Y/m/d', $filter['start'] / 1000));
-    $endtime = strtotime(date('Y/m/d', $filter['end'] / 1000)) + 60 * 60 * 24 - 1;
-
-    $sql = 'select a.* from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where (thoigian between '. $starttime. ' and '. $endtime  .') order by thoigian desc';
+  public function getid($id) {
+    $sql = 'select * from pet_test_5min where id = '. $id;
     $query = $this->db->query($sql);
 
     $data = $query->fetch_assoc();
@@ -148,6 +162,6 @@ class Fivemin extends Module {
         $this->db->query($sql);
       }
     }
-    return $this->getid($data, $filter);
+    return $this->getid($id);
   }
 }
