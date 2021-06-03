@@ -41,13 +41,12 @@ class Fivemin extends Module {
   }
 
   public function gopy($gopy, $id) {
-    $sql = 'update pet_test_5min set gopy = "'. $gopy .'" where id = '. $id;
+    $sql = 'update pet_test_5min set gopy = "'. $gopy .'", nguoigopy = '. $this->userid .' where id = '. $id;
     $this->db->query($sql);
-    $sql = 'select gopy from pet_test_5min where id = '. $id;
+    $sql = 'select a.gopy, concat(b.last_name, " ", b.first_name) as nguoigopy from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where a.id = '. $id;
     $query = $this->db->query($sql);
     $data = $query->fetch_assoc();
-    return $data['gopy'];
-
+    return $data;
   }
 
   public function hoanthanh($filter) {
@@ -56,7 +55,7 @@ class Fivemin extends Module {
     $xtra = ' and hoanthanh = 0';
     if ($filter['status']) $xtra = ' and hoanthanh > 0';
 
-    $sql = 'select a.*, concat(last_name, " ", first_name) as hoten from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where nhanvien = '. $filter['nhanvien'] .' and (thoigian between '. $starttime. ' and '. $endtime  .') order by thoigian desc';
+    $sql = 'select a.*, concat(last_name, " ", first_name) as nguoigopy from pet_test_5min a inner join pet_users b on a.nguoigopy = b.userid where nhanvien = '. $filter['nhanvien'] .' and (thoigian between '. $starttime. ' and '. $endtime  .') order by thoigian desc';
     // die($sql);
     $query = $this->db->query($sql);
 
@@ -66,6 +65,7 @@ class Fivemin extends Module {
         'id' => $row['id'],
         'time' => $row['thoigian'],
         'gopy' => $row['gopy'],
+        'nguoigopy' => $row['nguoigopy'],
         'danhsach' => array()
       );
       $sql = 'select * from pet_test_5min_hang where idcha = '. $row['id'] . $xtra;
