@@ -149,17 +149,21 @@ class Fivemin extends Module {
     return $data;
   }
 
-  public function insert($data, $filter) {
+  public function insert($data) {
     $time = time();
-    $sql = "insert into pet_test_5min (nhanvien, thoigian) values ($this->userid, ". time() .")";
+    $hour = date('H', $time);
+    if ($hour >= 19) $time += 60 * 60 * 24;
+    $sql = "insert into pet_test_5min (nhanvien, thoigian) values ($this->userid, ". $time .")";
     $this->db->query($sql);
     $id = $this->db->insert_id;
 
     foreach ($data as $name => $value) {
       $list = explode(',', $value);
       foreach ($list as $key => $real_value) {
-        $sql = "insert into pet_test_5min_hang (idcha, noidung, tieuchi, hoanthanh) values($id, '$real_value', '$name', 0)";
-        $this->db->query($sql);
+        if (!empty($real_value)) {
+          $sql = "insert into pet_test_5min_hang (idcha, noidung, tieuchi, hoanthanh) values($id, '$real_value', '$name', 0)";
+          $this->db->query($sql);
+        }
       }
     }
     return $this->getid($id);
