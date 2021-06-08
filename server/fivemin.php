@@ -18,8 +18,12 @@ class Fivemin extends Module {
     $sql = 'select a.* from pet_test_5min a inner join pet_users b on a.nhanvien = b.userid where nhanvien = '. $this->userid .' order by thoigian desc limit 10 offset '. ($filter['page'] - 1) * 10;
     $query = $this->db->query($sql);
 
+    $yesterday = strtotime(date('Y/m/d', time() - 60 * 60 * 24). ' 19:00');
+
     $list = array();
     while ($row = $query->fetch_assoc()) {
+      $row['dis'] = 0;
+      if ($row['thoigian'] <= $yesterday) $row['dis'] = 1;
       $row['thoigian'] *= 1000;
       $list []= $row;
     }
@@ -135,20 +139,6 @@ class Fivemin extends Module {
   }
 
   public function upload($id, $image, $lydo, $hoanthanh) {
-    $today = time();
-    $data = $this->getParentData($id);
-    $time = $data['thoigian'];
-
-    // nếu cùng ngày, cho phép
-    // nếu ngày hôm trước
-      // thời gian data > 19h, cho phép
-
-    // không cùng ngày
-    if (date('d', $time) != date('d')) {
-      // nếu trước 19h thì return
-      if (date('H', $time) < 19) return 0;
-    }
-
     $sql = 'update pet_test_5min_hang set hinhanh = "'. str_replace('@@', '%2F', $image).'", lydo = "'. addslashes($lydo) .'", hoanthanh = "'. ($hoanthanh > 0 ? time() : 0) .'" where id = '. $id;
     $this->db->query($sql);
     return 1;
@@ -177,11 +167,6 @@ class Fivemin extends Module {
     $this->db->query($sql);
   }
 
-  public function update($data) {
-    $sql = "update pet_test_5min set chamsoc = '$data[chamsoc]', tugiac = '$data[tugiac]', giaiphap = '$data[giaiphap]', uytin = '$data[uytin]', ketqua = '$data[ketqua]', dongdoi = '$data[dongdoi]', trachnhiem = '$data[trachnhiem]', tinhyeu = '$data[tinhyeu]' where id = $data[id]";
-    $this->db->query($sql);
-  }
-
   public function getid($id) {
     $sql = 'select * from pet_test_5min where id = '. $id;
     $query = $this->db->query($sql);
@@ -203,6 +188,19 @@ class Fivemin extends Module {
       foreach ($list as $key => $real_value) {
         if (!empty($real_value)) {
           $sql = "insert into pet_test_5min_hang (idcha, noidung, tieuchi, hoanthanh) values($id, '$real_value', '$name', 0)";
+          $this->db->query($sql);
+        }
+      }
+    }
+    return $this->getid($id);
+  }
+
+  public function update($data, $id) {
+    foreach ($data as $name => $list) {
+      foreach ($list as $key => $field) {
+        if (!empty($field)) {
+          if ($field->id) $sql = "update pet_test_5min_hang set noidung = '$field->giatri' where id = $field->id";
+          else $sql = "insert into pet_test_5min_hang (idcha, noidung, tieuchi, hoanthanh) values($id, '$field->giatri', '$name', 0)";
           $this->db->query($sql);
         }
       }
