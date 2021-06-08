@@ -49,13 +49,16 @@ class Fivemin extends Module {
     return $data;
   }
 
+  public function rate($data) {
+    $sql = 'update pet_test_5min_hang set sao = '. $data->point .' where id = '. $data->id;
+    $this->db->query($sql);
+  }
+
   public function hoanthanh($filter) {
     $starttime = strtotime(date('Y/m/d', $filter['start'] / 1000));
     $endtime = strtotime(date('Y/m/d', $filter['end'] / 1000)) + 60 * 60 * 24 - 1;
-    $xtra = ' and hoanthanh = 0';
-    if ($filter['status']) $xtra = ' and hoanthanh > 0';
 
-    $sql = 'select a.*, concat(last_name, " ", first_name) as nguoigopy from pet_test_5min a inner join pet_users b on a.nguoigopy = b.userid where nhanvien = '. $filter['nhanvien'] .' and (thoigian between '. $starttime. ' and '. $endtime  .') order by thoigian desc';
+    $sql = 'select a.*, concat(last_name, " ", first_name) as nguoigopy from pet_test_5min a inner join pet_users b on a.nguoigopy = b.userid where nhanvien = '. $filter['nhanvien'] .' and (thoigian between '. $starttime. ' and '. $endtime  .') order by id desc';
     // die($sql);
     $query = $this->db->query($sql);
 
@@ -66,16 +69,27 @@ class Fivemin extends Module {
         'time' => $row['thoigian'],
         'gopy' => $row['gopy'],
         'nguoigopy' => $row['nguoigopy'],
-        'danhsach' => array()
+        'dulieu' => array()
       );
-      $sql = 'select * from pet_test_5min_hang where idcha = '. $row['id'] . $xtra;
+      $sql = 'select * from pet_test_5min_hang where idcha = '. $row['id'];
       $query2 = $this->db->query($sql);
+      $temp = array();
       while ($hang = $query2->fetch_assoc()) {
         if ($hang['noidung'] !== 'undefined' && strlen($hang['noidung']))
-        $data['danhsach'] []= array(
+
+        if (empty($temp[$hang['tieuchi']])) $temp[$hang['tieuchi']] = array();
+        $temp[$hang['tieuchi']] []= array(
+          'id' => $hang['id'],
+          'sao' => $hang['sao'],
           'noidung' => $hang['noidung'],
-          'tieuchi' => $hang['tieuchi'],
+          'hoanthanh' => $hang['hoanthanh'],
           'image' => $hang['hinhanh']
+        );
+      }
+      foreach ($temp as $key => $value) {
+        $data['dulieu'] []= array(
+          'tieuchi' => $key,
+          'danhsach' => $value
         );
       }
       $list []= $data;
@@ -92,14 +106,16 @@ class Fivemin extends Module {
 
     $data = array();
     while ($row = $query->fetch_assoc()) {
-      $sql = 'select hoanthanh from pet_test_5min_hang where idcha = '. $row['id'];
+      $sql = 'select hoanthanh, sao from pet_test_5min_hang where idcha = '. $row['id'];
       $query2 = $this->db->query($sql);
       while ($nhanvien = $query2->fetch_assoc()) {
         if (empty($data[$row['nhanvien']])) $data[$row['nhanvien']] = array(
           'nhanvien' => $row['hoten'],
+          'danhgia' => 0,
           'hoanthanh' => 0,
           'chuahoanthanh' => 0
         );
+        $data[$row['nhanvien']]['danhgia'] += intval($nhanvien['sao']);
         if ($nhanvien['hoanthanh'] > 0) $data[$row['nhanvien']]['hoanthanh'] ++;
         else $data[$row['nhanvien']]['chuahoanthanh'] ++;
       }
@@ -111,6 +127,7 @@ class Fivemin extends Module {
         'id' => $key,
         'nhanvien' => $row['nhanvien'],
         'hoanthanh' => $row['hoanthanh'],
+        'danhgia' => $row['danhgia'],
         'chuahoanthanh' => $row['chuahoanthanh']
       );
     }
@@ -118,8 +135,33 @@ class Fivemin extends Module {
   }
 
   public function upload($id, $image, $lydo, $hoanthanh) {
+    $today = time();
+    $data = $this->getParentData($id);
+    $time = $data['thoigian'];
+
+    // nếu cùng ngày, cho phép
+    // nếu ngày hôm trước
+      // thời gian data > 19h, cho phép
+
+    // không cùng ngày
+    if (date('d', $time) != date('d')) {
+      // nếu trước 19h thì return
+      if (date('H', $time) < 19) return 0;
+    }
+
     $sql = 'update pet_test_5min_hang set hinhanh = "'. str_replace('@@', '%2F', $image).'", lydo = "'. addslashes($lydo) .'", hoanthanh = "'. ($hoanthanh > 0 ? time() : 0) .'" where id = '. $id;
     $this->db->query($sql);
+    return 1;
+  }
+
+  public function getParentData($id) {
+    $sql = 'select * from pet_test_5min_hang where id = '. $id;
+    $query = $this->db->query($sql);
+    $data = $query->fetch_assoc();
+
+    $sql = 'select * from pet_test_5min where id = '. $data['idcha'];
+    $query = $this->db->query($sql);
+    return $query->fetch_assoc();
   }
 
   public function change($id, $status) {
@@ -157,8 +199,7 @@ class Fivemin extends Module {
     $this->db->query($sql);
     $id = $this->db->insert_id;
 
-    foreach ($data as $name => $value) {
-      $list = explode(',', $value);
+    foreach ($data as $name => $list) {
       foreach ($list as $key => $real_value) {
         if (!empty($real_value)) {
           $sql = "insert into pet_test_5min_hang (idcha, noidung, tieuchi, hoanthanh) values($id, '$real_value', '$name', 0)";
