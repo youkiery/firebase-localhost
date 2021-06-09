@@ -1,6 +1,20 @@
 <?php 
 
 $id = parseGetData('id', '0');
+$thoigian = array(
+  1 => '07h - 08h',
+  '08h - 09h',
+  '09h - 10h',
+  '10h - 11h',
+  '11h - 12h',
+  '12h - 13h',
+  '13h - 14h',
+  '14h - 15h',
+  '15h - 16h',
+  '16h - 17h',
+  '17h - 18h',
+  '18h - 19h'
+);
 $list = array(
   'muctieu' => array(
     'ten' => 'Mục tiêu doanh số',
@@ -67,14 +81,49 @@ foreach ($list as $tieuchi => $dulieu) {
   }
 }
 
+$sql = 'select * from pet_test_5min_hang where idcha = '. $id;
+$query = $mysqli->query($sql);
+
+$temp = '';
+$index = 1;
+
+while ($row = $query->fetch_assoc()) {
+  $temp .= '
+    <tr>
+      <td> '. ($index ++) .' </td>
+      <td> '. $thoigian[$row['thoigian']] .' </td>
+      <td> '. $row['noidung'] .' </td>
+      <td> '. ($danhsach['hoanthanh'] > 0 ? 'HT' : 'CHT') .' </td>
+    </tr>
+  ';
+}
+
+$temp = '
+<table>
+  <tr>
+    <th> STT </th>
+    <th> Thời gian </th>
+    <th> Nội dung </th>
+    <th> Tiến độ </th>
+  </tr>
+  '. $temp .'
+</table>
+';
+
 $result['status'] = 1;
 $result['html'] = '
 <style>
   th, td {
     padding: 5px;
+    border: 1px solid gray;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
   }
 </style>
-<table border="1" style="border-collapse: collapse; width: 100%">
+<table border="1">
   <tr>
     <th colspan="3"> Công việc ngày '. date('d/m/Y', $data['thoigian']) .' của '. $data['fullname'] .' </th>
   </tr>
@@ -83,6 +132,6 @@ $result['html'] = '
     <th> Mục tiêu </th>
     <th style="width: 1px"> Tình trạng </th>
   </tr>
-  '. $html .'
+  '. $html .' '. $temp .'
 </table>
 ';

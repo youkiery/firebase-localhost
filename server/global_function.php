@@ -18,6 +18,10 @@ function cmp2($source, $target) {
   return strcmp($target['calltime'], $source['calltime']);
 }
 
+function cmp3($a, $b) {
+  return $a['danhgia'] < $b['danhgia'];
+}
+
 function checkUserRole($userid) {
   global $mysqli;
   if (!empty(checkUserId($userid))) {

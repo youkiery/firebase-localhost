@@ -29,6 +29,10 @@ class Drug extends Module {
     $list = array();
 
     while ($row = $query->fetch_assoc()) {
+      $row['limits'] = urldecode($row['limits']);
+      $row['effect'] = urldecode($row['effect']);
+      $row['sideeffect'] = urldecode($row['sideeffect']);
+      $row['mechanic'] = urldecode($row['mechanic']);
       $list []= $row;
     }
     return $list;
@@ -46,6 +50,10 @@ class Drug extends Module {
     $list = array();
 
     while ($row = $query->fetch_assoc()) {
+      $row['limits'] = urldecode($row['limits']);
+      $row['effect'] = urldecode($row['effect']);
+      $row['sideeffect'] = urldecode($row['sideeffect']);
+      $row['mechanic'] = urldecode($row['mechanic']);
       $list []= $row;
     }
     return $list;

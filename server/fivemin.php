@@ -30,8 +30,10 @@ class Fivemin extends Module {
     return $list;
   }
 
-  public function get($id) {
-    $sql = 'select * from pet_test_5min_hang where idcha = '. $id;
+  public function get($id, $act = 0) {
+    $sort = '';
+    if ($act) $sort = 'order by thoigian asc';
+    $sql = 'select * from pet_test_5min_hang where idcha = '. $id .' '. $sort;
     $query = $this->db->query($sql);
     $data = array();
 
@@ -135,6 +137,8 @@ class Fivemin extends Module {
         'chuahoanthanh' => $row['chuahoanthanh']
       );
     }
+
+    usort($list, 'cmp3');
     return $list;
   }
 
@@ -185,9 +189,9 @@ class Fivemin extends Module {
     $id = $this->db->insert_id;
 
     foreach ($data as $name => $list) {
-      foreach ($list as $key => $real_value) {
-        if (!empty($real_value)) {
-          $sql = "insert into pet_test_5min_hang (idcha, noidung, tieuchi, hoanthanh) values($id, '$real_value', '$name', 0)";
+      foreach ($list as $key => $field) {
+        if (!empty($field) && !empty($field->giatri)) {
+          $sql = "insert into pet_test_5min_hang (idcha, noidung, tieuchi, thoigian, hoanthanh) values($id, '$field->giatri', '$name', $field->thoigian, 0)";
           $this->db->query($sql);
         }
       }
@@ -198,9 +202,9 @@ class Fivemin extends Module {
   public function update($data, $id) {
     foreach ($data as $name => $list) {
       foreach ($list as $key => $field) {
-        if (!empty($field)) {
-          if ($field->id) $sql = "update pet_test_5min_hang set noidung = '$field->giatri' where id = $field->id";
-          else $sql = "insert into pet_test_5min_hang (idcha, noidung, tieuchi, hoanthanh) values($id, '$field->giatri', '$name', 0)";
+        if (!empty($field) && !empty($field->giatri)) {
+          if ($field->id) $sql = "update pet_test_5min_hang set noidung = '$field->giatri', thoigian = $field->thoigian where id = $field->id";
+          else $sql = "insert into pet_test_5min_hang (idcha, noidung, tieuchi, thoigian, hoanthanh) values($id, '$field->giatri', '$name', $field->thoigian, 0)";
           $this->db->query($sql);
         }
       }
