@@ -5,7 +5,7 @@ $key = parseGetData('name', '');
 require_once(ROOTDIR .'/expire.php');
 $expire = new Expire();
 
-$sql = 'select * from `pet_'. $expire->table .'_catalog` where name like "%'. $key .'%" limit 30';
+$sql = 'select * from `pet_test_storage_item` where name like "%'. $key .'%" limit 30';
 
 $query = $expire->db->query($sql);
 $data = array();

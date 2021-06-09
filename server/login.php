@@ -45,7 +45,7 @@ else {
         $userList = $spa->getUserList();
   
         $list = array();
-        $sql = 'select a.userid, b.username as username, concat(last_name, " ", first_name) as name from `pet_'. $work->table .'_user` a inner join `pet_users` b on a.userid = b.userid group by userid';
+        $sql = 'select a.userid, b.username as username, concat(last_name, " ", first_name) as name from `pet_test_user` a inner join `pet_users` b on a.userid = b.userid group by userid';
         $query = $mysqli->query($sql);
         while ($row = $query->fetch_assoc()) {
             $list []= $row;
@@ -53,7 +53,7 @@ else {
         $result['employ'] = $list;
   
         $list = array();
-        $sql = 'select a.userid, b.username as username, concat(last_name, " ", first_name) as name from `pet_'. $work->table .'_user` a inner join `pet_users` b on a.userid = b.userid and a.except = 1';
+        $sql = 'select a.userid, b.username as username, concat(last_name, " ", first_name) as name from `pet_test_user` a inner join `pet_users` b on a.userid = b.userid and a.except = 1';
         $query = $mysqli->query($sql);
         while ($row = $query->fetch_assoc()) {
             $list []= $userList[$row['userid']];
@@ -61,7 +61,7 @@ else {
         $result['except'] = $list;
   
         $list = array();
-        $sql = 'select a.userid, b.username as username, concat(last_name, " ", first_name) as name from `pet_'. $work->table .'_user` a inner join `pet_users` b on a.userid = b.userid and a.daily = 1';
+        $sql = 'select a.userid, b.username as username, concat(last_name, " ", first_name) as name from `pet_test_user` a inner join `pet_users` b on a.userid = b.userid and a.daily = 1';
         $query = $mysqli->query($sql);
         while ($row = $query->fetch_assoc()) {
             $list []= $row;

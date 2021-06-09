@@ -37,7 +37,7 @@ class Schedule extends Module {
           array(1 => date('d/m', $starttime + $aday * 5), 'green', 'green'),
           array(1 => date('d/m', $starttime + $aday * 6), 'green', 'green'),
         );
-        $sql = 'select id, user_id, type, time from `'. $this->prefix .'` where (type = 2 or type = 3) and (time between '. $starttime .' and '. $endtime .') and user_id = ' . $id;
+        $sql = 'select id, user_id, type, time from `pet_test_row` where (type = 2 or type = 3) and (time between '. $starttime .' and '. $endtime .') and user_id = ' . $id;
         $query = $this->db->query($sql);
         while ($row = $query->fetch_assoc()) {
           $day = date('N', $row['time']);
@@ -60,7 +60,7 @@ class Schedule extends Module {
         );
       }
   
-      $sql = 'select id, user_id, type, time from `'. $this->prefix .'` where (time between '. $starttime .' and '. $endtime .')';
+      $sql = 'select id, user_id, type, time from `pet_test_row` where (time between '. $starttime .' and '. $endtime .')';
       $query = $this->db->query($sql);
       $row = array();
       $userList = $this->getUserList();
@@ -76,7 +76,7 @@ class Schedule extends Module {
   }
 
   function getScheduleById($id) {
-    $sql = 'select * from `'. $this->prefix .'` where id = '. $id;
+    $sql = 'select * from `pet_test_row` where id = '. $id;
     $query = $this->db->query($sql);
     if (!empty($row = $query->fetch_assoc())) return $row;
     return array();
@@ -86,14 +86,14 @@ class Schedule extends Module {
     $start = $time;
     $end = $start + 60 * 60 * 24 - 1;
 
-    $sql = 'select * from `'. $this->prefix .'` where user_id = '. $userid . ' and (time between '. $start .' and '. $end .') and type = '. $type;
+    $sql = 'select * from `pet_test_row` where user_id = '. $userid . ' and (time between '. $start .' and '. $end .') and type = '. $type;
     $query = $this->db->query($sql);
     $row = $query->fetch_assoc();
     // echo $action . '<br>';
     if ($action) {
-      if ($row) $sql = 'delete from `'. $this->prefix .'` where id = ' . $row['id'];
+      if ($row) $sql = 'delete from `pet_test_row` where id = ' . $row['id'];
     }
-    else if (!$row) $sql = 'insert into `'. $this->prefix .'` (user_id, type, time, reg_time) values('. $userid .', '. $type .', '. $time .', '. time() .')';
+    else if (!$row) $sql = 'insert into `pet_test_row` (user_id, type, time, reg_time) values('. $userid .', '. $type .', '. $time .', '. time() .')';
     if ($sql) $this->db->query($sql);
   }
 }

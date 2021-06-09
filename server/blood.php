@@ -12,18 +12,18 @@ class Blood extends Module {
     $data = array();
 
     $target = array();
-    $sql = 'select * from `pet_' . $this->table . '_remind` where name = "blood" order by id';
+    $sql = 'select * from `pet_test_remind` where name = "blood" order by id';
     $query =$this->db->query($sql);
   
     while ($row = $query->fetch_assoc()) {
       $target[$row['id']] = $row['value'];
     }
   
-    $sql = 'select * from ((select id, time, 0 as type from `' . $this->prefix . '_row`) union (select id, time, 1 as type from `' . $this->prefix . '_import`)) a order by time desc, id desc limit 20 offset '. ($filter['page'] - 1) * 20;
+    $sql = 'select * from ((select id, time, 0 as type from `pet_test_blood_row`) union (select id, time, 1 as type from `pet_test_blood_import`)) a order by time desc, id desc limit 20 offset '. ($filter['page'] - 1) * 20;
     $query =$this->db->query($sql);
     while ($row = $query->fetch_assoc()) {
-      if ($row['type']) $sql = 'select * from `' . $this->prefix . '_import` where id = ' . $row['id'];
-      else $sql = 'select * from `' . $this->prefix . '_row` where id = ' . $row['id'];
+      if ($row['type']) $sql = 'select * from `pet_test_blood_import` where id = ' . $row['id'];
+      else $sql = 'select * from `pet_test_blood_row` where id = ' . $row['id'];
       $query2 =$this->db->query($sql);
       $row2 = $query2->fetch_assoc();
   
@@ -60,18 +60,18 @@ class Blood extends Module {
     $data = array();
 
     $target = array();
-    $sql = 'select * from `pet_' . $this->table . '_remind` where name = "blood" order by id';
+    $sql = 'select * from `pet_test_remind` where name = "blood" order by id';
     $query =$this->db->query($sql);
   
     while ($row = $query->fetch_assoc()) {
       $target[$row['id']] = $row['value'];
     }
   
-    $sql = 'select * from ((select id, time, 0 as type from `' . $this->prefix . '_row`) union (select id, time, 1 as type from `' . $this->prefix . '_import`)) a order by time desc, id desc limit '. $filter['page'] * 20;
+    $sql = 'select * from ((select id, time, 0 as type from `pet_test_blood_row`) union (select id, time, 1 as type from `pet_test_blood_import`)) a order by time desc, id desc limit '. $filter['page'] * 20;
     $query =$this->db->query($sql);
     while ($row = $query->fetch_assoc()) {
-      if ($row['type']) $sql = 'select * from `' . $this->prefix . '_import` where id = ' . $row['id'];
-      else $sql = 'select * from `' . $this->prefix . '_row` where id = ' . $row['id'];
+      if ($row['type']) $sql = 'select * from `pet_test_blood_import` where id = ' . $row['id'];
+      else $sql = 'select * from `pet_test_blood_row` where id = ' . $row['id'];
       $query2 =$this->db->query($sql);
       $row2 = $query2->fetch_assoc();
   
@@ -104,24 +104,24 @@ class Blood extends Module {
   }
 
   function getCatalogById($id) {
-    $sql = 'select * from `pet_'. $this->table .'_catalog` where id = ' . $id;
+    $sql = 'select * from `pet_test_catalog` where id = ' . $id;
     $query = $this->db->query($sql);
     return $query->fetch_assoc();
   }
 
   function check_last_blood() {
-    $sql = 'select * from `pet_config` where config_name = "'. $this->table .'_blood_number"';
+    $sql = 'select * from `pet_config` where config_name = "test_blood_number"';
     $query = $this->db->query($sql);
     if (!empty($row = $query->fetch_assoc())) {
       return $row['config_value'];
     }
-    $sql = 'insert into `pet_config` (lang, module, config_name, config_value) values ("sys", "site", "'. $this->table .'_blood_number", "1")';
+    $sql = 'insert into `pet_config` (lang, module, config_name, config_value) values ("sys", "site", "test_blood_number", "1")';
     $this->db->query($sql);
     return 0;
   }
 
   function check_blood_sample() {
-    $sql = 'select * from `pet_config` where config_name like "'. $this->table .'_blood_sample%" order by config_name';
+    $sql = 'select * from `pet_config` where config_name like "test_blood_sample%" order by config_name';
     $query = $this->db->query($sql);
     $number = array();
     $index = 1;
@@ -133,19 +133,19 @@ class Blood extends Module {
 
   function update_blood_sample($data) {
     for ($i = 1; $i <= 3; $i++) {
-      $sql = 'update `pet_config` set config_value = config_value + '. $data['number'. $i] .' where config_name = "'. $this->table .'_blood_sample_'. $i .'"';
+      $sql = 'update `pet_config` set config_value = config_value + '. $data['number'. $i] .' where config_name = "test_blood_sample_'. $i .'"';
       $this->db->query($sql);
     }
   }
 
   function check_blood_remind($name) {
     $targetid = 0;
-    $sql = 'select * from `pet_' . $this->table . '_remind` where name = "blood" and value = "' . $name . '"';
+    $sql = 'select * from `pet_test_remind` where name = "blood" and value = "' . $name . '"';
     $query = $this->db->query($sql);
     if (!empty($row = $query->fetch_assoc())) {
       $targetid = $row['id'];
     } else {
-      $sql = 'insert into `pet_' . $this->table . '_remind` (name, value) values ("blood", "' . $name . '")';
+      $sql = 'insert into `pet_test_remind` (name, value) values ("blood", "' . $name . '")';
       if ($this->db->query($sql)) {
         $targetid = $this->db->insert_id;
       }
@@ -165,7 +165,7 @@ class Blood extends Module {
     );
 
     $doctor = $this->employ_list();
-    $sql = 'select * from `' . $this->prefix . '_row` where (time between ' . $from . ' and ' . $end . ')';
+    $sql = 'select * from `pet_test_blood_row` where (time between ' . $from . ' and ' . $end . ')';
     $query = $this->db->query($sql);
     $data = array();
     while ($row = $query->fetch_assoc()) {
@@ -183,7 +183,7 @@ class Blood extends Module {
       $data[$row['doctor']]['sample'] += $row['number'];
     }
 
-    $sql = 'select * from `' . $this->prefix . '_import` where (time between ' . $from . ' and ' . $end . ')';
+    $sql = 'select * from `pet_test_blood_import` where (time between ' . $from . ' and ' . $end . ')';
     $query = $this->db->query($sql);
     $sum = 0;
     while ($row = $query->fetch_assoc()) {

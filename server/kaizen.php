@@ -50,7 +50,7 @@ class Kaizen extends Module {
     if (count($xtra)) $xtra = ' and ' . implode(' and ', $xtra);
     else $xtra = '';
     $list = array();
-    $sql = 'select * from `pet_'. $this->table .'_kaizen` where active = 1 ' . $xtra . ' and done = '. $filter['type'] .' order by edit_time ' . $filter['sort'] . ' limit 10 offset '. ($filter['page'] - 1) * 10;
+    $sql = 'select * from `pet_test_kaizen` where active = 1 ' . $xtra . ' and done = '. $filter['type'] .' order by edit_time ' . $filter['sort'] . ' limit 10 offset '. ($filter['page'] - 1) * 10;
     $query = $this->db->query($sql);
 
     while ($row = $query->fetch_assoc()) {
@@ -106,7 +106,7 @@ class Kaizen extends Module {
     else $xtra = '';
     // $list = array();
     
-    $sql = 'select * from `pet_'. $this->table .'_kaizen` where active = 1 ' . $xtra . ' and done = 1 order by edit_time ' . $filter['sort'] . ' limit '. $filter['page2'] * 10;
+    $sql = 'select * from `pet_test_kaizen` where active = 1 ' . $xtra . ' and done = 1 order by edit_time ' . $filter['sort'] . ' limit '. $filter['page2'] * 10;
     $query = $this->db->query($sql);
     
     while ($row = $query->fetch_assoc()) {
@@ -124,7 +124,7 @@ class Kaizen extends Module {
       $list['done'] []= $data;
     }
     
-    $sql = 'select * from `pet_'. $this->table .'_kaizen` where active = 1 ' . $xtra . ' and done = 0 order by edit_time ' . $filter['sort'] . ' limit '. $filter['page1'] * 10;
+    $sql = 'select * from `pet_test_kaizen` where active = 1 ' . $xtra . ' and done = 0 order by edit_time ' . $filter['sort'] . ' limit '. $filter['page1'] * 10;
     $query = $this->db->query($sql);
     
     while ($row = $query->fetch_assoc()) {
@@ -145,7 +145,7 @@ class Kaizen extends Module {
   }
 
   function getKaizenNotify() {
-    $sql = 'select * from `pet_'. $this->table .'_notify` where module = "kaizen" and userid = '. $this->userid . ' order by time desc';
+    $sql = 'select * from `pet_test_notify` where module = "kaizen" and userid = '. $this->userid . ' order by time desc';
     $query = $this->db->query($sql);
     $list = array();
     $action_trans = array(1 => 'Thêm giải phảp', 'Cập nhật giải pháp', 'Hoàn thành giải pháp', 'Xóa giải phảp');
@@ -164,7 +164,7 @@ class Kaizen extends Module {
   }
   
   function getKaizenById($id) {
-    $sql = 'select * from `pet_'. $this->table .'_kaizen` where id = ' . $id;
+    $sql = 'select * from `pet_test_kaizen` where id = ' . $id;
     $query = $this->db->query($sql);
     return $query->fetch_assoc();
   }
@@ -173,7 +173,7 @@ class Kaizen extends Module {
     $sql = 'update `pet_config` set = "'. $time .'" where config_name = "pet_lastkaizen"';
     $this->db->query($sql);
 
-    $sql = 'insert into `pet_'. $this->table .'_kaizen` (userid, problem, solution, result, post_time, edit_time) values('. $this->userid .', "'. $data['problem'] .'", "'. $data['solution'] .'", "'. $data['result'] .'", '. time() .', '. time() .')';
+    $sql = 'insert into `pet_test_kaizen` (userid, problem, solution, result, post_time, edit_time) values('. $this->userid .', "'. $data['problem'] .'", "'. $data['solution'] .'", "'. $data['result'] .'", '. time() .', '. time() .')';
     if ($this->db->query($sql)) {
       $this->insertNotify(INSERT_NOTIFY, $this->db->insert_id, $time);
     }
@@ -181,7 +181,7 @@ class Kaizen extends Module {
 
   function updateData($data) {
     $time = time();
-    $sql = 'update `pet_'. $this->table .'_kaizen` set problem = "'. $data['problem'] .'", solution = "'. $data['solution'] .'", result = "'. $data['result'] .'", edit_time = '. $time .' where id = '. $data['id'];
+    $sql = 'update `pet_test_kaizen` set problem = "'. $data['problem'] .'", solution = "'. $data['solution'] .'", result = "'. $data['result'] .'", edit_time = '. $time .' where id = '. $data['id'];
     // die($sql);
     if ($this->db->query($sql)) {
       $this->insertNotify(EDIT_NOTIFY, $this->db->insert_id, $time);
@@ -191,7 +191,7 @@ class Kaizen extends Module {
 
   function removeData($data) {
     $time = time();
-    $sql = 'update `pet_'. $this->table .'_kaizen` set active = 0 where id = '. $data['id'];
+    $sql = 'update `pet_test_kaizen` set active = 0 where id = '. $data['id'];
     if ($this->db->query($sql)) {
       $this->insertNotify(REMOVE_NOTIFY, $data['id'], $time);
     }
@@ -200,7 +200,7 @@ class Kaizen extends Module {
 
   function checkData($id, $type) {
     $time = time();
-    $sql = 'update `pet_'. $this->table .'_kaizen` set done = '. intval(!$type) .' where id = '. $id;
+    $sql = 'update `pet_test_kaizen` set done = '. intval(!$type) .' where id = '. $id;
     if ($this->db->query($sql)) {
       $this->insertNotify(COMPLETE_NOTIFY, $id, $time);
     }

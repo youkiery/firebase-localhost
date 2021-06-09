@@ -11,7 +11,7 @@ $filter = array(
   'keyword' => parseGetData('keyword', '')
 );
 
-$sql = 'update `'. $usg->prefix .'` set expectnumber = ' . $number . ', status = 2 where id = ' . $id;
+$sql = 'update `pet_test_usg2` set expectnumber = ' . $number . ', status = 2 where id = ' . $id;
 // die($sql);
 $mysqli->query($sql);
 

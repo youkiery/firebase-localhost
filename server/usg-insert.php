@@ -20,28 +20,28 @@ $filter = array(
 );
 
 // thay đổi thông tin khách
-$sql = 'select * from `pet_'. $usg->table .'_customer` where phone = "'. $data['phone'] .'"';
+$sql = 'select * from `pet_test_customer` where phone = "'. $data['phone'] .'"';
 $query = $mysqli->query($sql);
 $row = $query->fetch_assoc();
 
 if (empty($row)) {
   // insert khách hàng 
-  $sql = 'insert into `pet_'. $usg->table .'_customer` (name, phone, address) values("'. $data['customer'] .'", "'. $data['phone'] .'", "")';
+  $sql = 'insert into `pet_test_customer` (name, phone, address) values("'. $data['customer'] .'", "'. $data['phone'] .'", "")';
   $mysqli->query($sql);
   $row['id'] = $mysqli->insert_id;
 }
 else {
-  $sql = 'update `pet_'. $usg->table .'_customer` set name = "'. $data['customer'] .'" where phone = "'. $data['phone'] .'"';
+  $sql = 'update `pet_test_customer` set name = "'. $data['customer'] .'" where phone = "'. $data['phone'] .'"';
   $mysqli->query($sql);
 }
 
 // Kiểm tra thông tin thú cưng
-$sql = 'select * from `pet_'. $usg->table .'_pet` where id = "'. $data['pet'] .'"';
+$sql = 'select * from `pet_test_pet` where id = "'. $data['pet'] .'"';
 $query = $mysqli->query($sql);
 $pet = $query->fetch_assoc();
 
 if (empty($pet)) {
-  $sql = 'insert into `pet_'. $usg->table .'_pet` (name, customerid) values("Không biết tên", "'. $row['id'] .'")';
+  $sql = 'insert into `pet_test_pet` (name, customerid) values("Không biết tên", "'. $row['id'] .'")';
   $query = $mysqli->query($sql);
   $pet['id'] = $mysqli->insert_id;
 }

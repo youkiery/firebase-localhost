@@ -81,7 +81,7 @@ foreach ($list as $tieuchi => $dulieu) {
   }
 }
 
-$sql = 'select * from pet_test_5min_hang where idcha = '. $id;
+$sql = 'select * from pet_test_5min_hang where idcha = '. $id . ' order by thoigian asc';
 $query = $mysqli->query($sql);
 
 $temp = '';

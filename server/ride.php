@@ -15,7 +15,7 @@ class Ride extends Module {
     $time = $filter['time'];
     $from = $time - 60 * 60 * 24 * 15;
     $end = $time + 60 * 60 * 24 * 15;
-    $sql = 'select * from `'. $this->prefix .'` where type = "'. $filter['type'] .'" and (time between '. $from .' and '. $end .') order by time desc';
+    $sql = 'select * from `pet_test_ride` where type = "'. $filter['type'] .'" and (time between '. $from .' and '. $end .') order by time desc';
     $query = $this->db->query($sql);
     $list = array();
 
@@ -27,7 +27,7 @@ class Ride extends Module {
   }
 
   function getDataById($id, $type) {
-    $sql = 'select * from `'. $this->prefix .'_collect` where id = ' . $id;
+    $sql = 'select * from `pet_test_ride_collect` where id = ' . $id;
     $query = $this->db->query($sql);
     $data = $query->fetch_assoc();
     return $this->func[$type]($data);
@@ -60,16 +60,16 @@ class Ride extends Module {
   }
 
   function setClock($number) {
-    $sql = 'update `pet_config` config_value = "'. $number .'" where config_name = "'. $this->prefix .'"';
+    $sql = 'update `pet_config` config_value = "'. $number .'" where config_name = "pet_test_ride"';
     $this->db->query($sql);
   }
 
   function getClock() {
-    $sql = 'select * from `pet_config` where config_name = "'. $this->prefix .'"';
+    $sql = 'select * from `pet_config` where config_name = "pet_test_ride"';
     $query = $this->db->query($sql);
     
     if (empty($row = $query->fetch_assoc())) {
-      $sql = 'insert into `pet_config` (lang, module, config_name, config_value) values("sys", "site", "'. $this->prefix .'", "0")';
+      $sql = 'insert into `pet_config` (lang, module, config_name, config_value) values("sys", "site", "pet_test_ride", "0")';
       $this->db->query($sql);
       $row['config_value'] = 0;
     }

@@ -9,11 +9,11 @@ $filter = array(
 
 $data = array();
 
-$sql = 'select * from `pet_'. $usg->table .'_customer` where name like "%'. $filter['value'] .'%" or phone like "%'. $filter['value'] .'%" limit 20';
+$sql = 'select * from `pet_test_customer` where name like "%'. $filter['value'] .'%" or phone like "%'. $filter['value'] .'%" limit 20';
 $query = $usg->db->query($sql);
 
 while ($row = $query->fetch_assoc()) {
-  $sql = 'select * from `pet_'. $usg->table .'_pet` where customerid = ' . $row['id'];
+  $sql = 'select * from `pet_test_pet` where customerid = ' . $row['id'];
   $query2 = $usg->db->query($sql);
   $list = array();
   while ($row2 = $query2->fetch_assoc()) {

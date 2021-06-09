@@ -9,7 +9,7 @@ $filter = array(
 
 $data = array();
 
-$sql = 'select * from `pet_'. $spa->table .'_customer` where name like "%'. $filter['value'] .'%" or phone like "%'. $filter['value'] .'%" limit 20';
+$sql = 'select * from `pet_test_customer` where name like "%'. $filter['value'] .'%" or phone like "%'. $filter['value'] .'%" limit 20';
 $query = $spa->db->query($sql);
 
 while ($row = $query->fetch_assoc()) {

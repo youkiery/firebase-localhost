@@ -13,7 +13,7 @@ $blood->update_blood_sample(array(
   'number2' => -1 * $number2,
   'number3' => -1 * $number3
 ));
-$sql = 'update `pet_config` set config_value = ' . $total . ' where config_name = "' . $blood->table . '_blood_number"';
+$sql = 'update `pet_config` set config_value = ' . $total . ' where config_name = "test_blood_number"';
 
 $blood->db->query($sql);
 

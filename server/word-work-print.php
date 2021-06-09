@@ -58,7 +58,7 @@ $table->addCell(2000, $fancyTableCellStyle)->addText("Tuần trước", $header_
 
 $list = $work->getWork($filter); // get all
 $overdate = array();
-$sql = 'select id, userid, cometime, calltime, process, content, note, image from `'. $work->prefix .'` where active = 1 and process < 100 and calltime < '. $startdate;
+$sql = 'select id, userid, cometime, calltime, process, content, note, image from `pet_test_work` where active = 1 and process < 100 and calltime < '. $startdate;
 $query = $work->db->query($sql);
 while ($row = $query->fetch_assoc()) {
   if (empty($user[$row['userid']])) {

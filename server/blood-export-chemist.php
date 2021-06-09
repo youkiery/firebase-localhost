@@ -12,7 +12,7 @@ $end = $sample_number - $number;
 $sql = 'insert into `' . $blood->prefix . '_row` (time, number, start, end, doctor, target) values(' . time() . ', ' . $number . ', ' . $sample_number . ', ' . $end . ', ' . $user['userid'] . ', ' . $targetid . ')';
 $query = $blood->db->query($sql);
 if ($query) {
-  $query = $blood->db->query('update `pet_config` set config_value = ' . $end . ' where config_name = "' . $blood->table . '_blood_number"');
+  $query = $blood->db->query('update `pet_config` set config_value = ' . $end . ' where config_name = "test_blood_number"');
   // die($sql);
   if ($query) {
     $result['status'] = 1;

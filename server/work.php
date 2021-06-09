@@ -52,7 +52,7 @@ class Work extends Module {
     if (count($xtra)) $xtra = ' and '. implode(' and ', $xtra);
     else $xtra = '';
 
-    $sql = 'select id, userid, cometime, calltime, process, content, note, image from `'. $this->prefix .'` where active = 1 '. $xtra . ' order by calltime desc limit 10 offset '. ($filter['page'] - 1) * 10;
+    $sql = 'select id, userid, cometime, calltime, process, content, note, image from `pet_test_work` where active = 1 '. $xtra . ' order by calltime desc limit 10 offset '. ($filter['page'] - 1) * 10;
 
     $query = $this->db->query($sql);
     $user = array();
@@ -111,7 +111,7 @@ class Work extends Module {
     if (count($xtra)) $xtra = ' and '. implode(' and ', $xtra);
     else $xtra = '';
     
-    $sql = 'select id, userid, cometime, calltime, process, content, note, image from `'. $this->prefix .'` where process < 100 and active = 1 '. $xtra .' order by calltime desc limit '. $filter['page1'] * 10;
+    $sql = 'select id, userid, cometime, calltime, process, content, note, image from `pet_test_work` where process < 100 and active = 1 '. $xtra .' order by calltime desc limit '. $filter['page1'] * 10;
     $query = $this->db->query($sql);
     $user = array();
     
@@ -129,7 +129,7 @@ class Work extends Module {
       $list['undone'] []= $row;
     }
     
-    $sql = 'select id, userid, cometime, calltime, process, content, note, image from `'. $this->prefix .'` where process > 99 and active = 1 '. $xtra .' order by calltime desc limit '. $filter['page2'] * 10;
+    $sql = 'select id, userid, cometime, calltime, process, content, note, image from `pet_test_work` where process > 99 and active = 1 '. $xtra .' order by calltime desc limit '. $filter['page2'] * 10;
     $query = $this->db->query($sql);
     $user = array();
     
@@ -157,7 +157,7 @@ class Work extends Module {
       // nhân viên, lấy thông báo bản thân
       $xtra = 'where userid = ' . $this->userid;
     }
-    $sql = 'select * from `pet_'. $this->table .'_notify` ' . $xtra . ' order by time desc';
+    $sql = 'select * from `pet_test_notify` ' . $xtra . ' order by time desc';
     $query = $this->db->query($sql);
 
     while ($row = $query->fetch_assoc()) {
@@ -167,11 +167,11 @@ class Work extends Module {
   }
 
   function getUserNotifyTime() {
-    $sql = 'select * from `pet_'. $this->table .'_notify_read` where userid = ' . $this->userid;
+    $sql = 'select * from `pet_test_notify_read` where userid = ' . $this->userid;
     $query = $this->db->query($sql);
 
     if (empty($row = $query->fetch_assoc())) {
-      $sql = 'insert into `pet_'. $this->table .'_notify_read` (userid, time) values ('. $this->userid .', 0)';
+      $sql = 'insert into `pet_test_notify_read` (userid, time) values ('. $this->userid .', 0)';
       $this->db->query($sql);
       $row = array(
         'time' => 0
@@ -195,13 +195,13 @@ class Work extends Module {
   }
 
   function getWorkById($workid) {
-    $sql = 'select * from `'. $this->prefix .'` where id = ' . $workid;
+    $sql = 'select * from `pet_test_work` where id = ' . $workid;
     $query = $this->db->query($sql);
     return $query->fetch_assoc();
   }
 
   function checkWorkId($workid) {
-    $sql = 'select * from `'. $this->prefix .'` where id = '. $workid;
+    $sql = 'select * from `pet_test_work` where id = '. $workid;
     $query = $this->db->query($sql);
 
     if (!empty($query->fetch_assoc())) return true;
@@ -209,7 +209,7 @@ class Work extends Module {
   }
 
   function insertWork($data, $time) {
-    $sql = 'insert into `'. $this->prefix .'` (cometime, calltime, last_time, post_user, edit_user, userid, depart, customer, content, process, confirm, review, note) value("'. $data['cometime'] .'", "'. $data['calltime'] .'", '. $time .', '. $this->userid .', '. $this->userid .', '. $data['employ'] .', 0, 0, "'. $data['content'] .'", 0, 0, "", "")';
+    $sql = 'insert into `pet_test_work` (cometime, calltime, last_time, post_user, edit_user, userid, depart, customer, content, process, confirm, review, note) value("'. $data['cometime'] .'", "'. $data['calltime'] .'", '. $time .', '. $this->userid .', '. $this->userid .', '. $data['employ'] .', 0, 0, "'. $data['content'] .'", 0, 0, "", "")';
 
     if ($this->db->query($sql)) {
       $id = $this->db->insert_id;
@@ -222,7 +222,7 @@ class Work extends Module {
     $xtra = '';
     if ($this->thisrole() > 1) $xtra .= ', calltime = ' . $data['calltime'] . ', content = "' . $data['content'] . '"';
 
-    $sql = 'update `'. $this->prefix .'` set process = '. $data['process'] .', note = "'. $data['note'] .'", image = "'. $data['image'] .'" '. $xtra .' where id = '. $data['id'];
+    $sql = 'update `pet_test_work` set process = '. $data['process'] .', note = "'. $data['note'] .'", image = "'. $data['image'] .'" '. $xtra .' where id = '. $data['id'];
     if ($this->db->query($sql)) {
       if ($data['process'] == 100) $this->insertNotify(COMPLETE_NOTIFY, $data['id'], $time);
       else $this->insertNotify(EDIT_NOTIFY, $data['id'], $time);
@@ -232,7 +232,7 @@ class Work extends Module {
 
   function doneWork($data, $time) {
     $xtra = '';
-    $sql = 'update `'. $this->prefix .'` set process = 100 where id = '. $data['id'];
+    $sql = 'update `pet_test_work` set process = 100 where id = '. $data['id'];
     if ($this->db->query($sql)) {
       $this->insertNotify(EDIT_NOTIFY, $data['id'], $time);
       $this->setLastUpdate($time);
@@ -240,7 +240,7 @@ class Work extends Module {
   }
 
   function removeWork($data, $time) {
-    $sql = 'update `'. $this->prefix .'` set active = 0 where id = '. $data['id'];
+    $sql = 'update `pet_test_work` set active = 0 where id = '. $data['id'];
     if ($this->db->query($sql)) {
       $this->setLastUpdate($time);
       $this->insertNotify(REMOVE_NOTIFY, $data['id'], $time);

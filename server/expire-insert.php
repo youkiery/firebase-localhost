@@ -12,10 +12,10 @@ require_once(ROOTDIR .'/expire.php');
 $expire = new Expire();
 
 if (empty($data['id'])) {
-  $sql = 'insert into `'. $expire->prefix .'` (rid, number, exp_time, update_time) values ('. $data['rid'] .', '. $data['number'] .', '. $data['expire'] .', '. time() .')';
+  $sql = 'insert into `pet_test_storage_expire` (itemid, number, time, status) values ('. $data['rid'] .', '. $data['number'] .', '. $data['expire'] .', 0)';
 }
 else {
-  $sql = 'update `'. $expire->prefix .'` set rid = '. $data['rid'] .', number = '. $data['number'] .', exp_time = '. $data['expire'] .' where id = '. $data['id'];
+  $sql = 'update `pet_test_storage_expire` set rid = '. $data['rid'] .', number = '. $data['number'] .', time = '. $data['expire'] .' where id = '. $data['id'];
 }
 $expire->db->query($sql);
 

@@ -13,7 +13,7 @@ $filter = array(
   'keyword' => parseGetData('keyword', '')
 );
 
-$sql = 'update `'. $usg->prefix .'` set note = "'. $data['text'] .'" where id = '. $data['id'];
+$sql = 'update `pet_test_usg2` set note = "'. $data['text'] .'" where id = '. $data['id'];
 $query = $mysqli->query($sql);
 
 $result['status'] = 1;

@@ -13,7 +13,7 @@ class Spa extends Module {
     
     $time = strtotime(date('Y/m/d', $time));
     $end = $time + 60 * 60 * 24 - 1;
-    $sql = 'select id, customerid, note, type, done from `'. $this->prefix .'` where time between '. $time .' and '. $end;
+    $sql = 'select id, customerid, note, type, done from `pet_test_spa` where time between '. $time .' and '. $end;
     // die($sql);
     $query = $this->db->query($sql);
 
@@ -47,7 +47,7 @@ class Spa extends Module {
 
   function getTypeList() {
     $list = array();
-    $sql = 'select * from `'. $this->prefix .'_type`';
+    $sql = 'select * from `pet_test_spa_type`';
     $query = $this->db->query($sql);
 
     while ($row = $query->fetch_assoc()) {
@@ -62,7 +62,7 @@ class Spa extends Module {
 
   function getTypeObject() {
     $list = array();
-    $sql = 'select * from `'. $this->prefix .'_type`';
+    $sql = 'select * from `pet_test_spa_type`';
     $query = $this->db->query($sql);
 
     while ($row = $query->fetch_assoc()) {
@@ -73,7 +73,7 @@ class Spa extends Module {
 
   function getCustonerId($cid) {
     if (!empty($cid)) {
-      $sql = 'select * from `pet_'. $this->table .'_customer` where id = ' . $cid;
+      $sql = 'select * from `pet_test_customer` where id = ' . $cid;
       $query = $this->db->query($sql);
   
       if (!empty($row = $query->fetch_assoc())) return $row;

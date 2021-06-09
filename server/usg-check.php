@@ -14,7 +14,7 @@ $filter = array(
   'keyword' => parseGetData('keyword', '')
 );
 
-$sql = 'update `'. $usg->prefix .'` set status = ' . $reversal[$filter['status']] . ' where id = ' . $id;
+$sql = 'update `pet_test_usg2` set status = ' . $reversal[$filter['status']] . ' where id = ' . $id;
 $mysqli->query($sql);
 
 $result['status'] = 1;

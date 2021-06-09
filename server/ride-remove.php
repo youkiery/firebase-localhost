@@ -8,7 +8,7 @@ $filter = array(
 );
 
 $id = parseGetData('id', 0);
-$sql = "delete from `" . $ride->prefix . "` where id = " . $id;
+$sql = "delete from `pet_test_ride` where id = " . $id;
 
 $ride->db->query($sql);
 $result['status'] = 1;

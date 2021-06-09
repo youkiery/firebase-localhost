@@ -9,12 +9,12 @@ $data = array(
 
 $time = time();
 
-$sql = 'select done from `'. $spa->prefix .'` where id = ' . $data['id'];
+$sql = 'select done from pet_test_spa where id = ' . $data['id'];
 $query = $mysqli->query($sql);
 $row = $query->fetch_assoc();
 
-if ($row['done']) $sql = 'update `'. $spa->prefix .'` set done = 0 where id = ' . $data['id'];
-else $sql = 'update `'. $spa->prefix .'` set done = '. $time .' where id = ' . $data['id'];
+if ($row['done']) $sql = 'update pet_test_spa set done = 0 where id = ' . $data['id'];
+else $sql = 'update pet_test_spa set done = '. $time .' where id = ' . $data['id'];
 $mysqli->query($sql);
 $spa->setLastUpdate($time);
 

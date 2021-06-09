@@ -7,7 +7,7 @@ $data = array(
   'id' => parseGetData('id', '0'),
 );
 
-$sql = 'select * from `'. $spa->prefix .'` where id = ' . $data['id'];
+$sql = 'select * from pet_test_spa where id = ' . $data['id'];
 $query = $mysqli->query($sql);
 $row = $query->fetch_assoc();
 

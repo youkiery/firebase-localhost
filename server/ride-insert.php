@@ -9,7 +9,7 @@ if ($type) {
     'note' => parseGetData('note', '')
   );
 
-  $sql = "insert into `" . $ride->prefix . "` (type, driver_id, doctor_id, customer_id, amount, clock_from, clock_to, destination, note, time) values (1, $userid, 0, 0, $data[amount], 0, 0, '', '$data[note]', " . time() . ")";
+  $sql = "insert into `pet_test_ride` (type, driver_id, doctor_id, customer_id, amount, clock_from, clock_to, destination, note, time) values (1, $userid, 0, 0, $data[amount], 0, 0, '', '$data[note]', " . time() . ")";
 }
 else { 
   $data = array(
@@ -29,7 +29,7 @@ else {
 
   $ride->setClock($data['end']);
 
-  $sql = "insert into `" . $ride->prefix . "` (type, driver_id, doctor_id, customer_id, amount, clock_from, clock_to, price, destination, note, time) values (0, $userid, $userid, $data[doctorid], '$data[amount]', $data[from], $data[end], 0, '$data[destination]', '$data[note]', " . time() . ")";
+  $sql = "insert into `pet_test_ride` (type, driver_id, doctor_id, customer_id, amount, clock_from, clock_to, price, destination, note, time) values (0, $userid, $userid, $data[doctorid], '$data[amount]', $data[from], $data[end], 0, '$data[destination]', '$data[note]', " . time() . ")";
   $result['end'] = $data['end'];
 }
 
