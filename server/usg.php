@@ -14,7 +14,7 @@ class Usg extends Module {
     $time = time();
     $limit = $time + 60 * 60 * 24 * 14;
 
-    $sql = 'select a.id, c.name, c.phone, a.usgtime, a.expecttime, a.note from `pet_test_usg` a inner join `pet_test_pet` b on a.petid = b.id inner join `pet_test_customer` c on b.customerid = c.id where (b.name like "%'. $filter['keyword'] .'%" or c.name like "%'. $filter['keyword'] .'%" or c.phone like "%'. $filter['keyword'] .'%") and expecttime < '. $limit .' and a.status = '. $filter['status'] .' order by a.expecttime desc '. ($filter['status'] > 0 ? 'limit 50' : '');
+    $sql = 'select a.id, c.name, c.phone, a.usgtime, a.expecttime, a.note from `pet_test_usg2` a inner join `pet_test_pet` b on a.petid = b.id inner join `pet_test_customer` c on b.customerid = c.id where (b.name like "%'. $filter['keyword'] .'%" or c.name like "%'. $filter['keyword'] .'%" or c.phone like "%'. $filter['keyword'] .'%") and expecttime < '. $limit .' and a.status = '. $filter['status'] .' order by a.expecttime desc limit 50';
     $query = $this->db->query($sql);
 
     // tên thú cưng, sđt, vaccine, ngày tái chủng, ghi chú, trạng thại
@@ -39,6 +39,26 @@ class Usg extends Module {
       );
     }
     return $data;
+  }
+
+  function getCustonerId($cid) {
+    if (!empty($cid)) {
+      $sql = 'select * from `pet_test_customer` where id = ' . $cid;
+      $query = $this->db->query($sql);
+  
+      if (!empty($row = $query->fetch_assoc())) return $row;
+    }
+    return array('phone' => '');
+  }
+
+  function getPetId($pid) {
+    if (!empty($pid)) {
+      $sql = 'select * from `pet_test_pet` where id = ' . $pid;
+      $query = $this->db->query($sql);
+  
+      if (!empty($row = $query->fetch_assoc())) return $row;
+    }
+    return array('customerid' => 0);
   }
 
 //   function usgCurrentList($filter)
@@ -155,24 +175,4 @@ class Usg extends Module {
 //   $xtpl->parse('main');
 //   return $xtpl->text();
 // }
-
-  function getCustonerId($cid) {
-    if (!empty($cid)) {
-      $sql = 'select * from `pet_test_customer` where id = ' . $cid;
-      $query = $this->db->query($sql);
-  
-      if (!empty($row = $query->fetch_assoc())) return $row;
-    }
-    return array('phone' => '');
-  }
-
-  function getPetId($pid) {
-    if (!empty($pid)) {
-      $sql = 'select * from `pet_test_pet` where id = ' . $pid;
-      $query = $this->db->query($sql);
-  
-      if (!empty($row = $query->fetch_assoc())) return $row;
-    }
-    return array('customerid' => 0);
-  }
 }

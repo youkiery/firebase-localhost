@@ -22,7 +22,7 @@ class Vaccine extends Module {
     $time = time();
     $limit = $time + 60 * 60 * 24 * 14;
 
-    $sql = 'select * from `pet_test_vaccine` where calltime < '. $limit .' and status = '. $filter['status'] .' order by calltime desc '. ($filter['status'] > 0 ? ' limit 50' : '');
+    $sql = 'select * from `pet_test_vaccine` where calltime < '. $limit .' and status = '. $filter['status'] .' order by calltime desc limit 50';
     $query = $this->db->query($sql);
 
     // tên thú cưng, sđt, vaccine, ngày tái chủng, ghi chú, trạng thại

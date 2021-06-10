@@ -57,4 +57,28 @@ if (!empty($row = $query->fetch_assoc())) {
 $sql = "insert into `pet_test_vaccine` (petid, cometime, calltime, doctorid, note, status, diseaseid, recall, ctime) values ($pet[id], $data[cometime], $data[calltime], 0, '', 0, $data[disease], 0, " . time() . ");";
 $mysqli->query($sql);
 
+$start = strtotime(date('Y/m/d'));
+$end = time();
+
+$sql = 'select * from pet_test_vaccine where (ctime between '. $start . ' and '. $end . ') and status = 0 limit 50';
+$query = $mysqli->query($sql);
+$list = array();
+
+$disease = $vaccine->getDiseaseList();
+
+while ($row = $query->fetch_assoc()) {
+  $pet = $vaccine->getPetId($row['petid']);
+  $customer = $vaccine->getCustonerId($pet['customerid']);
+  if (!empty($customer['phone'])) {
+    $list []= array(
+      'name' => $customer['name'],
+      'number' => $customer['phone'],
+      'vaccine' => $disease[$row['diseaseid']],
+      'calltime' => $row['calltime'],
+    );
+  }
+}
+
 $result['status'] = 1;
+$result['data'] = $vaccine->getList($filter);
+$result['new'] = $list;

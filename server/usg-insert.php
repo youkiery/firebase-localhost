@@ -16,7 +16,8 @@ $data['cometime'] = totime($data['cometime']);
 $data['calltime'] = totime($data['calltime']);
 
 $filter = array(
-  'status' => parseGetData('status', 0)
+  'status' => parseGetData('status', 0),
+  'keyword' => parseGetData('keyword', '')
 );
 
 // thay đổi thông tin khách
@@ -55,7 +56,31 @@ if (empty($pet)) {
 //   $mysqli->query($sql);
 // }
 
-$sql = "INSERT INTO `" . $usg->prefix . "_usg2` (petid, doctorid, usgtime, expecttime, expectnumber, vaccinetime, image, status, note, time) VALUES ($data[pet], $userid, $data[cometime], $data[calltime], $data[number], 0, '', 0, '$data[note]', " . time() . ")";
+$sql = "INSERT INTO `pet_test_usg2` (petid, doctorid, usgtime, expecttime, expectnumber, vaccinetime, image, status, note, time) VALUES ($data[pet], $userid, $data[cometime], $data[calltime], $data[number], 0, '', 0, '$data[note]', " . time() . ")";
+
 $mysqli->query($sql);
 
+$start = strtotime(date('Y/m/d'));
+$end = time();
+
+$sql = 'select * from pet_test_usg2 where (time between '. $start . ' and '. $end . ') and status = 0 limit 50';
+$query = $mysqli->query($sql);
+
+$data = array();
+// tên thú cưng, sđt, vaccine, ngày tái chủng, ghi chú, trạng thại
+while ($row = $query->fetch_assoc()) {
+  $pet = $usg->getPetId($row['petid']);
+  $customer = $usg->getCustonerId($pet['customerid']);
+  if (!empty($customer['phone'])) {
+    $data []= array(
+      'name' => $customer['name'],
+      'number' => $customer['phone'],
+      'time' => date('d/m/Y', $row['usgtime']),
+      'calltime' => date('d/m/Y', $row['expecttime']),
+    );
+  }
+}
+
 $result['status'] = 1;
+$result['data'] = $usg->getList($filter);
+$result['new'] = $data;
