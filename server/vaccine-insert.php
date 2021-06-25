@@ -71,10 +71,11 @@ while ($row = $query->fetch_assoc()) {
   $customer = $vaccine->getCustonerId($pet['customerid']);
   if (!empty($customer['phone'])) {
     $list []= array(
+      'id' => $row['id'],
       'name' => $customer['name'],
       'number' => $customer['phone'],
       'vaccine' => $disease[$row['diseaseid']],
-      'calltime' => $row['calltime'],
+      'calltime' => $row['calltime'] * 1000,
     );
   }
 }

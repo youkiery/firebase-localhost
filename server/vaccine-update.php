@@ -1,17 +1,22 @@
- <?php 
+<?php 
 
 require_once(ROOTDIR .'/vaccine.php');
 $vaccine = new Vaccine();
 
-$filter = array(
-  'status' => parseGetData('status', 0)
+$data = array(
+  'id' => parseGetData('id'),
+  'disease' => parseGetData('disease'),
+  'calltime' => parseGetData('calltime')
 );
+$data['calltime'] = totime($data['calltime']);
+
+$sql = 'update `pet_test_vaccine` set calltime = '. $data['calltime'] .', diseaseid = '. $data['disease'] .' where id = '. $data['id'];
+$mysqli->query($sql);
 
 $start = strtotime(date('Y/m/d'));
 $end = time();
 
 $sql = 'select * from pet_test_vaccine where (ctime between '. $start . ' and '. $end . ') and status = 0 limit 50';
-
 $query = $mysqli->query($sql);
 $list = array();
 
@@ -32,8 +37,4 @@ while ($row = $query->fetch_assoc()) {
 }
 
 $result['status'] = 1;
-$result['data'] = $vaccine->getList($filter);
 $result['new'] = $list;
-
-echo json_encode($result);
-die();
