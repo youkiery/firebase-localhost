@@ -19,5 +19,5 @@ $mysqli->query($sql);
 $spa->setLastUpdate($time);
 
 $result['status'] = 1;
-$result['data'] = $spa->getList();
+$result['data'] = $spa->getList($time);
 $result['time'] = $time;

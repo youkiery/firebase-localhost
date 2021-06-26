@@ -3,10 +3,15 @@
 require_once(ROOTDIR .'/usg.php');
 $usg = new Usg();
 
-$filter = array(
-  'status' => parseGetData('status', 0),
-  'keyword' => parseGetData('keyword', '')
+$data = array(
+  'id' => parseGetData('id'),
+  'number' => parseGetData('number'),
+  'calltime' => parseGetData('calltime'),
 );
+$data['calltime'] = totime($data['calltime']);
+
+$sql = "update `pet_test_usg2` set expecttime = $data[calltime], number = $data[number] where id = $data[id]";
+$mysqli->query($sql);
 
 $start = strtotime(date('Y/m/d'));
 $end = time();
@@ -31,5 +36,4 @@ while ($row = $query->fetch_assoc()) {
 }
 
 $result['status'] = 1;
-$result['data'] = $usg->getList($filter);
 $result['new'] = $data;

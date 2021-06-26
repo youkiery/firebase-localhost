@@ -16,7 +16,6 @@ class Spa extends Module {
     $sql = 'select id, customerid, note, type, done from `pet_test_spa` where time between '. $time .' and '. $end;
     // die($sql);
     $query = $this->db->query($sql);
-
     $type = $this->getTypeObject();
 
     while ($row = $query->fetch_assoc()) {

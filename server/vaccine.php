@@ -45,7 +45,7 @@ class Vaccine extends Module {
           'name' => $customer['name'],
           'number' => $customer['phone'],
           'vaccine' => $disease[$row['diseaseid']],
-          'calltime' => $row['calltime'],
+          'calltime' => date('d/m/Y', $row['calltime']),
           'note' => $row['note'],
           'color' => $row['color'],
         );

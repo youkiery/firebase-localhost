@@ -73,9 +73,10 @@ while ($row = $query->fetch_assoc()) {
   $customer = $usg->getCustonerId($pet['customerid']);
   if (!empty($customer['phone'])) {
     $data []= array(
+      'id' => $row['id'],
       'name' => $customer['name'],
       'number' => $customer['phone'],
-      'time' => date('d/m/Y', $row['usgtime']),
+      'birth' => $row['number'],
       'calltime' => date('d/m/Y', $row['expecttime']),
     );
   }

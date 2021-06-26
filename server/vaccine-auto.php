@@ -26,7 +26,7 @@ while ($row = $query->fetch_assoc()) {
       'name' => $customer['name'],
       'number' => $customer['phone'],
       'vaccine' => $disease[$row['diseaseid']],
-      'calltime' => $row['calltime'] * 1000,
+      'calltime' => date('d/m/Y', $row['calltime']),
     );
   }
 }
