@@ -9,7 +9,6 @@ else $time = totime($time);
 $day = date('N', $time);
 $startdate = ($day == '1' ? strtotime(date('Y/m/d', $time)) : strtotime('last monday', $time));
 $enddate = $startdate + 60 * 60 * 24 * 7 - 1;
-// echo date('d/m/Y', $startdate);die();
 
 $filter = array(
   'startdate' => date('d/m/Y', $startdate),
