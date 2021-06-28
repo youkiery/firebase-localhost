@@ -44,7 +44,7 @@ $pet = $query->fetch_assoc();
 if (empty($pet)) {
   $sql = 'insert into `pet_test_pet` (name, customerid) values("Không biết tên", "'. $row['id'] .'")';
   $query = $mysqli->query($sql);
-  $pet['id'] = $mysqli->insert_id;
+  $data['pet'] = $mysqli->insert_id;
 }
 
 // // kiểm tra nếu đã có thì tick luôn
