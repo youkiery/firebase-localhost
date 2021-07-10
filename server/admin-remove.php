@@ -1,4 +1,10 @@
-<?php
+<?php 
+
+$inputJSON = file_get_contents('php://input');
+$data = json_decode($inputJSON);
+
+$sql = 'delete from pet_test_user where userid = '. $data->id;
+$query = $mysqli->query($sql);
 
 $sql = 'select username, concat(a.last_name, " ", a.first_name) as fullname, a.userid from pet_users a inner join pet_test_user b on a.userid = b.userid';
 $query = $mysqli->query($sql);
@@ -32,4 +38,3 @@ while ($row = $query->fetch_assoc()) {
 
 $result['status'] = 1;
 $result['users'] = $list;
-
