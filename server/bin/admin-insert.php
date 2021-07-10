@@ -10,7 +10,7 @@ if (!empty($row = $query->fetch_assoc())) {
   $result['messenger'] = 'Nhân viên đã tồn tại';
 }
 else {
-  $sql = "insert into pet_test_user (userid, manager, except, daily, kaizen) values($data->id, 0, 0, 0, 0)";
+  $sql = "insert into pet_test_user (userid, manager, `except`, daily, kaizen) values($data->id, 0, 0, 0, 0)";
   $mysqli->query($sql);
 
   $result['status'] = 1;
