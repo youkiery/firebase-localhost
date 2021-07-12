@@ -5,7 +5,33 @@ function auto() {
   $result['status'] = 1;
   $result['list'] = getlist();
   $result['new'] = getlist(true);
+  $result['disease'] = getDisease();
 
+  return $result;
+}
+
+function insert() {
+  global $data, $db, $result;
+
+  $sql = "select * from pet_test_customer where phone = '$data->phone'";
+  if (!empty($customer = $db->fetch($sql))) {
+    $sql = "update pet_test_customer set name = '$data->name'";
+    $db->query($sql);
+  }
+  else {
+    $sql = "insert into pet_test_customer (name, phone, address) values ('$data->name', '$data->phone', '')";
+    $customer['id'] = $db->insertid($sql);
+  }
+
+  $sql = "select * from pet_test_pet where customerid = $customer[id]";
+  if (empty($pet = $db->fetch($sql))) {
+    $sql = "insert into pet_test_pet (name) values ('Chưa đặt tên')";
+    $pet['id'] = $db->insertid($sql);
+  }
+
+  $sql = "insert into pet_test_vaccine (petid, diseaseid, cometime, calltime, note, status, recall, doctorid, ctime) values ()";
+  $db->query($sql);
+  $result['status'] = 1;
   return $result;
 }
 
@@ -85,4 +111,10 @@ function diseaseList() {
   global $db;
   $sql = 'select * from `pet_test_disease`';
   return $db->object($sql, 'id', 'name');
+}
+
+function getDisease() {
+  global $db;
+  $sql = 'select * from `pet_test_disease`';
+  return $db->all($sql, 'id', 'name');
 }

@@ -17,6 +17,8 @@ function session() {
       'admin' => $admin,
       'session' => $data->sess,
       'users' => $list,
+      'today' => date('d/m/Y'),
+      'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
       'module' => permission($user['userid'])
     );
   }
@@ -52,6 +54,8 @@ function login() {
       'admin' => $admin,
       'session' => $session,
       'users' => $list,
+      'today' => date('d/m/Y'),
+      'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
       'module' => permission($user['userid'])
     );
   }

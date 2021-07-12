@@ -11,6 +11,11 @@ class Database {
     return $this->db->query($sql);
   }
 
+  public function insertid($sql) {
+    $this->db->query($sql);
+    return $this->db->insert_id();
+  }
+
   public function all($sql) {
     $list = array();
     $query = $this->db->query($sql);
