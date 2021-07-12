@@ -9,6 +9,33 @@ function auto() {
   return $result;
 }
 
+function note() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_vaccine set note = '$data->note' where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  return $result;
+}
+
+function called() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_vaccine set status = 1, recall = ". time() ." where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  return $result;
+}
+
+function dead() {
+  global $data, $db, $result;
+
+  $sql = "delete from pet_test_vaccine where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  return $result;
+}
+
 function getlist($today = false) {
   global $db;
 
@@ -16,11 +43,11 @@ function getlist($today = false) {
   if ($today) {
     $start = strtotime(date('Y/m/d'));
     $end = time();
-    $sql = 'select * from pet_test_vaccine where (ctime between '. $start . ' and '. $end . ') and status < 2 limit 50';
+    $sql = 'select * from pet_test_vaccine where (ctime between '. $start . ' and '. $end . ') and status < 2 order by id desc limit 50';
   }
   else {
-    $end = time() + 60 * 60 * 24 * 7;
-    $sql = 'select * from pet_test_vaccine where (calltime < '. $end . ') and status < 2 limit 50';
+    $end = time() + 60 * 60 * 24 * 7; 
+    $sql = 'select * from pet_test_vaccine where (recall < '. $end . ') and status < 2 order by recall desc limit 50';
   }
 
   $query = $db->query($sql);
@@ -32,8 +59,10 @@ function getlist($today = false) {
       $list []= array(
         'id' => $row['id'],
         'name' => $customer['name'],
+        'note' => $row['note'],
         'number' => $customer['phone'],
         'vaccine' => $disease[$row['diseaseid']],
+        'recall' => ($row['calltime'] == $row['recall'] ? 0 : date('d/m/Y', $row['recall'])),
         'calltime' => date('d/m/Y', $row['calltime']),
       );
     }
