@@ -15,7 +15,7 @@ function insert() {
 
   $sql = "select * from pet_test_customer where phone = '$data->phone'";
   if (!empty($customer = $db->fetch($sql))) {
-    $sql = "update pet_test_customer set name = '$data->name'";
+    $sql = "update pet_test_customer set name = '$data->name' where id = $customer[id]";
     $db->query($sql);
   }
   else {
@@ -29,9 +29,41 @@ function insert() {
     $pet['id'] = $db->insertid($sql);
   }
 
-  $sql = "insert into pet_test_vaccine (petid, diseaseid, cometime, calltime, note, status, recall, doctorid, ctime) values ()";
+  $data->cometime = totime($data->cometime);
+  $data->calltime = totime($data->calltime);
+  $userid = checkUserid();
+  $sql = "insert into pet_test_vaccine (petid, diseaseid, cometime, calltime, note, status, recall, doctorid, ctime) values ($pet[id], $data->disease, $data->cometime, $data->calltime, '', 0, 0, $userid, ". time() .")";
   $db->query($sql);
   $result['status'] = 1;
+  $result['new'] = getlist(true);
+  return $result;
+}
+
+function update() {
+  global $data, $db, $result;
+
+  $sql = "select * from pet_test_customer where phone = '$data->phone'";
+  $customer = $db->fetch($sql);
+  $sql = "select * from pet_test_pet where customerid = $customer[id]";
+  $pet = $db->fetch($sql);
+
+  $data->cometime = totime($data->cometime);
+  $data->calltime = totime($data->calltime);
+  $userid = checkUserid();
+  $sql = "update pet_test_vaccine set diseaseid = $data->disease, cometime = $data->cometime, calltime = $data->calltime where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  $result['new'] = getlist(true);
+  return $result;
+}
+
+function remove() {
+  global $data, $db, $result;
+
+  $sql = "delete from pet_test_vaccine where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  $result['new'] = getlist(true);
   return $result;
 }
 
@@ -84,11 +116,12 @@ function getlist($today = false) {
     if (!empty($customer['phone'])) {
       $list []= array(
         'id' => $row['id'],
-        'name' => $customer['name'],
         'note' => $row['note'],
-        'number' => $customer['phone'],
+        'name' => $customer['name'],
+        'phone' => $customer['phone'],
         'vaccine' => $disease[$row['diseaseid']],
         'recall' => ($row['calltime'] == $row['recall'] ? 0 : date('d/m/Y', $row['recall'])),
+        'cometime' => date('d/m/Y', $row['cometime']),
         'calltime' => date('d/m/Y', $row['calltime']),
       );
     }
@@ -116,5 +149,5 @@ function diseaseList() {
 function getDisease() {
   global $db;
   $sql = 'select * from `pet_test_disease`';
-  return $db->all($sql, 'id', 'name');
+  return $db->all($sql);
 }

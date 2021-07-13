@@ -18,6 +18,15 @@ else {
   include_once(ROOTDIR. "/$data->type.php");
 
   $db = new database($config['servername'], $config['username'], $config['password'], $config['database']);
+
+  if ($data->action !== 'session' && $data->action !== 'login') {
+    if ($data->type !== 'user') include_once(ROOTDIR. "/user.php");
+    if (check()) {
+      $result['nogin'] = true;
+      echo json_encode($result);
+      die();
+    }
+  }
   
   $action = $data->action;
   if (function_exists($action)) $result = $action();

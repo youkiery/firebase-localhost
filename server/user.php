@@ -1,4 +1,13 @@
 <?php
+function check() {
+  global $data, $db, $result;
+
+  $sql = "select * from pet_test_user where session = '$data->session'";
+
+  if (empty($user = $db->fetch($sql))) return true;
+  return false;
+}
+
 function session() {
   global $data, $db, $result;
 
