@@ -1,199 +1,120 @@
 <?php
-class Vaccine extends Module {
-  function __construct() {
-    parent::__construct();
-    $this->module = 'vaccine';
-    $this->prefix = 'pet_' . $this->table .'_'. $this->module;
-    $this->role = $this->getRole();
+function auto() {
+  global $data, $db, $result;
+
+  $result['status'] = 1;
+  $result['list'] = getlist();
+  $result['new'] = getlist(true);
+  $result['disease'] = getDisease();
+
+  return $result;
+}
+
+function insert() {
+  global $data, $db, $result;
+
+  $sql = "select * from pet_test_customer where phone = '$data->phone'";
+  if (!empty($customer = $db->fetch($sql))) {
+    $sql = "update pet_test_customer set name = '$data->name'";
+    $db->query($sql);
+  }
+  else {
+    $sql = "insert into pet_test_customer (name, phone, address) values ('$data->name', '$data->phone', '')";
+    $customer['id'] = $db->insertid($sql);
   }
 
-  function thisrole() {
-    $sql = 'select * from pet_test_permission where userid = '. $this->userid .' and module = "vaccine"';
-    $query = $this->db->query($sql);
-    $role = $query->fetch_assoc();
-    return $role['type'];
+  $sql = "select * from pet_test_pet where customerid = $customer[id]";
+  if (empty($pet = $db->fetch($sql))) {
+    $sql = "insert into pet_test_pet (name) values ('Chưa đặt tên')";
+    $pet['id'] = $db->insertid($sql);
   }
 
-  function getList($filter) {
-    $list = array();
-    $data = array();
-    $disease = $this->getDiseaseList();
+  $sql = "insert into pet_test_vaccine (petid, diseaseid, cometime, calltime, note, status, recall, doctorid, ctime) values ()";
+  $db->query($sql);
+  $result['status'] = 1;
+  return $result;
+}
 
-    $time = time();
-    $limit = $time + 60 * 60 * 24 * 14;
+function note() {
+  global $data, $db, $result;
 
-    $sql = 'select * from `pet_test_vaccine` where calltime < '. $limit .' and status = '. $filter['status'] .' order by calltime desc limit 50';
-    $query = $this->db->query($sql);
+  $sql = "update pet_test_vaccine set note = '$data->note' where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  return $result;
+}
 
-    // tên thú cưng, sđt, vaccine, ngày tái chủng, ghi chú, trạng thại
-    while ($row = $query->fetch_assoc()) {
-      if ($time > $row['calltime']) $row['color'] = 'red';
-      else $row['color'] = 'green';
-      $list []= $row;
-    }
+function called() {
+  global $data, $db, $result;
 
-    usort($list, "cmp2");
+  $sql = "update pet_test_vaccine set status = 1, recall = ". time() ." where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  return $result;
+}
 
-    // tên thú cưng, sđt, vaccine, ngày tái chủng, ghi chú, trạng thại
-    foreach ($list as $row) {
-      $pet = $this->getPetId($row['petid']);
-      $customer = $this->getCustonerId($pet['customerid']);
-      if (!empty($customer['phone'])) {
-        $data []= array(
-          'id' => $row['id'],
-          'petname' => $pet['name'],
-          'name' => $customer['name'],
-          'number' => $customer['phone'],
-          'vaccine' => $disease[$row['diseaseid']],
-          'calltime' => date('d/m/Y', $row['calltime']),
-          'note' => $row['note'],
-          'color' => $row['color'],
-        );
-      }
-    }
-    return $data;
+function dead() {
+  global $data, $db, $result;
+
+  $sql = "delete from pet_test_vaccine where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  return $result;
+}
+
+function getlist($today = false) {
+  global $db;
+
+  $disease = diseaseList();
+  if ($today) {
+    $start = strtotime(date('Y/m/d'));
+    $end = time();
+    $sql = 'select * from pet_test_vaccine where (ctime between '. $start . ' and '. $end . ') and status < 2 order by id desc limit 50';
+  }
+  else {
+    $end = time() + 60 * 60 * 24 * 7; 
+    $sql = 'select * from pet_test_vaccine where (recall < '. $end . ') and status < 2 order by recall desc limit 50';
   }
 
-  function getDiseaseList() {
-    $list = array();
-    $sql = 'select * from `pet_test_disease`';
-    $query = $this->db->query($sql);
+  $query = $db->query($sql);
+  $list = array();
 
-    while ($row = $query->fetch_assoc()) {
-      $list[$row['id']] = $row['name'];
-    }
-    return $list;
-  }
-
-  function diseaseList() {
-    $list = array();
-    $sql = 'select * from `pet_test_disease`';
-    $query = $this->db->query($sql);
-
-    while ($row = $query->fetch_assoc()) {
+  while ($row = $query->fetch_assoc()) {
+    $customer = getCustomer($row['petid']);
+    if (!empty($customer['phone'])) {
       $list []= array(
         'id' => $row['id'],
-        'name' => $row['name']
+        'name' => $customer['name'],
+        'note' => $row['note'],
+        'number' => $customer['phone'],
+        'vaccine' => $disease[$row['diseaseid']],
+        'recall' => ($row['calltime'] == $row['recall'] ? 0 : date('d/m/Y', $row['recall'])),
+        'calltime' => date('d/m/Y', $row['calltime']),
       );
     }
-    return $list;
   }
 
-  function getCustonerId($cid) {
-    if (!empty($cid)) {
-      $sql = 'select * from `pet_test_customer` where id = ' . $cid;
-      $query = $this->db->query($sql);
-  
-      if (!empty($row = $query->fetch_assoc())) return $row;
-    }
-    return array('phone' => '');
-  }
+  return $list;
+}
 
-  function getPetId($pid) {
-    if (!empty($pid)) {
-      $sql = 'select * from `pet_test_pet` where id = ' . $pid;
-      $query = $this->db->query($sql);
-  
-      if (!empty($row = $query->fetch_assoc())) return $row;
-    }
-    return array('customerid' => 0);
-  }
+function getCustomer($petid) {
+  global $db;
 
-  function getUserNotify($page = 1) {
-    $list = array();
-    // lấy danh sách thông báo
-    $xtra = '';
-    if ($this->thisrole() < 2) {
-      // nhân viên, lấy thông báo bản thân
-      $xtra = 'where userid = ' . $this->userid;
-    }
-    $sql = 'select * from `pet_test_notify` ' . $xtra . ' order by time desc';
-    $query = $this->db->query($sql);
+  $sql = "select * from pet_test_pet where id = $petid";
+  $pet = $db->fetch($sql);
 
-    while ($row = $query->fetch_assoc()) {
-      $list []= $this->parseWorkNotify($row);
-    }
-    return $list;
-  }
+  $sql = "select * from pet_test_customer where id = $pet[customerid]";
+  return $db->fetch($sql);
+}
 
-  function getUserNotifyTime() {
-    $sql = 'select * from `pet_test_notify_read` where userid = ' . $this->userid;
-    $query = $this->db->query($sql);
+function diseaseList() {
+  global $db;
+  $sql = 'select * from `pet_test_disease`';
+  return $db->object($sql, 'id', 'name');
+}
 
-    if (empty($row = $query->fetch_assoc())) {
-      $sql = 'insert into `pet_test_notify_read` (userid, time) values ('. $this->userid .', 0)';
-      $this->db->query($sql);
-      $row = array(
-        'time' => 0
-      );
-    }
-    return $row['time'];
-  }
-
-  // userid, action, workid, time
-  function parseWorkNotify($data) {
-    $action_trans = array(1 => 'thêm công việc', 'cập nhật tiến độ', 'hoàn thành', 'hủy công việc');
-    $user = checkUserId($data['userid']);
-    $name = (!empty($user['last_name']) ? $user['last_name'] . ' ': '') . $user['first_name'];
-    $work = $this->getWorkById($data['workid']);
-
-    return array(
-      'id' => $data['workid'],
-      'content' => $name . ' ' . $action_trans[$data['action']] . ' ' . $work['content'],
-      'time' => date('d/m/Y H:i', $data['time'])
-    );
-  }
-
-  function getWorkById($workid) {
-    $sql = 'select * from `pet_test_vaccine` where id = ' . $workid;
-    $query = $this->db->query($sql);
-    return $query->fetch_assoc();
-  }
-
-  function checkWorkId($workid) {
-    $sql = 'select * from `pet_test_vaccine` where id = '. $workid;
-    $query = $this->db->query($sql);
-
-    if (!empty($query->fetch_assoc())) return true;
-    return false;
-  }
-
-  function insertWork($data, $time) {
-    $sql = 'insert into `pet_test_vaccine` (cometime, calltime, last_time, post_user, edit_user, userid, depart, customer, content, process, confirm, review, note) value("'. $data['cometime'] .'", "'. $data['calltime'] .'", '. $time .', '. $this->userid .', '. $this->userid .', '. $data['employ'] .', 0, 0, "'. $data['content'] .'", 0, 0, "", "")';
-
-    if ($this->db->query($sql)) {
-      $id = $this->db->insert_id;
-      $this->insertNotify(INSERT_NOTIFY, $id, $time);
-      $this->setLastUpdate($time);
-    }
-  }
-
-  function updateWork($data, $time) {
-    $xtra = '';
-    if ($this->thisrole() > 1) $xtra .= ', calltime = ' . $data['calltime'] . ', content = "' . $data['content'] . '"';
-
-    $sql = 'update `pet_test_vaccine` set process = '. $data['process'] .', note = "'. $data['note'] .'", image = "'. $data['image'] .'" '. $xtra .' where id = '. $data['id'];
-    if ($this->db->query($sql)) {
-      if ($data['process'] == 100) $this->insertNotify(COMPLETE_NOTIFY, $data['id'], $time);
-      else $this->insertNotify(EDIT_NOTIFY, $data['id'], $time);
-      $this->setLastUpdate($time);
-    }
-  }
-
-  function doneWork($data, $time) {
-    $xtra = '';
-    $sql = 'update `pet_test_vaccine` set process = 100 where id = '. $data['id'];
-    if ($this->db->query($sql)) {
-      $this->insertNotify(EDIT_NOTIFY, $data['id'], $time);
-      $this->setLastUpdate($time);
-    }
-  }
-
-  function removeWork($data, $time) {
-    $sql = 'update `pet_test_vaccine` set active = 0 where id = '. $data['id'];
-    if ($this->db->query($sql)) {
-      $this->setLastUpdate($time);
-      $this->insertNotify(REMOVE_NOTIFY, $data['id'], $time);
-    }
-  }
+function getDisease() {
+  global $db;
+  $sql = 'select * from `pet_test_disease`';
+  return $db->all($sql, 'id', 'name');
 }
