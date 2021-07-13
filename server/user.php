@@ -20,9 +20,14 @@ function session() {
     $sql = "select * from pet_test_user";
     $list = $db->all($sql);
 
+    $sql = "select username, concat(last_name, ' ', first_name) as fullname from pet_users where userid = $user[userid]";
+    $userinfo = $db->fetch($sql);
+
     $result['status'] = 1;
     $result['config'] = array(
       'userid' => $user['userid'],
+      'username' => $userinfo['username'],
+      'fullname' => $userinfo['fullname'],
       'admin' => $admin,
       'session' => $data->sess,
       'users' => $list,
@@ -57,9 +62,14 @@ function login() {
     $sql = "update pet_test_user set session = '$session'";
     $db->query($sql);
 
+    $sql = "select username, concat(last_name, ' ', first_name) as fullname from pet_users where userid = $user[userid]";
+    $userinfo = $db->fetch($sql);
+
     $result['status'] = 1;
     $result['config'] = array(
       'userid' => $user['userid'],
+      'username' => $userinfo['username'],
+      'fullname' => $userinfo['fullname'],
       'admin' => $admin,
       'session' => $session,
       'users' => $list,
@@ -67,6 +77,31 @@ function login() {
       'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
       'module' => permission($user['userid'])
     );
+  }
+  return $result;
+}
+
+function password() {
+  global $data, $db, $result;
+  include_once('Encryption.php');
+  $sitekey = 'e3e052c73ae5aa678141d0b3084b9da4';
+  $crypt = new NukeViet\Core\Encryption($sitekey);
+
+  if (empty($data->old)) $result['messenger'] = 'Mật khẩu cũ trống';
+  else if (empty($data->new)) $result['messenger'] = 'Mật khẩu mới trống';
+  else {
+    $userid = checkUserid();
+    $sql = 'select password from `pet_users` where userid = '. $userid;
+    $user_info = $db->fetch($sql);
+    if (empty($user_info)) $result['messenger'] = 'Người dùng không tồn tại';
+    else if (!$crypt->validate_password($data->old, $user_info['password'])) $result['messenger'] = 'Sai mật khẩu cũ';
+    else {
+      $password = $crypt->hash_password($data->new, '{SSHA512}');
+      $sql = 'update `pet_users` set password = "'. $password .'" where userid = '. $userid;
+      $db->query($sql);
+      $result['status'] = 1;
+      $result['messenger'] = 'Đã đổi mật khẩu';
+    }
   }
   return $result;
 }
