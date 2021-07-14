@@ -7,6 +7,35 @@ function auto() {
   return $result;
 }
 
+function filter() {
+  global $db, $data, $result;
+  
+  $result['status'] = 1;
+  $result['list'] = filterUser();
+  return $result;
+}
+
+function insert() {
+  global $db, $data, $result;
+
+  $sql = 'select * from pet_test_user where userid = '. $data->id;
+  $userinfo = $db->fetch($sql);
+  
+  if (!empty($userinfo)) {
+    $result['messenger'] = 'Nhân viên đã tồn tại';
+  }
+  else {
+    $sql = "insert into pet_test_user (userid, manager, `except`, daily, kaizen) values($data->id, 0, 0, 0, 0)";
+    $db->query($sql);
+
+    $result['status'] = 1;
+    $result['list'] = filterUser();
+    $result['messenger'] = 'Đã thêm nhân viên';
+  }
+  
+  return $result;
+}
+
 function update() {
   global $db, $data, $result;
   
@@ -68,4 +97,15 @@ function getConfig() {
   $userid = checkUserid();
   $sql = 'select * from pet_test_permission where userid = '. $userid;
   return $db->object($sql, 'module', 'type');
+}
+
+function filterUser() {
+  global $db, $data;
+  
+  $sql = 'select userid from pet_test_user';
+  $list = $db->object($sql, 'userid', 'userid');
+  
+  $sql = "select userid, concat(last_name, ' ', first_name) as fullname, username from pet_users where userid not in (". implode(', ', $list) .") and (username like '%$data->key%' or first_name like '%$data->key%' or last_name like '%$data->key%')";
+
+  return $db->all($sql);
 }
