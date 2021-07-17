@@ -109,8 +109,36 @@ function dead() {
   return $result;
 }
 
+function search() {
+  global $data, $db, $result;
+  
+  $key = $data->filter->keyword;
+  $disease = diseaseList();
+
+  $sql = "select a.*, c.name, c.phone, d.name as disease from pet_test_vaccine a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_test_disease d on a.diseaseid = d.id where (c.name like '%$key%' or c.phone like '%$key%') order by a.recall desc limit 50";
+  $query = $db->query($sql);
+  $list = array();
+
+  while ($row = $query->fetch_assoc()) {
+    $list []= array(
+      'id' => $row['id'],
+      'note' => $row['note'],
+      'name' => $row['name'],
+      'phone' => $row['phone'],
+      'vaccine' => $row['disease'],
+      'recall' => ($row['recall'] ? date('d/m/Y', $row['recall']) : 0),
+      'cometime' => date('d/m/Y', $row['cometime']),
+      'calltime' => date('d/m/Y', $row['calltime']),
+    );
+  }
+
+  $result['status'] = 1;
+  $result['search'] = $list;
+  return $result;
+}
+
 function getlist($today = false) {
-  global $db;
+  global $db, $data;
 
   $disease = diseaseList();
   if ($today) {
