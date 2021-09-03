@@ -5,7 +5,6 @@ function auto() {
   $result['status'] = 1;
   $result['list'] = getlist();
   $result['new'] = getlist(true);
-  $result['disease'] = getDisease();
 
   return $result;
 }
@@ -26,7 +25,7 @@ function insert() {
   $data->cometime = totime($data->cometime);
   $data->calltime = totime($data->calltime);
   $userid = checkUserid();
-  $sql = "insert into pet_test_vaccine (customerid, diseaseid, cometime, calltime, note, status, called, recall, userid, time) values ($customer[id], $data->disease, $data->cometime, $data->calltime, '', 0, 0, $data->calltime, $userid, ". time() .")";
+  $sql = "insert into pet_test_usg2 (customerid, userid, cometime, calltime, called, recall, number, status, note, time) values ($customer[id], $userid, $data->cometime, $data->calltime, 0, $data->calltime, $data->number, 0, '', ". time() .")";
   $db->query($sql);
   $result['status'] = 1;
   $result['new'] = getlist(true);
@@ -40,7 +39,8 @@ function update() {
   $data->cometime = totime($data->cometime);
   $data->calltime = totime($data->calltime);
   $userid = checkUserid();
-  $sql = "update pet_test_vaccine set diseaseid = $data->disease, cometime = $data->cometime, calltime = $data->calltime where id = $data->id";
+  $sql = "update pet_test_usg2 set number = $data->number, cometime = $data->cometime, calltime = $data->calltime where id = $data->id";
+  // die($sql);
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getlist();
@@ -48,10 +48,20 @@ function update() {
   return $result;
 }
 
+function remove() {
+  global $data, $db, $result;
+
+  $sql = "delete from pet_test_usg2 where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  $result['new'] = getlist(true);
+  return $result;
+}
+
 function done() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_vaccine set status = 2, recall = ". time() ." where id = $data->id";
+  $sql = "update pet_test_usg2 set status = 2, recall = ". time() ." where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getlist();
@@ -62,7 +72,7 @@ function done() {
 function called() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_vaccine set status = 1, note = '". $data->note ."', called = ". time() .", recall = ". (time() + 60 * 60 * 24 * 7) ." where id = $data->id";
+  $sql = "update pet_test_usg2 set status = 1, note = '". $data->note ."', called = ". time() .", recall = ". (time() + 60 * 60 * 24 * 7) ." where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getlist();
@@ -72,7 +82,7 @@ function called() {
 function uncalled() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_vaccine set status = 1, note = '". $data->note ."', called = ". time() .", recall = ". (time() + 60 * 60 * 24) ." where id = $data->id";
+  $sql = "update pet_test_usg2 set status = 1, note = '". $data->note ."', called = ". time() .", recall = ". (time() + 60 * 60 * 24) ." where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getlist();
@@ -82,7 +92,7 @@ function uncalled() {
 function dead() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_vaccine set status = 2, recall = ". time() .", note = '$data->note' where id = $data->id";
+  $sql = "update pet_test_usg2 set status = 2, recall = ". time() .", number = '". $data->number ."' where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getlist();
@@ -90,6 +100,8 @@ function dead() {
 }
 
 function search() {
+  global $result;
+
   $result['status'] = 1;
   $result['list'] = getlist();
   return $result;
@@ -98,19 +110,19 @@ function search() {
 function getlist($today = false) {
   global $db, $data;
 
-  $disease = diseaseList();
   $time = time();
   $start = strtotime(date('Y/m/d'));
   if ($today) {
-    $sql = 'select a.*, b.name, b.phone, b.address from pet_test_vaccine a inner join pet_test_customer b on a.customerid = b.id where (a.time between '. $start . ' and '. $time . ') and a.status < 2 order by a.id desc limit 50';
+    $sql = 'select a.*, b.name, b.phone, b.address from pet_test_usg2 a inner join pet_test_customer b on a.customerid = b.id where (a.time between '. $start . ' and '. $time . ') and a.status < 2 order by a.id desc limit 50';
   }
   else if (empty($data->filter->keyword)) {
     $start = $start + 60 * 60 * 24 - 1; 
-    $sql = 'select a.*, b.name, b.phone, b.address from pet_test_vaccine a inner join pet_test_customer b on a.customerid = b.id where a.recall < '. $start . ' and a.status < 2 order by a.recall desc limit 50';
+    $end = $start + 60 * 60 * 24 * 7; 
+    $sql = 'select a.*, b.name, b.phone, b.address from pet_test_usg2 a inner join pet_test_customer b on a.customerid = b.id where (a.recall < '. $start . ' and calltime < '. $end .') and a.status < 2 order by a.calltime asc, a.recall desc limit 50';
   }
   else {
     $key = $data->filter->keyword;
-    $sql = "select a.*, b.name, b.phone, b.address from pet_test_vaccine a inner join pet_test_customer b on a.customerid = b.id where (b.name like '%$key%' or b.phone like '%$key%') order by a.recall desc limit 50";
+    $sql = "select a.*, b.name, b.phone, b.address from pet_test_usg2 a inner join pet_test_customer b on a.customerid = b.id where (b.name like '%$key%' or b.phone like '%$key%') order by a.recall desc limit 50";
   }
 
   $query = $db->query($sql);
@@ -120,10 +132,10 @@ function getlist($today = false) {
     $list []= array(
       'id' => $row['id'],
       'note' => $row['note'],
+      'number' => $row['number'],
       'name' => $row['name'],
       'phone' => $row['phone'],
       'address' => $row['address'],
-      'vaccine' => $disease[$row['diseaseid']],
       'called' => ($row['called'] ? date('d/m/Y', $row['called']) : '-'),
       'cometime' => date('d/m/Y', $row['cometime']),
       'calltime' => date('d/m/Y', $row['calltime']),
@@ -136,37 +148,14 @@ function getlist($today = false) {
 function getOlder($customerid) {
   global $db;
 
-  $sql = "select * from pet_test_vaccine where status < 2 and customerid = $customerid order by id asc";
+  $sql = "select * from pet_test_usg2 where status < 2 and customerid = $customerid order by id asc";
   $list = $db->all($sql);
   $query = $db->query($sql);
-  $disease = diseaseList();
   foreach ($list as $index => $row) {
-    $list[$index]['disease'] = $disease[$row['diseaseid']];
+    $list[$index]['number'] = $row['number'];
     $list[$index]['calltime'] = date('d/m/Y', $row['calltime']);
     $list[$index]['called'] = ($row['called'] ? date('d/m/Y', $row['called']) : '-');
   }
 
   return $list;
-}
-
-function getCustomer($petid) {
-  global $db;
-
-  $sql = "select * from pet_test_pet where id = $petid";
-  $pet = $db->fetch($sql);
-
-  $sql = "select * from pet_test_customer where id = $pet[customerid]";
-  return $db->fetch($sql);
-}
-
-function diseaseList() {
-  global $db;
-  $sql = 'select * from `pet_test_disease`';
-  return $db->object($sql, 'id', 'name');
-}
-
-function getDisease() {
-  global $db;
-  $sql = 'select * from `pet_test_disease`';
-  return $db->all($sql);
 }
