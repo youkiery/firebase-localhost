@@ -27,6 +27,36 @@ function auto() {
   return $result;
 }
 
+function done() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_spa set status = 1 where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  return $result;
+}
+
+function called() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_spa set status = 2 where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 2;
+  return $result;
+}
+
+function returned() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_spa set status = 3 where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 3;
+  return $result;
+}
+
 function getList() {
   global $data, $db, $spa_option;
 
@@ -41,7 +71,11 @@ function getList() {
     $service = array();
     foreach ($spa_option as $key => $value) {
       if ($row[$key]) $service []= $spa_option[$key];
-      $option[$key] = $row[$key];
+      $option[] = array(
+        'name' => $key,
+        'value' => $spa_option[$key],
+        'check' => intval($row[$key])
+      );
     }
     $image = explode(', ', $row['image']);
     $list []= array(
@@ -50,6 +84,7 @@ function getList() {
       'phone' => $row['phone'],
       'user' => $row['user'],
       'note' => $row['note'],
+      'status' => $row['status'],
       'image' => (count($image) && !empty($image[0]) ? $image : array()),
       'time' => date('d/m/Y', $row['time']),
       'option' => $option,
@@ -82,6 +117,33 @@ function insert() {
   }
 
   $sql = "insert into pet_test_spa (customerid, doctorid, note, time, " . implode(", ", $name) . ", image) values($customer[id], $userid, '$data->note', '" . time() . "', " . implode(", ", $value) . ", '". str_replace('@@', '%2F', implode(', ', $data->image))."')";
+  $db->query($sql);  
+
+  $result['status'] = 1;
+  return $result;
+}
+
+function update() {
+  global $data, $db, $result;
+
+  $xtra = array();
+  foreach ($data->option as $n => $v) {
+    $xtra []= $n . ' = '. $v;
+  }
+  $xtra = implode(', ', $xtra);
+  $userid = checkUserid();
+
+  $sql = "select * from pet_test_customer where phone = '$data->phone'";
+  if (!empty($customer = $db->fetch($sql))) {
+    $sql = "update pet_test_customer set name = '$data->name' where id = $customer[id]";
+    $db->query($sql);
+  }
+  else {
+    $sql = "insert into pet_test_customer (name, phone, address) values ('$data->name', '$data->phone', '')";
+    $customer['id'] = $db->insertid($sql);
+  }
+
+  $sql = "update pet_test_spa set customerid = $customer[id], doctorid = $userid, note = '$data->note', image = '". str_replace('@@', '%2F', implode(', ', $data->image))."', $xtra where id = $data->id";
   $db->query($sql);  
 
   $result['status'] = 1;
