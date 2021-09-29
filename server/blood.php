@@ -106,7 +106,7 @@ function getList() {
   global $db, $data;
 
   $sql = 'select * from `pet_test_remind` where name = "blood" order by id';
-  $target = $db->object($sql, 'id', 'value');
+  $target = $db->obj($sql, 'id', 'value');
 
   $sql = "select * from ((select id, time, 0 as type from `pet_test_blood_row` where time between $data->start and $data->end) union (select id, time, 1 as type from `pet_test_blood_import` where time between $data->start and $data->end)) as a order by time desc, id desc";
   $record = $db->all($sql);

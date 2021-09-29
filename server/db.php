@@ -13,7 +13,7 @@ class Database {
 
   public function insertid($sql) {
     $this->db->query($sql);
-    return $this->db->insert_id();
+    return $this->db->insert_id;
   }
 
   public function all($sql) {
@@ -23,7 +23,7 @@ class Database {
     return $list;
   }
 
-  public function object($sql, $key, $name = '') {
+  public function obj($sql, $key, $name = '') {
     $list = array();
     $query = $this->db->query($sql);
 
@@ -33,6 +33,14 @@ class Database {
     else {
       while ($row = $query->fetch_assoc()) $list [$row[$key]]= $row;
     }
+    return $list;
+  }
+
+  function arr($sql, $name) {
+    $list = array();
+    $query = $this->query($sql);
+  
+    while ($row = $query->fetch_assoc()) $list[]= $row[$name];
     return $list;
   }
 

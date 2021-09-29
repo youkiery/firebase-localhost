@@ -24,7 +24,7 @@ $module = array(
 );
 
 while ($row = $query->fetch_assoc()) {
-  $sql = 'select * from pet_test_permission where userid = '. $row['userid'];
+  $sql = 'select * from pet_test_user_per where userid = '. $row['userid'];
   $permist_query = $mysqli->query($sql);
   $permists = $module;
 

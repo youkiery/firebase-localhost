@@ -56,7 +56,7 @@ function getlist() {
 
   foreach ($list as $index => $data) {
     $sql = "SELECT * FROM `wp_postmeta` where post_id = $data[id]";
-    $info = $db->object($sql, 'meta_key', 'meta_value');
+    $info = $db->obj($sql, 'meta_key', 'meta_value');
     $list[$index]['method'] = $info['_payment_method_title'];
     $list[$index]['customer'] = $info['_billing_last_name'] . ' '. $info['_billing_first_name'];
     $list[$index]['address'] = $info['_billing_address_1'] . ', '. $info['_billing_city'];
@@ -70,7 +70,7 @@ function getlist() {
 
     foreach ($orders as $key => $order) {
       $sql = "SELECT * FROM `wp_woocommerce_order_itemmeta` where order_item_id = $order[id]";
-      $item = $db->object($sql, 'meta_key', 'meta_value');
+      $item = $db->obj($sql, 'meta_key', 'meta_value');
       
       $orders[$key]['price'] = $item['_line_total'] / $item['_qty'];
       $orders[$key]['number'] = $item['_qty'];

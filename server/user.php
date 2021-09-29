@@ -24,17 +24,16 @@ function session() {
     $userinfo = $db->fetch($sql);
 
     $result['status'] = 1;
-    $result['config'] = array(
+    $result['data'] = array(
       'userid' => $user['userid'],
       'username' => $userinfo['username'],
       'fullname' => $userinfo['fullname'],
       'admin' => $admin,
-      'session' => $data->sess,
       'users' => $list,
       'today' => date('d/m/Y'),
       'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
-      'module' => permission($user['userid'])
     );
+    $result['config'] = permission($user['userid']);
   }
   return $result;
 }
@@ -66,17 +65,17 @@ function login() {
     $userinfo = $db->fetch($sql);
 
     $result['status'] = 1;
-    $result['config'] = array(
+    $result['data'] = array(
       'userid' => $user['userid'],
       'username' => $userinfo['username'],
       'fullname' => $userinfo['fullname'],
       'admin' => $admin,
-      'session' => $session,
       'users' => $list,
       'today' => date('d/m/Y'),
       'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
-      'module' => permission($user['userid'])
     );
+    $result['session'] = $session;
+    $result['config'] = permission($user['userid']);
   }
   return $result;
 }
@@ -109,12 +108,14 @@ function password() {
 function permission($userid) {
   global $data, $db;
 
-  $module = array('work' => 0, 'kaizen' => 0, 'schedule' => 0, 'vaccine' => 0, 'spa' => 0, 'expire' => 0, 'blood' => 0, 'usg' => 0, 'drug' => 0, 'profile' => 0);
-  $sql = "select * from pet_test_permission where userid = $userid";
+  $sql = "select name, 0 as per from pet_test_config where module = 'setting'";
+  $c = $db->obj($sql, 'name', 'per');
+
+  $sql = "select * from pet_test_user_per where userid = $userid";
   $query = $db->query($sql);
   
   while ($row = $query->fetch_assoc()) {
-    $module[$row['module']] = intval($row['type']);
+    $c[$row['module']] = intval($row['type']);
   }
-  return $module;
+  return $c;
 }

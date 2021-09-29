@@ -15,15 +15,15 @@ $data = array(
 $id = parseGetData('id', 0);
 
 foreach ($data as $key => $value) {
-  $sql = 'select * from pet_test_permission where module = "'. $key .'" and userid = '. $id;
+  $sql = 'select * from pet_test_user_per where module = "'. $key .'" and userid = '. $id;
   $query = $mysqli->query($sql);
   $type = intval($value);
 
   if (empty($query->fetch_assoc())) {
-    $sql = 'insert into pet_test_permission (userid, module, type) values ('. $id .', "'. $key .'", '. $type .')';
+    $sql = 'insert into pet_test_user_per (userid, module, type) values ('. $id .', "'. $key .'", '. $type .')';
   }
   else {
-    $sql = 'update pet_test_permission set type = '. $type .' where module = "'. $key .'" and userid = '. $id;
+    $sql = 'update pet_test_user_per set type = '. $type .' where module = "'. $key .'" and userid = '. $id;
   }
   $query = $mysqli->query($sql);
 }
@@ -41,7 +41,7 @@ $module = array(
   'profile' => 0,
 );
 
-$sql = 'select * from pet_test_permission where userid = '. $userid;
+$sql = 'select * from pet_test_user_per where userid = '. $userid;
 $query = $mysqli->query($sql);
 $list = array();
 while ($row = $query->fetch_assoc()) {

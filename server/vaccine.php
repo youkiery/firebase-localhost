@@ -179,7 +179,7 @@ function getCustomer($petid) {
 function diseaseList() {
   global $db;
   $sql = 'select * from `pet_test_disease`';
-  return $db->object($sql, 'id', 'name');
+  return $db->obj($sql, 'id', 'name');
 }
 
 function getDisease() {

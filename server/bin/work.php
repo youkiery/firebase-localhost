@@ -8,7 +8,7 @@ class Work extends Module {
   }
 
   function thisrole() {
-    $sql = 'select * from pet_test_permission where userid = '. $this->userid .' and module = "work"';
+    $sql = 'select * from pet_test_user_per where userid = '. $this->userid .' and module = "work"';
     $query = $this->db->query($sql);
     $role = $query->fetch_assoc();
     return $role['type'];

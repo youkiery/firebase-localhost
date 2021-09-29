@@ -137,7 +137,7 @@ class Module {
     }
 
     // kiểm tra quyền sử dụng
-    $sql = 'select * from `pet_test_permission` where module = "'. $this->module .'" and userid = '. $this->userid;
+    $sql = 'select * from `pet_test_user_per` where module = "'. $this->module .'" and userid = '. $this->userid;
     $query = $this->db->query($sql);
 
     $user = $query->fetch_assoc();

@@ -90,7 +90,7 @@ else {
         $result['password'] = $password;
         $result['name'] = (!empty($user_info['last_name']) ? $user_info['last_name'] . ' ': '') . $user_info['first_name'];
 
-        $sql = 'select * from pet_test_permission where userid = '. $userid;
+        $sql = 'select * from pet_test_user_per where userid = '. $userid;
         $query = $mysqli->query($sql);
         $config = array();
         while ($row = $query->fetch_assoc()) {
