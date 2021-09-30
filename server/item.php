@@ -11,7 +11,7 @@ function expire() {
   
   $data->expire = totime($data->expire);
   $sql = "insert into pet_test_item_expire (rid, number, expire, time) values($item[id], $data->number, $data->expire, ". time() .")";
-  query($sql);
+  $db->query($sql);
   $result['status'] = 1;
   $result['messenger'] = 'Đã thêm hạn sử dụng';
 
@@ -110,7 +110,7 @@ function inpositem() {
     $sql = "select * from pet_test_item_pos_item where posid = $data->posid and itemid = $value->id";
     if (empty($db->fetch($sql))) {
       $sql = "insert into pet_test_item_pos_item (posid, itemid) values($data->posid, $value->id)";
-      query($sql);
+      $db->query($sql);
     }
   }
   
@@ -146,11 +146,11 @@ function insert() {
 
   $name_sql = "select * from pet_test_item where name = '$data->name'";
   $code_sql = "select * from pet_test_item where code = '$data->code'";
-  if (!empty(fetch($name_sql))) $result['messenger'] = 'Tên mặt hàng đã tồn tại'; 
-  else if (!empty(fetch($code_sql))) $result['messenger'] = 'Mã mặt hàng đã tồn tại'; 
+  if (!empty($db->fetch($name_sql))) $result['messenger'] = 'Tên mặt hàng đã tồn tại'; 
+  else if (!empty($db->fetch($code_sql))) $result['messenger'] = 'Mã mặt hàng đã tồn tại'; 
   else {
     $sql = "insert into pet_test_item (name, code, shop, storage, catid, border, image) values('$data->name', '$data->code', 0, 0, $data->cat, 10, '". str_replace('@@', '%2F', implode(', ', $data->image)) ."')";
-    query($sql);
+    $db->query($sql);
   
     $result['status'] = 1;
     $result['list'] = getList();
@@ -205,7 +205,7 @@ function repos() {
   global $data, $db, $result;
 
   $sql = "delete from pet_test_item_pos_item where id = $data->itemid";
-  query($sql);
+  $db->query($sql);
   
   $sql = "select b.id, a.name from pet_test_item a inner join pet_test_item_pos_item b on a.id = b.itemid where b.posid = $data->posid";
   $result['list'] = $db->all($sql);
@@ -242,11 +242,11 @@ function update() {
 
   $name_sql = "select * from pet_test_item where name = '$data->name' and id <> $data->id";
   $code_sql = "select * from pet_test_item where code = '$data->code' and id <> $data->id";
-  if (!empty(fetch($name_sql))) $result['messenger'] = 'Tên mặt hàng đã tồn tại'; 
-  else if (!empty(fetch($code_sql))) $result['messenger'] = 'Mã mặt hàng đã tồn tại'; 
+  if (!empty($db->fetch($name_sql))) $result['messenger'] = 'Tên mặt hàng đã tồn tại'; 
+  else if (!empty($db->fetch($code_sql))) $result['messenger'] = 'Mã mặt hàng đã tồn tại'; 
   else {
     $sql = "update pet_test_item set name = '$data->name', code = '$data->code', border = '$data->border', image = '". str_replace('@@', '%2F', implode(', ', $data->image)) ."' where id = $data->id";
-    query($sql);
+    $db->query($sql);
   
     $result['status'] = 1;
     $result['list'] = getList();
@@ -263,7 +263,7 @@ function uppos() {
   }
 
   $sql = "update pet_test_item_pos set name = '$data->pos', image = '$image' where id = $data->id";
-  query($sql);
+  $db->query($sql);
 
   $result['status'] = 1;
 
