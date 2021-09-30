@@ -155,7 +155,7 @@ function insert() {
 
   $userid = checkUserid();
   
-  $sql = "insert into pet_test_spa (customerid, customerid2, doctorid, note, time, utime, weight, image) values($customer[id], $customer2[id], $userid, '$data->note', '" . time() . "', '" . time() . "', $data->weight, '". str_replace('@@', '%2F', implode(', ', $data->image))."')";
+  $sql = "insert into pet_test_spa (customerid, customerid2, doctorid, note, time, utime, weight, image) values($customer[id], $customer2[id], $userid, '$data->note', '" . time() . "', '" . time() . "', $data->weight, '". implode(', ', $data->image)."')";
   $id = $db->insertid($sql);
   
   foreach ($data->option as $value) {
@@ -198,7 +198,7 @@ function update() {
   
   $userid = checkUserid();
 
-  $sql = "update pet_test_spa set customerid = $customer[id], customerid2 = $customer2[id], doctorid = $userid, note = '$data->note', image = '". str_replace('@@', '%2F', implode(', ', $data->image))."', weight = $data->weight, utime = ". time() .", luser = $userid, ltime = ". time() .", status = 0, duser = 0 where id = $data->id";
+  $sql = "update pet_test_spa set customerid = $customer[id], customerid2 = $customer2[id], doctorid = $userid, note = '$data->note', image = '". implode(', ', $data->image)."', weight = $data->weight, utime = ". time() .", luser = $userid, ltime = ". time() .", status = 0, duser = 0 where id = $data->id";
   $db->query($sql);  
   
   $sql = "delete from pet_test_spa_row where spaid = $data->id";
