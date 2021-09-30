@@ -48,7 +48,7 @@ function update() {
       $sql = "insert into pet_test_user_per (userid, module, type) values ($data->id, '$name', '$value')";
     }
     else {
-      $sql = "update pet_test_user_per set type = $name where module = '$value' and userid = $data->id";
+      $sql = "update pet_test_user_per set type = '$value' where module = '$name' and userid = $data->id";
     }
     $db->query($sql);
   }

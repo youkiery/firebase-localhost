@@ -102,7 +102,7 @@ function search() {
   $list = array();
   foreach ($spa as $key => $row) {
     $sql = "select b.value from pet_test_spa_row a inner join pet_test_config b on a.spaid = $row[id] and a.typeid = b.id";
-    $service = arr($sql, 'value');
+    $service = $db->arr($sql, 'value');
   
     $sql = "select first_name as name from pet_users where userid = $row[duser]";
     $d = $db->fetch($sql);
@@ -198,7 +198,7 @@ function update() {
   
   $userid = checkUserid();
 
-  $sql = "update pet_test_spa set customerid = $customer[id], customerid2 = $customer2[id], doctorid = $userid, note = '$data->note', image = '". str_replace('@@', '%2F', implode(', ', $data->image))."', weight = $data->weight, utime = ". time() .", luser = $userid, ltime = ". time() .", status = 0 where id = $data->id";
+  $sql = "update pet_test_spa set customerid = $customer[id], customerid2 = $customer2[id], doctorid = $userid, note = '$data->note', image = '". str_replace('@@', '%2F', implode(', ', $data->image))."', weight = $data->weight, utime = ". time() .", luser = $userid, ltime = ". time() .", status = 0, duser = 0 where id = $data->id";
   $db->query($sql);  
   
   $sql = "delete from pet_test_spa_row where spaid = $data->id";
