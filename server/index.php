@@ -22,6 +22,13 @@ die();
 define('ROOTDIR', pathinfo(str_replace(DIRECTORY_SEPARATOR, '/', __file__), PATHINFO_DIRNAME));
 $inputJSON = file_get_contents('php://input');
 $data = json_decode($inputJSON);
+if (!empty($_POST['action']) && !empty($_POST['type']) && !empty($_POST['session'])) {
+  $data = (object) array(
+    'session' => $_POST['session'],
+    'action' => $_POST['action'],
+    'type' => $_POST['type']
+  );
+}
 
 $result = array(
   'status' => 0

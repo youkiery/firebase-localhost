@@ -77,10 +77,10 @@ function excel() {
   );
   $xr = array(0 => 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AM', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ');
 
-  $dir = str_replace('/server/', '/', ROOTDIR);
+  $dir = str_replace('/server', '/', ROOTDIR);
 
   include $dir .'PHPExcel/IOFactory.php';
-  $inputFileName = $dir .'upload/ChiTietHoaDon_HD250167_KV24092021-103818-243.xlsx';
+  $inputFileName = $dir .'export/ChiTietHoaDon_HD250167_KV24092021-103818-243.xlsx';
     
   $inputFileType = PHPExcel_IOFactory::identify($inputFileName);
   $objReader = PHPExcel_IOFactory::createReader($inputFileType);
@@ -92,10 +92,10 @@ function excel() {
   $highestColumn = $sheet->getHighestColumn();
 
   $sql = "select * from pet_test_doctor";
-  $doctor = obj($sql, 'name', 'userid');
+  $doctor = $db->obj($sql, 'name', 'userid');
 
   $sql = "select * from pet_test_type";
-  $type = obj($sql, 'code', 'id');
+  $type = $db->obj($sql, 'code', 'id');
 
   $col = array(
     'Mã hàng' => '', // 0
@@ -317,19 +317,18 @@ function getlist($today = false) {
   $xtra = '';
   if ($role['type'] == 1) $xtra = " and userid = $userid ";
 
-  $type = typeList();
   $start = strtotime(date('Y/m/d'));
   if ($today) {
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.time between $start and ". time() . ") $xtra and a.status < 2 order by a.id desc limit 50";
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where (a.time between $start and ". time() . ") $xtra and a.status < 2 order by a.id desc limit 50";
   }
   else if (empty($data->keyword)) {
     $end = $start + 60 * 60 * 24 - 1; 
     // x
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.recall < $end $xtra and a.status < 2 order by a.calltime asc, a.recall desc limit 50";
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.recall < $end $xtra and a.status < 2 order by a.calltime asc, a.recall desc limit 50";
   }
   else {
     $key = $data->keyword;
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (b.name like '%$key%' or b.phone like '%$key%') order by a.calltime asc, a.recall desc limit 50";
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where (b.name like '%$key%' or b.phone like '%$key%') order by a.calltime desc, a.recall desc limit 50";
   }
 
   $v = $db->all($sql);
@@ -343,8 +342,10 @@ function getlist($today = false) {
 
   $limit = $start - 60 * 60 * 24 * 7;
   foreach ($v as $row) {
-    $status = $row['status'];
-    if ($status) {
+    $status = intval($row['status']);
+    if ($status == 3) $status = 5;
+    else if ($status == 2) $status = 4;
+    else if ($status == 1) {
       if ($row['calltime'] < $limit) $status = 2;
       else $status = 1;
     }
@@ -361,7 +362,7 @@ function getlist($today = false) {
       'phone' => $row['phone'],
       'address' => $row['address'],
       'status' => $status,
-      'vaccine' => $type[$row['typeid']],
+      'vaccine' => $row['type'],
       'called' => ($row['called'] ? date('d/m/Y', $row['called']) : '-'),
       'cometime' => date('d/m/Y', $row['cometime']),
       'calltime' => date('d/m/Y', $row['calltime']),
@@ -381,11 +382,10 @@ function gettemplist($today = false) {
   $xtra = '';
   if ($role['type'] == 1) $xtra = " and userid = $userid ";
 
-  $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status = 5 $xtra order by a.id desc limit 50";
+  $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status = 5 $xtra order by a.id desc limit 50";
   $v = $db->all($sql);
   $list = array();
 
-  $type = typeList();
   foreach ($v as $row) {
     $list []= array(
       'id' => $row['id'],
@@ -394,7 +394,7 @@ function gettemplist($today = false) {
       'name' => $row['name'],
       'phone' => $row['phone'],
       'address' => $row['address'],
-      'vaccine' => $type[$row['typeid']],
+      'vaccine' => $row['type'],
       'called' => ($row['called'] ? date('d/m/Y', $row['called']) : ''),
       'cometime' => date('d/m/Y', $row['cometime']),
       'calltime' => date('d/m/Y', $row['calltime']),
@@ -416,7 +416,8 @@ function getOlder($customerid) {
 
   foreach ($list as $index => $row) {
     $status = $row['status'];
-    if ($status == 2) $status = 4;
+    if ($status == 3) $status = 5;
+    else if ($status == 2) $status = 4;
     else if ($status == 1) {
       if ($row['calltime'] < $limit) $status = 2;
       else $status = 1;
