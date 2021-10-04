@@ -149,7 +149,7 @@ function insert() {
   if (!empty($db->fetch($name_sql))) $result['messenger'] = 'Tên mặt hàng đã tồn tại'; 
   else if (!empty($db->fetch($code_sql))) $result['messenger'] = 'Mã mặt hàng đã tồn tại'; 
   else {
-    $sql = "insert into pet_test_item (name, code, shop, storage, catid, border, image) values('$data->name', '$data->code', 0, 0, $data->cat, 10, '". str_replace('@@', '%2F', implode(', ', $data->image)) ."')";
+    $sql = "insert into pet_test_item (name, code, shop, storage, catid, border, image) values('$data->name', '$data->code', 0, 0, $data->cat, 10, '". implode(', ', $data->image) ."')";
     $db->query($sql);
   
     $result['status'] = 1;
@@ -245,7 +245,7 @@ function update() {
   if (!empty($db->fetch($name_sql))) $result['messenger'] = 'Tên mặt hàng đã tồn tại'; 
   else if (!empty($db->fetch($code_sql))) $result['messenger'] = 'Mã mặt hàng đã tồn tại'; 
   else {
-    $sql = "update pet_test_item set name = '$data->name', code = '$data->code', border = '$data->border', image = '". str_replace('@@', '%2F', implode(', ', $data->image)) ."' where id = $data->id";
+    $sql = "update pet_test_item set name = '$data->name', code = '$data->code', border = '$data->border', image = '". implode(', ', $data->image) ."' where id = $data->id";
     $db->query($sql);
   
     $result['status'] = 1;

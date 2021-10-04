@@ -62,7 +62,9 @@ function done() {
   
   $result['status'] = 1;
   $result['time'] = time();
-  $result['list'] = getList();  return $result;
+  $result['list'] = getList();
+  
+  return $result;
 }
 
 function called() {
@@ -76,6 +78,16 @@ function called() {
   $result['time'] = time();
   $result['list'] = getList();
 
+  return $result;
+}
+
+function report() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_spa set dimage = '". implode(', ', $data->image) ."' where id = $data->id";
+  $db->query($sql);
+  
+  $result['status'] = 1;
   return $result;
 }
 
@@ -93,14 +105,11 @@ function returned() {
   return $result;
 }
 
-function search() {
-  global $data, $db, $result;
+function coverData($data) {
+  global $db;
 
-  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (b.name like '%$data->keyword%' or b.phone like '%$data->keyword%') order by time desc limit 30";
-  $spa = $db->all($sql);
-  
   $list = array();
-  foreach ($spa as $key => $row) {
+  foreach ($data as $key => $row) {
     $sql = "select b.value from pet_test_spa_row a inner join pet_test_config b on a.spaid = $row[id] and a.typeid = b.id";
     $service = $db->arr($sql, 'value');
   
@@ -108,21 +117,75 @@ function search() {
     $d = $db->fetch($sql);
   
     $image = explode(', ', $row['image']);
+    $dimage = explode(', ', $row['dimage']);
     $list []= array(
       'id' => $row['id'],
       'name' => $row['name'],
       'phone' => $row['phone'],
+      'rate' => intval($row['rate']),
       'duser' => (empty($d['name']) ? '' : $d['name']),
       'note' => $row['note'],
       'status' => $row['status'],
       'image' => (count($image) && !empty($image[0]) ? $image : array()),
-      'time' => date('d/m/Y H:i', $row['time']),
+      'dimage' => (count($dimage) && !empty($dimage[0]) ? $dimage : array()),
+      'hour' => date('H:i', $row['time']),
+      'date' => date('d/m/Y', $row['time']),
       'service' => (count($service) ? implode(', ', $service) : '-')
     );
   }
+  return $list;
+}
+
+function search() {
+  global $data, $db, $result;
+
+  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (b.name like '%$data->keyword%' or b.phone like '%$data->keyword%') order by time desc limit 30";
   
   $result['status'] = 1;
-  $result['list'] = $list;
+  $result['list'] = coverData($db->all($sql));
+
+  return $result;
+}
+
+function rate() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_spa set rate = $data->rate where id = $data->id";
+  $db->query($sql);
+
+  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (b.name like '%$data->keyword%' or b.phone like '%$data->keyword%') order by time desc limit 30";
+  
+  $result['status'] = 1;
+  $result['list'] = coverData($db->all($sql));
+
+  return $result;
+}
+
+function statrate() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_spa set rate = $data->rate where id = $data->id";
+  $db->query($sql);
+
+  $data->from = totime($data->from);
+  $data->end = totime($data->end);
+  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (dimage <> '' or rate > 0) and (a.time between $data->from and $data->end) order by time desc limit 30";
+  
+  $result['status'] = 1;
+  $result['list'] = coverData($db->all($sql));
+
+  return $result;
+}
+
+function statistic() {
+  global $data, $db, $result;
+
+  $data->from = totime($data->from);
+  $data->end = totime($data->end);
+  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (dimage <> '' or rate > 0) and (a.time between $data->from and $data->end) order by time desc limit 30";
+  
+  $result['status'] = 1;
+  $result['list'] = coverData($db->all($sql));
 
   return $result;
 }
@@ -248,6 +311,7 @@ function getList() {
     $d = $db->fetch($sql);
 
     $image = explode(', ', $row['image']);
+    $dimage = explode(', ', $row['dimage']);
     $list []= array(
       'id' => $row['id'],
       'name' => $row['name'],
@@ -262,6 +326,8 @@ function getList() {
       'status' => $row['status'],
       'weight' => $row['weight'],
       'image' => (count($image) && !empty($image[0]) ? $image : array()),
+      'dimage' => (count($dimage) && !empty($dimage[0]) ? $dimage : array()),
+      'ftime' => date('d/m/Y', $row['time']),
       'time' => date('H:i', $row['time']),
       'option' => $option,
       'service' => (count($service) ? implode(', ', $service) : '-')

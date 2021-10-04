@@ -394,7 +394,7 @@ function getCurrent($status) {
   $time = time();
   $limf = $time - 60 * 60 * 24 * 2;
   $lime = $time + 60 * 60 * 24 * 3;
-  $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where  a.status = $status and (calltime between $limf and $lime) $xtra order by a.calltime asc limit 50";
+  $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where  a.status = $status and (calltime between $limf and $lime) $xtra order by a.called asc";
   // echo "$sql;<br>";
   return dataCover($db->all($sql));
 }
@@ -404,7 +404,7 @@ function getOver($status) {
 
   $time = time();
   $lim = $time - 60 * 60 * 24 * 2;
-  $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status = $status and calltime < $lim $xtra order by a.calltime asc limit 50";
+  $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status = $status and calltime < $lim $xtra order by a.calltime asc";
   // echo "$sql;<br>";
   return dataCover($db->all($sql), 1);
 }
