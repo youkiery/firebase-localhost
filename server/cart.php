@@ -8,10 +8,11 @@ function auto() {
 }
 
 function connect() {
-  $servername = 'localhost';
-  $username = 'root';
-  $password = '';
-  $database = 'watch';
+  global $shop_config; 
+  $servername = $shop_config['servername'];
+  $username = $shop_config['username'];
+  $password = $shop_config['password'];
+  $database = $shop_config['database'];
   $db = new Database($servername, $username, $password, $database);
   return $db;
 }

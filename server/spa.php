@@ -13,7 +13,7 @@ function init() {
 
   $userid = checkUserid();
 
-  $sql = "select * from pet_test_user where userid = $userid and spa = 1";
+  $sql = "select * from pet_test_user_per where module = 'spa' and type = 2 and userid = $userid";
   if (!empty($db->fetch($sql))) {
     $sql = "select * from pet_test_doctor";
     $result['doctor'] = $db->all($sql);
@@ -53,11 +53,32 @@ function auto() {
   return $result;
 }
 
+function remove() {
+  global $data, $db, $result;
+
+  $sql = "delete from pet_test_spa where id = $data->id";
+  $db->query($sql);
+  
+  $result['status'] = 1;
+  $result['time'] = time();
+  $result['list'] = getList();
+  
+  return $result;
+}
+
 function done() {
   global $data, $db, $result;
 
-  if (!empty($data->uid)) $sql = "update pet_test_spa set utime = ". time() .",  status = 1, duser = $data->uid where id = $data->id";
-  else $sql = "update pet_test_spa set utime = ". time() .", status = 1 where id = $data->id";
+  if (!empty($data->uid)) $sql = "update pet_test_spa set utime = ". time() .", duser = $data->uid, status = 1 where id = $data->id";
+  else {
+    $sql = "select * from pet_test_spa where id = $data->id";
+    $s = $db->fetch($sql);
+    if (!$s['duser']) {
+      $userid = checkUserid();
+      $sql = "update pet_test_spa set utime = ". time() .", status = 1, duser = $userid where id = $data->id";
+    }
+    else $sql = "update pet_test_spa set utime = ". time() .", status = 1 where id = $data->id";
+  } 
   $db->query($sql);
   
   $result['status'] = 1;
@@ -70,8 +91,16 @@ function done() {
 function called() {
   global $data, $db, $result;
 
-  if (!empty($data->uid)) $sql = "update pet_test_spa set utime = ". time() .",  status = 2, duser = $data->uid where id = $data->id";
-  else $sql = "update pet_test_spa set utime = ". time() .", status = 2 where id = $data->id";
+  if (!empty($data->uid)) $sql = "update pet_test_spa set utime = ". time() .", duser = $data->uid, status = 2 where id = $data->id";
+  else {
+    $sql = "select * from pet_test_spa where id = $data->id";
+    $s = $db->fetch($sql);
+    if (!$s['duser']) {
+      $userid = checkUserid();
+      $sql = "update pet_test_spa set utime = ". time() .", status = 1, duser = $userid where id = $data->id";
+    }
+    else $sql = "update pet_test_spa set utime = ". time() .", status = 2 where id = $data->id";
+  }
   $db->query($sql);
   
   $result['status'] = 2;
@@ -81,27 +110,35 @@ function called() {
   return $result;
 }
 
-function report() {
-  global $data, $db, $result;
-
-  $sql = "update pet_test_spa set dimage = '". implode(', ', $data->image) ."' where id = $data->id";
-  $db->query($sql);
-  
-  $result['status'] = 1;
-  return $result;
-}
-
 function returned() {
   global $data, $db, $result;
 
-  if (!empty($data->uid)) $sql = "update pet_test_spa set utime = ". time() .",  status = 3, duser = $data->uid where id = $data->id";
-  else $sql = "update pet_test_spa set utime = ". time() .", status = 3 where id = $data->id";
+  if (!empty($data->uid)) $sql = "update pet_test_spa set utime = ". time() .", duser = $data->uid, status = 3 where id = $data->id";
+  else {
+    $sql = "select * from pet_test_spa where id = $data->id";
+    $s = $db->fetch($sql);
+    if (!$s['duser']) {
+      $userid = checkUserid();
+      $sql = "update pet_test_spa set utime = ". time() .", status = 1, duser = $userid where id = $data->id";
+    }
+    else $sql = "update pet_test_spa set utime = ". time() .", status = 3 where id = $data->id";
+  }
   $db->query($sql);
   
   $result['status'] = 3;
   $result['time'] = time();
   $result['list'] = getList();
 
+  return $result;
+}
+
+function report() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_spa set duser = $data->uid, dimage = '". implode(', ', $data->image) ."' where id = $data->id";
+  $db->query($sql);
+  
+  $result['status'] = 1;
   return $result;
 }
 
@@ -323,6 +360,7 @@ function getList() {
       'ltime' => (empty($u['name']) ? '' : date('d/m/Y H:i', $row['ltime'])),
       'luser' => (empty($u['name']) ? '' : $u['name']),
       'duser' => (empty($d['name']) ? '' : $d['name']),
+      'duserid' => $row['duser'],
       'status' => $row['status'],
       'weight' => $row['weight'],
       'image' => (count($image) && !empty($image[0]) ? $image : array()),
