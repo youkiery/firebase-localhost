@@ -18,7 +18,7 @@ function userreg() {
   $aday = 60 * 60 * 24;
   
   foreach ($data->list as $v) {
-    $time = $starttime + $v->order * ($aday - 1);
+    $time = $starttime + $v->order * $aday;
     insert($v->uid, $time, $v->type, $v->action);
   }
   

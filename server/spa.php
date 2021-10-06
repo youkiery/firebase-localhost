@@ -205,8 +205,8 @@ function statrate() {
   $db->query($sql);
 
   $data->from = totime($data->from);
-  $data->end = totime($data->end) + 60 * 60 * 24 - 1;
-  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (a.time between $data->from and $data->end) order by time desc limit 30";
+  $data->end = totime($data->end);
+  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (a.time between $data->from and $data->end) order by time desc";
   
   $result['status'] = 1;
   $result['list'] = coverData($db->all($sql));
@@ -218,8 +218,8 @@ function statistic() {
   global $data, $db, $result;
 
   $data->from = totime($data->from);
-  $data->end = totime($data->end) + 60 * 60 * 24 - 1;
-  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (a.time between $data->from and $data->end) order by time desc limit 30";
+  $data->end = totime($data->end);
+  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (a.time between $data->from and $data->end) order by time desc";
   
   $result['status'] = 1;
   $result['list'] = coverData($db->all($sql));
