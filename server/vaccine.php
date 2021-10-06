@@ -235,18 +235,18 @@ function insert() {
   $data->calltime = totime($data->calltime);
   $userid = checkUserid();
 
-  $sql = "select * from pet_test_vaccine where customerid = $customer[id] and typeid = $data->typeid and cometime = $data->cometime and calltime = $data->calltime";
-  $v = $db->fetch($sql);
+  // $sql = "select * from pet_test_vaccine where customerid = $customer[id] and typeid = $data->typeid and cometime = $data->cometime and calltime = $data->calltime";
+  // $v = $db->fetch($sql);
 
-  if (!empty($v)) $result['messenger'] = 'Phiếu nhắc cùng loại đã được thêm';
-  else {
+  // if (!empty($v)) $result['messenger'] = 'Phiếu nhắc cùng loại đã được thêm';
+  // else {
     $sql = "insert into pet_test_vaccine (customerid, typeid, cometime, calltime, note, status, called, recall, userid, time) values ($customer[id], $data->typeid, $data->cometime, $data->calltime, '', 0, 0, $data->calltime, $userid, ". time() .")";
     $result['status'] = 1;
-    $result['vid'] = insertid($sql);
+    $result['vid'] = $db->insertid($sql);
     $result['new'] = getlist(true);
     $result['list'] = getlist();
     $result['old'] = getOlder($customer['id'], $result['vid']);
-  }
+  // }
 
   return $result;
 }
@@ -395,8 +395,8 @@ function getCurrent($status) {
   global $db, $data, $xtra;
 
   $time = time();
-  $limf = $time - 60 * 60 * 24 * 2;
-  $lime = $time + 60 * 60 * 24 * 2;
+  $limf = $time;
+  $lime = $time + 60 * 60 * 24 * 3;
   $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where  a.status = $status and (calltime between $limf and $lime) $xtra order by a.recall asc";
   // echo "$sql;<br>";
   return dataCover($db->all($sql));
@@ -406,7 +406,7 @@ function getOver() {
   global $db, $data, $xtra;
 
   $time = time();
-  $lim = $time - 60 * 60 * 24 * 2;
+  $lim = $time;
   $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where status < 3 and calltime < $lim $xtra order by a.recall asc";
   // echo "$sql;<br>";
   return dataCover($db->all($sql), 1);
@@ -436,6 +436,7 @@ function dataCover($list, $over = 0) {
       'id' => $row['id'],
       'note' => $row['note'],
       'doctor' => $row['doctor'],
+      'customerid' => $row['customerid'],
       'name' => $row['name'],
       'phone' => $row['phone'],
       'address' => $row['address'],
@@ -501,7 +502,7 @@ function gettemplist($today = false) {
 function getOlder($customerid, $vid) {
   global $db;
 
-  $sql = "select a.*, c.first_name as doctor, d.name as type, b.phone, b.name, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status < 2 and a.customerid = $customerid and id <> $vid order by id asc";
+  $sql = "select a.*, c.first_name as doctor, d.name as type, b.phone, b.name, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status < 2 and a.customerid = $customerid and a.id <> $vid order by a.id asc";
   return dataCover($db->all($sql));
 }
 
