@@ -206,7 +206,7 @@ function statrate() {
 
   $data->from = totime($data->from);
   $data->end = totime($data->end);
-  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (dimage <> '' or rate > 0) and (a.time between $data->from and $data->end) order by time desc limit 30";
+  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (a.time between $data->from and $data->end) order by time desc limit 30";
   
   $result['status'] = 1;
   $result['list'] = coverData($db->all($sql));
@@ -219,7 +219,7 @@ function statistic() {
 
   $data->from = totime($data->from);
   $data->end = totime($data->end);
-  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (dimage <> '' or rate > 0) and (a.time between $data->from and $data->end) order by time desc limit 30";
+  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (a.time between $data->from and $data->end) order by time desc limit 30";
   
   $result['status'] = 1;
   $result['list'] = coverData($db->all($sql));

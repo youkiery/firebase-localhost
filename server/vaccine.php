@@ -19,12 +19,29 @@ function called() {
   $sql = "select * from pet_test_vaccine where id = $data->id";
   $v = $db->fetch($sql);
   $time = time();
+  $recall = $time + 60 * 60 * 24 * 3;
 
-  $sql = "update pet_test_vaccine set status = 2, note = '". $data->note ."', called = $time where id = $data->id";
+  $sql = "update pet_test_vaccine set status = 2, note = '". $data->note ."', called = $time, recall = $recall where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getlist();
 
+  return $result;
+}
+
+function uncalled() {
+  global $data, $db, $result;
+
+  $sql = "select * from pet_test_vaccine where id = $data->id";
+  $v = $db->fetch($sql);
+  $time = time();
+  $recall = $time + 60 * 60 * 24 * 3;
+
+  $sql = "update pet_test_vaccine set status = 1, note = '". $data->note ."', called = $time, recall = $recall where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  $result['list'] = getlist();
+  
   return $result;
 }
 
@@ -62,7 +79,7 @@ function done() {
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getlist();
-  $result['old'] = getOlder($data->customerid);
+  $result['old'] = getOlder($data->customerid, $data->vid);
 
   return $result;
 }
@@ -224,10 +241,11 @@ function insert() {
   if (!empty($v)) $result['messenger'] = 'Phiếu nhắc cùng loại đã được thêm';
   else {
     $sql = "insert into pet_test_vaccine (customerid, typeid, cometime, calltime, note, status, called, recall, userid, time) values ($customer[id], $data->typeid, $data->cometime, $data->calltime, '', 0, 0, $data->calltime, $userid, ". time() .")";
-    $db->query($sql);
     $result['status'] = 1;
+    $result['vid'] = insertid($sql);
     $result['new'] = getlist(true);
-    $result['old'] = getOlder($customer['id']);
+    $result['list'] = getlist();
+    $result['old'] = getOlder($customer['id'], $result['vid']);
   }
 
   return $result;
@@ -317,22 +335,6 @@ function update() {
   return $result;
 }
 
-function uncalled() {
-  global $data, $db, $result;
-
-  $sql = "select * from pet_test_vaccine where id = $data->id";
-  $v = $db->fetch($sql);
-  $time = time();
-
-  $sql = "update pet_test_vaccine set status = 1, note = '". $data->note ."', called = $time where id = $data->id";
-  // die($sql);
-  $db->query($sql);
-  $result['status'] = 1;
-  $result['list'] = getlist();
-  
-  return $result;
-}
-
 function updatedoctor() {
   global $data, $db, $result;
 
@@ -372,9 +374,10 @@ function getlist($today = false) {
   }
   else if (empty($data->keyword)) {
     $list = array();
-    for ($i = 0; $i <= 2; $i++) { 
-      $list = array_merge($list, getOver($i));
-    }
+
+    // Lấy danh 
+    $list = array_merge($list, getOver());
+    // Lấy danh sách hiện tại theo status
     for ($i = 0; $i <= 2; $i++) { 
       $list = array_merge($list, getCurrent($i));
     }
@@ -393,18 +396,18 @@ function getCurrent($status) {
 
   $time = time();
   $limf = $time - 60 * 60 * 24 * 2;
-  $lime = $time + 60 * 60 * 24 * 3;
-  $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where  a.status = $status and (calltime between $limf and $lime) $xtra order by a.called asc";
+  $lime = $time + 60 * 60 * 24 * 2;
+  $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where  a.status = $status and (calltime between $limf and $lime) $xtra order by a.recall asc";
   // echo "$sql;<br>";
   return dataCover($db->all($sql));
 }
 
-function getOver($status) {
+function getOver() {
   global $db, $data, $xtra;
 
   $time = time();
   $lim = $time - 60 * 60 * 24 * 2;
-  $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status = $status and calltime < $lim $xtra order by a.calltime asc";
+  $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where status < 3 and calltime < $lim $xtra order by a.recall asc";
   // echo "$sql;<br>";
   return dataCover($db->all($sql), 1);
 }
@@ -421,7 +424,14 @@ function dataCover($list, $over = 0) {
   global $start;
   $limit = time() - 60 * 60 * 24 * 7;
   $v = array();
+  $stoday = strtotime(date('Y/m/d'));
+  $etoday = $stoday + 60 * 60 * 24  - 1;
+
   foreach ($list as $row) {
+    // thời gian gọi
+    if (!$row['called']) $called = '-';
+    else if ($row['called'] >= $stoday && $row['called'] <= $etoday) $called = 'Hôm hay đã gọi';
+    else $called = date('d/m/Y', $row['called']);
     $v []= array(
       'id' => $row['id'],
       'note' => $row['note'],
@@ -432,7 +442,7 @@ function dataCover($list, $over = 0) {
       'status' => $row['status'],
       'over' => $over,
       'vaccine' => $row['type'],
-      'called' => ($row['called'] ? date('d/m/Y', $row['called']) : '-'),
+      'called' => $called,
       'cometime' => date('d/m/Y', $row['cometime']),
       'calltime' => date('d/m/Y', $row['calltime']),
     );
@@ -488,10 +498,10 @@ function gettemplist($today = false) {
   return array_merge($e, $l);
 }
 
-function getOlder($customerid) {
+function getOlder($customerid, $vid) {
   global $db;
 
-  $sql = "select a.*, c.first_name as doctor, d.name as type, b.phone, b.name, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status < 2 and a.customerid = $customerid order by id asc";
+  $sql = "select a.*, c.first_name as doctor, d.name as type, b.phone, b.name, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status < 2 and a.customerid = $customerid and id <> $vid order by id asc";
   return dataCover($db->all($sql));
 }
 
