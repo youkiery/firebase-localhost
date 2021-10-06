@@ -20,13 +20,14 @@ function session() {
     $sql = "select * from pet_test_user";
     $list = $db->all($sql);
 
-    $sql = "select username, concat(last_name, ' ', first_name) as fullname from pet_users where userid = $user[userid]";
+    $sql = "select username, first_name, concat(last_name, ' ', first_name) as fullname from pet_users where userid = $user[userid]";
     $userinfo = $db->fetch($sql);
 
     $result['status'] = 1;
     $result['data'] = array(
       'userid' => $user['userid'],
       'username' => $userinfo['username'],
+      'name' => $userinfo['first_name'],
       'fullname' => $userinfo['fullname'],
       'admin' => $admin,
       'users' => $list,
@@ -68,6 +69,7 @@ function login() {
     $result['data'] = array(
       'userid' => $user['userid'],
       'username' => $userinfo['username'],
+      'name' => $userinfo['first_name'],
       'fullname' => $userinfo['fullname'],
       'admin' => $admin,
       'users' => $list,
