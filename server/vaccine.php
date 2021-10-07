@@ -13,6 +13,40 @@ function auto() {
   return $result;
 }
 
+function removeall() {
+  global $data, $db, $result;
+
+  foreach ($data->list as $id) {
+    $sql = "delete from pet_test_vaccine where id = $id";
+    $db->query($sql);
+  }
+
+  $result['status'] = 1;
+  $result['list'] = gettemplist();
+  return $result;
+}
+
+function doneall() {
+  global $data, $db, $result;
+
+  $c = array();
+  $userid = checkUserid();
+  foreach ($data->list as $id) {
+    $sql = "select * from pet_test_vaccine where id = $id";
+    $v = $db->fetch($sql);
+    $c []= $v['customerid'];
+  
+    $sql = "update pet_test_vaccine set status = 0, recall = calltime, userid = $userid, time = ". time() ." where id = $id";
+    $db->query($sql);
+  }
+
+  $sql = "select a.*, c.first_name as doctor, d.name as type, b.phone, b.name, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status < 3 and a.customerid in (". implode(', ', $c) .") order by a.id asc";
+  $result['old'] = dataCover($db->all($sql));
+  $result['list'] = gettemplist();
+  $result['status'] = 1;
+  return $result;
+}
+
 function history() {
   global $data, $db, $result;
 
@@ -139,12 +173,11 @@ function done() {
 function donerecall() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_vaccine set status = 3 where id = $data->id";
-  $db->query($sql);
+  foreach ($data->list as $id) {
+    $sql = "update pet_test_vaccine set status = 3 where id = $id";
+    $db->query($sql);
+  }
   $result['status'] = 1;
-  $result['new'] = getlist(true);
-  $result['old'] = getOlder($data->customerid, $data->vid);
-  $result['list'] = getlist();
   return $result;
 }
 

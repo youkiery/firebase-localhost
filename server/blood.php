@@ -81,7 +81,7 @@ function init() {
   global $db, $data, $result;
 
   $data->start = time() - 60 * 60 * 24 * 7;
-  $data->end = time();
+  $data->end = time() + 60 * 60 * 24 - 1;
 
   $result['start'] = date('d/m/Y', $data->start);
   $result['end'] = date('d/m/Y');
@@ -96,7 +96,7 @@ function init() {
 function statistic() {
   
   $from = time() - 60 * 60 * 24 * 30;
-  $end = time();
+  $end = time() + 60 * 60 * 24 - 1;
 
   $result['status'] = 1;
   $result['statistic'] = status($from, $end);
