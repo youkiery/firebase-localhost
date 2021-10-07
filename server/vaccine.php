@@ -13,6 +13,56 @@ function auto() {
   return $result;
 }
 
+function history() {
+  global $data, $db, $result;
+
+  $sql = "select a.*, c.first_name as doctor, d.name as type, b.phone, b.name, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status < 3 and b.phone = '$data->phone' order by a.id asc";
+  $result['status'] = 1;
+  $result['old'] = dataCover($db->all($sql));
+  return $result;
+}
+
+function inserthistory() {
+  global $data, $db, $result;
+
+  $customerid = checkcustomer();
+  
+  $data->cometime = isodatetotime($data->cometime);
+  $data->calltime = isodatetotime($data->calltime);
+  $userid = checkUserid();
+
+  $sql = "update pet_test_vaccine set status = 3 where id = $data->id";
+  $db->query($sql);
+
+  $sql = "insert into pet_test_vaccine (customerid, typeid, cometime, calltime, note, status, called, recall, userid, time) values ($customerid, $data->typeid, $data->cometime, $data->calltime, '', 0, 0, $data->calltime, $userid, ". time() .")";
+  $db->query($sql);
+  $result['status'] = 1;
+  $result['messenger'] = 'Đã xác nhận';
+  $result['list'] = gettemplist();
+
+  return $result;
+}
+
+function updatehistory() {
+  global $data, $db, $result;
+
+  $customerid = checkcustomer();
+  
+  $data->cometime = isodatetotime($data->cometime);
+  $data->calltime = isodatetotime($data->calltime);
+  $userid = checkUserid();
+
+  $sql = "update pet_test_vaccine set customerid = $customerid, typeid = $data->typeid, cometime = $data->cometime, calltime = $data->calltime, status = 0, recall = $data->calltime, userid = $userid, time = ". time() ." where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['messenger'] = 'Đã xác nhận';
+  $result['old'] = getOlder($customerid, $data->id);
+  $result['list'] = gettemplist();
+
+  return $result;
+}
+
 function called() {
   global $data, $db, $result;
 
@@ -48,15 +98,18 @@ function uncalled() {
 function confirm() {
   global $data, $db, $result;
 
-  $sql = "select * from pet_test_vaccine where id = $data->id";
+  $sql = "select b.* from pet_test_vaccine a inner join pet_test_customer b on a.customerid = b.id where a.id = $data->id";
   $c = $db->fetch($sql);
 
-  $sql = "update pet_test_vaccine set status = 0, recall = calltime where id = $data->id";
+  $userid = checkUserid();
+
+  $sql = "update pet_test_vaccine set status = 0, recall = calltime, userid = $userid, time = ". time() ." where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
-  $result['list'] = getlist();
+  $result['old'] = getOlder($c['id'], $data->id);
+  $result['name'] = $c['name'];
+  $result['phone'] = $c['phone'];
   $result['temp'] = gettemplist();
-  $result['old'] = getOlder($c['customerid']);
 
   return $result;
 }
@@ -79,7 +132,6 @@ function done() {
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getlist();
-  $result['old'] = getOlder($data->customerid, $data->vid);
 
   return $result;
 }
@@ -90,6 +142,8 @@ function donerecall() {
   $sql = "update pet_test_vaccine set status = 3 where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
+  $result['new'] = getlist(true);
+  $result['old'] = getOlder($data->customerid, $data->vid);
   $result['list'] = getlist();
   return $result;
 }
@@ -207,6 +261,7 @@ function filter() {
       'petname' => $row['petname'],
       'number' => $row['phone'],
       'vaccine' => $type[$row['typeid']],
+      'typeid' => $row['typeid'],
       'calltime' => $row['calltime'],
       'note' => $row['note'],
       'status' => $row['status'],
@@ -221,18 +276,10 @@ function filter() {
 function insert() {
   global $data, $db, $result;
 
-  $sql = "select * from pet_test_customer where phone = '$data->phone'";
-  if (!empty($customer = $db->fetch($sql))) {
-    $sql = "update pet_test_customer set name = '$data->name' where id = $customer[id]";
-    $db->query($sql);
-  }
-  else {
-    $sql = "insert into pet_test_customer (name, phone, address) values ('$data->name', '$data->phone', '')";
-    $customer['id'] = $db->insertid($sql);
-  }
+  $customerid = checkcustomer();
   
-  $data->cometime = totime($data->cometime);
-  $data->calltime = totime($data->calltime);
+  $data->cometime = isodatetotime($data->cometime);
+  $data->calltime = isodatetotime($data->calltime);
   $userid = checkUserid();
 
   // $sql = "select * from pet_test_vaccine where customerid = $customer[id] and typeid = $data->typeid and cometime = $data->cometime and calltime = $data->calltime";
@@ -240,12 +287,12 @@ function insert() {
 
   // if (!empty($v)) $result['messenger'] = 'Phiếu nhắc cùng loại đã được thêm';
   // else {
-    $sql = "insert into pet_test_vaccine (customerid, typeid, cometime, calltime, note, status, called, recall, userid, time) values ($customer[id], $data->typeid, $data->cometime, $data->calltime, '', 0, 0, $data->calltime, $userid, ". time() .")";
+    $sql = "insert into pet_test_vaccine (customerid, typeid, cometime, calltime, note, status, called, recall, userid, time) values ($customerid, $data->typeid, $data->cometime, $data->calltime, '', 0, 0, $data->calltime, $userid, ". time() .")";
     $result['status'] = 1;
     $result['vid'] = $db->insertid($sql);
     $result['new'] = getlist(true);
     $result['list'] = getlist();
-    $result['old'] = getOlder($customer['id'], $result['vid']);
+    $result['old'] = getOlder($customerid, $result['vid']);
   // }
 
   return $result;
@@ -279,6 +326,15 @@ function remove() {
   return $result;
 }
 
+function removetemp() {
+  global $data, $db, $result;
+  $sql = "delete from pet_test_vaccine where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  $result['list'] = gettemplist();
+  return $result;
+}
+
 function removedoctor() {
   global $data, $db, $result;
   $sql = "delete from pet_test_doctor where id = $data->id";
@@ -308,20 +364,12 @@ function searchdoctor() {
 function update() {
   global $data, $db, $result;
 
-  $sql = "select * from pet_test_customer where phone = '$data->phone'";
-  if (!empty($customer = $db->fetch($sql))) {
-    $sql = "update pet_test_customer set name = '$data->name' where id = $customer[id]";
-    $db->query($sql);
-  }
-  else {
-    $sql = "insert into pet_test_customer (name, phone, address) values ('$data->name', '$data->phone', '')";
-    $customer['id'] = $db->insertid($sql);
-  }
+  $customerid = checkcustomer();
   
-  $data->cometime = totime($data->cometime);
-  $data->calltime = totime($data->calltime);
+  $data->cometime = isodatetotime($data->cometime);
+  $data->calltime = isodatetotime($data->calltime);
   
-  $sql = "update pet_test_vaccine set typeid = $data->typeid, cometime = $data->cometime, calltime = $data->calltime where id = $data->id";
+  $sql = "update pet_test_vaccine set customerid = $customerid, typeid = $data->typeid, cometime = $data->cometime, calltime = $data->calltime where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
   if (!empty($data->prv)) {
@@ -364,12 +412,12 @@ function getlist($today = false) {
   $role = $db->fetch($sql);
 
   $xtra = '';
-  if ($role['type'] == 1) $xtra = " and userid = $userid ";
+  if ($role['type'] == 1) $xtra = " and a.userid = $userid ";
 
   $start = strtotime(date('Y/m/d'));
 
   if ($today) {
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where (a.time between $start and ". time() . ") $xtra and a.status < 2 order by a.id desc limit 50";
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where (a.time between $start and ". time() . ") $xtra and a.status < 3 order by a.id desc limit 50";
     $list = dataCover($db->all($sql));
   }
   else if (empty($data->keyword)) {
@@ -443,6 +491,7 @@ function dataCover($list, $over = 0) {
       'status' => $row['status'],
       'over' => $over,
       'vaccine' => $row['type'],
+      'typeid' => $row['typeid'],
       'called' => $called,
       'cometime' => date('d/m/Y', $row['cometime']),
       'calltime' => date('d/m/Y', $row['calltime']),
@@ -459,7 +508,7 @@ function gettemplist($today = false) {
   $role = $db->fetch($sql);
 
   $xtra = '';
-  if ($role['type'] == 1) $xtra = " and userid = $userid ";
+  if ($role['type'] == 1) $xtra = " and a.userid = $userid ";
 
   $sql = "select a.*, c.first_name as doctor, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_type d on a.typeid = d.id where a.status = 5 $xtra order by a.id desc limit 50";
   $v = $db->all($sql);
@@ -488,6 +537,7 @@ function gettemplist($today = false) {
       'phone' => $phone,
       'address' => $address,
       'vaccine' => $row['type'],
+      'typeid' => $row['typeid'],
       'called' => ($row['called'] ? date('d/m/Y', $row['called']) : ''),
       'cometime' => date('d/m/Y', $row['cometime']),
       'calltime' => ($row['calltime'] ? date('d/m/Y', $row['calltime']) : ''),
@@ -502,7 +552,7 @@ function gettemplist($today = false) {
 function getOlder($customerid, $vid) {
   global $db;
 
-  $sql = "select a.*, c.first_name as doctor, d.name as type, b.phone, b.name, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status < 2 and a.customerid = $customerid and a.id <> $vid order by a.id asc";
+  $sql = "select a.*, c.first_name as doctor, d.name as type, b.phone, b.name, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status < 3 and a.customerid = $customerid and a.id <> $vid order by a.id asc";
   return dataCover($db->all($sql));
 }
 
@@ -524,4 +574,19 @@ function getDoctor() {
 
   $sql = "select a.id, a.userid, a.name, b.username from pet_test_doctor a inner join pet_users b on a.userid = b.userid";
   return $db->all($sql);
+}
+
+function checkcustomer() {
+  global $db, $data;
+
+  $sql = "select * from pet_test_customer where phone = '$data->phone'";
+  if (!empty($customer = $db->fetch($sql))) {
+    $sql = "update pet_test_customer set name = '$data->name' where id = $customer[id]";
+    $db->query($sql);
+  }
+  else {
+    $sql = "insert into pet_test_customer (name, phone, address) values ('$data->name', '$data->phone', '')";
+    $customer['id'] = $db->insertid($sql);
+  }
+  return $customer['id'];
 }

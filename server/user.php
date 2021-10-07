@@ -62,7 +62,7 @@ function login() {
     $sql = "update pet_test_user set session = '$session' where userid = $user[userid]";
     $db->query($sql);
 
-    $sql = "select username, concat(last_name, ' ', first_name) as fullname from pet_users where userid = $user[userid]";
+    $sql = "select username, concat(last_name, ' ', first_name) as fullname, first_name from pet_users where userid = $user[userid]";
     $userinfo = $db->fetch($sql);
 
     $result['status'] = 1;

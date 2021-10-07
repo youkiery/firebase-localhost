@@ -15,6 +15,13 @@ function totime($date) {
   return $date;
 }
 
+function isodatetotime($iso) {
+  // 2021-10-28T00:00:00.000Z
+  $dates = explode('T', $iso);
+  $timestring = str_replace('-', '/', $dates[0]);
+  return strtotime($timestring);
+}
+
 function lower($str) {
   $str = mb_strtolower($str);
   $str = preg_replace("/(à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ)/", 'a', $str);
