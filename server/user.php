@@ -36,6 +36,9 @@ function session() {
     );
     $result['config'] = permission($user['userid']);
   }
+  else {
+    $result['messenger'] = "Phiên đăng nhập hết hạn";
+  }
   return $result;
 }
 

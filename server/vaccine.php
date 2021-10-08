@@ -517,11 +517,11 @@ function getlist($today = false) {
     );
 
     for ($i = 0; $i <= 2; $i++) { 
-      $list[$i] = array_merge($list[$i], getOver($i));
+      $list[$i] = array_merge($list[$i], getOver($i, $xtra));
     }
     // Lấy danh sách hiện tại theo status
     for ($i = 0; $i <= 2; $i++) { 
-      $list[$i] = array_merge($list[$i], getCurrent($i));
+      $list[$i] = array_merge($list[$i], getCurrent($i, $xtra));
     }
   }
   else {
@@ -533,8 +533,8 @@ function getlist($today = false) {
   return $list;
 }
 
-function getCurrent($status) {
-  global $db, $data, $xtra;
+function getCurrent($status, $xtra) {
+  global $db, $data;
 
   $time = time();
   $limf = $time;
@@ -544,13 +544,13 @@ function getCurrent($status) {
   return dataCover($db->all($sql));
 }
 
-function getOver($status) {
-  global $db, $data, $xtra;
+function getOver($status, $xtra) {
+  global $db, $data;
 
   $time = time();
   $lim = $time;
   $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where status = $status and calltime < $lim $xtra order by a.recall asc";
-  // echo "$sql;<br>";
+//   echo "$sql;<br>";
   return dataCover($db->all($sql), 1);
 }
 
