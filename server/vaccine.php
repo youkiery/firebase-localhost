@@ -13,6 +13,33 @@ function auto() {
   return $result;
 }
 
+function tempauto() {
+  global $data, $db, $result;
+
+  $result['status'] = 1;
+  $result['list'] = gettemplist();
+  
+  return $result;
+}
+
+function typeauto() {
+  global $data, $db, $result;
+
+  $result['status'] = 1;
+  $result['list'] = gettypeobj();
+  
+  return $result;
+}
+
+function doctorauto() {
+  global $data, $db, $result;
+
+  $result['status'] = 1;
+  $result['list'] = getDoctor();
+  
+  return $result;
+}
+
 function removeall() {
   global $data, $db, $result;
 
@@ -22,6 +49,7 @@ function removeall() {
   }
 
   $result['status'] = 1;
+  $result['messenger'] = "Đã xóa các phiếu nhắc tạm";
   $result['list'] = gettemplist();
   return $result;
 }
@@ -43,6 +71,7 @@ function doneall() {
   $sql = "select a.*, c.first_name as doctor, d.name as type, b.phone, b.name, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status < 3 and a.customerid in (". implode(', ', $c) .") order by a.id asc";
   $result['old'] = dataCover($db->all($sql));
   $result['list'] = gettemplist();
+  $result['messenger'] = "Đã xác nhận các phiếu nhắc tạm";
   $result['status'] = 1;
   return $result;
 }
@@ -68,11 +97,11 @@ function inserthistory() {
   $sql = "update pet_test_vaccine set status = 3 where id = $data->id";
   $db->query($sql);
 
-  $sql = "insert into pet_test_vaccine (customerid, typeid, cometime, calltime, note, status, called, recall, userid, time) values ($customerid, $data->typeid, $data->cometime, $data->calltime, '', 0, 0, $data->calltime, $userid, ". time() .")";
+  $sql = "insert into pet_test_vaccine (customerid, typeid, cometime, calltime, note, status, called, recall, userid, time) values ($customerid, $data->typeid, $data->cometime, $data->calltime, '$data->note', 0, 0, $data->calltime, $userid, ". time() .")";
   $db->query($sql);
   $result['status'] = 1;
-  $result['messenger'] = 'Đã xác nhận';
-  $result['list'] = gettemplist();
+  $result['messenger'] = 'Đã xác nhận và hoàn thành phiếu nhắc cũ';
+  $result['new'] = getlist(true);
 
   return $result;
 }
@@ -86,11 +115,11 @@ function updatehistory() {
   $data->calltime = isodatetotime($data->calltime);
   $userid = checkUserid();
 
-  $sql = "update pet_test_vaccine set customerid = $customerid, typeid = $data->typeid, cometime = $data->cometime, calltime = $data->calltime, status = 0, recall = $data->calltime, userid = $userid, time = ". time() ." where id = $data->id";
+  $sql = "update pet_test_vaccine set customerid = $customerid, typeid = $data->typeid, cometime = $data->cometime, calltime = $data->calltime, status = 0, recall = $data->calltime, note = '$data->note', userid = $userid, utemp = 1, time = ". time() ." where id = $data->id";
   $db->query($sql);
 
   $result['status'] = 1;
-  $result['messenger'] = 'Đã xác nhận';
+  $result['messenger'] = 'Đã xác nhận và thêm vào danh sách nhắc';
   $result['old'] = getOlder($customerid, $data->id);
   $result['list'] = gettemplist();
 
@@ -108,6 +137,7 @@ function called() {
   $sql = "update pet_test_vaccine set status = 2, note = '". $data->note ."', called = $time, recall = $recall where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
+  $result['messenger'] = "Đã chuyển sang tab 'Đã gọi'";
   $result['list'] = getlist();
 
   return $result;
@@ -124,8 +154,25 @@ function uncalled() {
   $sql = "update pet_test_vaccine set status = 1, note = '". $data->note ."', called = $time, recall = $recall where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
+  $result['messenger'] = "Đã chuyển sang tab 'Không nghe'";
   $result['list'] = getlist();
   
+  return $result;
+}
+
+function transfer() {
+  global $data, $db, $result;
+
+  foreach ($data->list as $id) {
+    $sql = "update pet_test_vaccine set userid = $data->uid where id = $id";
+    $db->query($sql);
+  }
+  $sql = "select * from pet_test_doctor where userid = $data->uid";
+  $d = $db->fetch($sql);
+  $result['status'] = 1;
+  $result['messenger'] = "Đã chuyển phiếu nhắc sang cho nhân viên: $d[name]";
+  $result['list'] = gettemplist();
+
   return $result;
 }
 
@@ -137,9 +184,10 @@ function confirm() {
 
   $userid = checkUserid();
 
-  $sql = "update pet_test_vaccine set status = 0, recall = calltime, userid = $userid, time = ". time() ." where id = $data->id";
+  $sql = "update pet_test_vaccine set status = 0, utemp = 1, recall = calltime, userid = $userid, time = ". time() ." where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
+  $result['messenger'] = "Đã xác nhận và chuyển vào danh sách nhắc";
   $result['old'] = getOlder($c['id'], $data->id);
   $result['name'] = $c['name'];
   $result['phone'] = $c['phone'];
@@ -154,6 +202,7 @@ function dead() {
   $sql = "update pet_test_vaccine set status = 4, note = '$data->note' where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
+  $result['messenger'] = "Phiếu nhắc đã được đặt thành 'Không tiêm được'";
   $result['list'] = getlist();
   
   return $result;
@@ -165,6 +214,7 @@ function done() {
   $sql = "update pet_test_vaccine set status = 3 where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
+  $result['messenger'] = "Phiếu nhắc đã được đặt thành 'Đã tái chủng'";
   $result['list'] = getlist();
 
   return $result;
@@ -178,6 +228,7 @@ function donerecall() {
     $db->query($sql);
   }
   $result['status'] = 1;
+  $result['messenger'] = "Tất cả phiếu nhắc được chọn chuyển thành 'Đã tái chủng'";
   return $result;
 }
 
@@ -204,6 +255,7 @@ function excel() {
     
   $inputFileType = PHPExcel_IOFactory::identify($des);
   $objReader = PHPExcel_IOFactory::createReader($inputFileType);
+  $objReader->setReadDataOnly(true);
   $objPHPExcel = $objReader->load($des);
   
   $sheet = $objPHPExcel->getSheet(0); 
@@ -270,6 +322,7 @@ function excel() {
     }
   }
   $result['list'] = gettemplist();
+  $result['messenger'] = "Đã chuyển dữ liệu Excel thành phiếu nhắc";
   return $result;
 }
 
@@ -315,19 +368,13 @@ function insert() {
   $data->calltime = isodatetotime($data->calltime);
   $userid = checkUserid();
 
-  // $sql = "select * from pet_test_vaccine where customerid = $customer[id] and typeid = $data->typeid and cometime = $data->cometime and calltime = $data->calltime";
-  // $v = $db->fetch($sql);
-
-  // if (!empty($v)) $result['messenger'] = 'Phiếu nhắc cùng loại đã được thêm';
-  // else {
-    $sql = "insert into pet_test_vaccine (customerid, typeid, cometime, calltime, note, status, called, recall, userid, time) values ($customerid, $data->typeid, $data->cometime, $data->calltime, '', 0, 0, $data->calltime, $userid, ". time() .")";
-    $result['status'] = 1;
-    $result['vid'] = $db->insertid($sql);
-    $result['new'] = getlist(true);
-    $result['list'] = getlist();
-    $result['old'] = getOlder($customerid, $result['vid']);
-  // }
-
+  $sql = "insert into pet_test_vaccine (customerid, typeid, cometime, calltime, note, status, called, recall, userid, time) values ($customerid, $data->typeid, $data->cometime, $data->calltime, '$data->note', 0, 0, $data->calltime, $userid, ". time() .")";
+  $result['status'] = 1;
+  $result['vid'] = $db->insertid($sql);
+  $result['new'] = getlist(true);
+  $result['old'] = getOlder($customerid, $result['vid']);
+  
+  $result['messenger'] = "Đã thêm vào danh sách nhắc";
   return $result;
 }
 
@@ -337,7 +384,8 @@ function insertdoctor() {
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getDoctor();
-
+  
+  $result['messenger'] = "Đã thêm bác sĩ";
   return $result;
 }
 
@@ -347,6 +395,17 @@ function inserttype() {
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = gettypeobj();
+  $result['messenger'] = "Đã thêm loại nhắc";
+  return $result;
+}
+
+function removevaccine() {
+  global $data, $db, $result;
+  $sql = "delete from pet_test_vaccine where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  $result['new'] = getlist(true);
+  $result['messenger'] = "Đã xóa phiếu nhắc";
   return $result;
 }
 
@@ -356,6 +415,7 @@ function remove() {
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = gettypeobj();
+  $result['messenger'] = "Đã xóa loại nhắc";
   return $result;
 }
 
@@ -365,6 +425,7 @@ function removetemp() {
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = gettemplist();
+  $result['messenger'] = "Đã xóa phiếu tạm";
   return $result;
 }
 
@@ -374,7 +435,7 @@ function removedoctor() {
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getDoctor();
-  
+  $result['messenger'] = "Đã xóa bác sĩ";
   return $result;
 }
 
@@ -402,17 +463,11 @@ function update() {
   $data->cometime = isodatetotime($data->cometime);
   $data->calltime = isodatetotime($data->calltime);
   
-  $sql = "update pet_test_vaccine set customerid = $customerid, typeid = $data->typeid, cometime = $data->cometime, calltime = $data->calltime where id = $data->id";
+  $sql = "update pet_test_vaccine set customerid = $customerid, typeid = $data->typeid, note = '$data->note', cometime = $data->cometime, calltime = $data->calltime where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
-  if (!empty($data->prv)) {
-    $result['list'] = gettemplist();
-  }
-  else {
-    $result['list'] = getlist();
-    $result['new'] = getlist(true);
-  }
-
+  $result['new'] = getlist(true);
+  $result['messenger'] = "Đã cập nhật phiếu nhắc";
   return $result;
 }
 
@@ -423,6 +478,7 @@ function updatedoctor() {
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getDoctor();
+  $result['messenger'] = "Đã cập nhật bác sĩ";
   return $result;
 }
 
@@ -433,7 +489,7 @@ function updatetype() {
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = gettypeobj();
-  
+  $result['messenger'] = "Đã cập nhật loại nhắc";  
   return $result;
 }
 
@@ -454,14 +510,18 @@ function getlist($today = false) {
     $list = dataCover($db->all($sql));
   }
   else if (empty($data->keyword)) {
-    $list = array();
+    $list = array(
+      0 => array(),
+      array(),
+      array(),
+    );
 
     for ($i = 0; $i <= 2; $i++) { 
-      $list = array_merge($list, getOver($i));
+      $list[$i] = array_merge($list[$i], getOver($i));
     }
     // Lấy danh sách hiện tại theo status
     for ($i = 0; $i <= 2; $i++) { 
-      $list = array_merge($list, getCurrent($i));
+      $list[$i] = array_merge($list[$i], getCurrent($i));
     }
   }
   else {
@@ -534,7 +594,7 @@ function dataCover($list, $over = 0) {
   return $v;
 }
 
-function gettemplist($today = false) {
+function gettemplist() {
   global $db, $data;
   $userid = checkUserid();
 
@@ -548,6 +608,9 @@ function gettemplist($today = false) {
   $v = $db->all($sql);
   $e = array();
   $l = array();
+  $list = array(
+    0 => array(), array()
+  );
 
   foreach ($v as $row) {
     if ($row['customerid']) {
@@ -580,7 +643,28 @@ function gettemplist($today = false) {
     else $l []= $temp;
   }
 
-  return array_merge($e, $l);
+  $list[0] = array_merge($e, $l);
+  $start = strtotime(date('Y/m/d'));
+  $end = $start + 60 * 60 * 24 - 1;
+  $sql = "select a.*, b.name, b.phone, b.address, c.first_name as doctor, d.name as type from pet_test_vaccine a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.userid = c.userid inner join pet_test_type d on a.typeid = d.id where utemp = 1 and (time between $start and $end) $xtra order by a.id desc limit 50";
+  $v = $db->all($sql);
+  foreach ($v as $row) {
+    $list[1] []= array(
+      'id' => $row['id'],
+      'note' => $row['note'],
+      'doctor' => $row['doctor'],
+      'customerid' => $row['customerid'],
+      'name' => $row['name'],
+      'phone' => $row['phone'],
+      'address' => $row['address'],
+      'vaccine' => $row['type'],
+      'typeid' => $row['typeid'],
+      'called' => ($row['called'] ? date('d/m/Y', $row['called']) : ''),
+      'cometime' => date('d/m/Y', $row['cometime']),
+      'calltime' => ($row['calltime'] ? date('d/m/Y', $row['calltime']) : ''),
+    );
+  }
+  return $list;
 }
 
 function getOlder($customerid, $vid) {
