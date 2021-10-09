@@ -19,7 +19,9 @@ foreach ($list as $row) {
 
 die();
 */
+
 define('ROOTDIR', pathinfo(str_replace(DIRECTORY_SEPARATOR, '/', __file__), PATHINFO_DIRNAME));
+date_default_timezone_set('Asia/Ho_Chi_Minh');
 $inputJSON = file_get_contents('php://input');
 $data = json_decode($inputJSON);
 if (!empty($_POST['action']) && !empty($_POST['type']) && !empty($_POST['session'])) {
