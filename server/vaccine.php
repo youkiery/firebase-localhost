@@ -585,8 +585,15 @@ function gettemplist() {
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'vaccine'";
   $role = $db->fetch($sql);
 
-  $xtra = '';
-  if ($role['type'] == 1) $xtra = " and a.userid = $userid ";
+  $xtra = array();
+  if ($role['type'] < 2) $xtra []= " a.userid = $userid ";
+  if (!empty($data->docs)) $xtra []= " a.userid in (". implode(', ', $data->docs) .") ";
+  if (!empty($data->time)) {
+    $data->time = isodatetotime($data->time) + 60 * 60 * 24 - 1;
+    $xtra []= " a.time < $data->time ";
+  }
+  if (count($xtra)) $xtra = "and".  implode(" and ", $xtra);
+  else $xtra = "";
 
   $sql = "select a.*, c.first_name as doctor, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_type d on a.typeid = d.id where a.status = 5 $xtra order by a.id desc";
   $v = $db->all($sql);
@@ -624,6 +631,7 @@ function gettemplist() {
       'address' => $address,
       'vaccine' => $row['type'],
       'typeid' => $row['typeid'],
+      'time' => date('d/m/Y', $row['time']),
       'called' => ($row['called'] ? date('d/m/Y', $row['called']) : ''),
       'cometime' => date('d/m/Y', $row['cometime']),
       'calltime' => ($row['calltime'] ? date('d/m/Y', $row['calltime']) : ''),
