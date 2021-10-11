@@ -268,7 +268,7 @@ function excel() {
   $sql = "select * from pet_test_doctor";
   $doctor = $db->obj($sql, 'name', 'userid');
 
-  $sql = "select * from pet_test_type";
+  $sql = "select * from pet_test_type where active = 1";
   $type = $db->obj($sql, 'code', 'id');
 
   $col = array(
@@ -310,26 +310,20 @@ function excel() {
       
       $sql = "select * from pet_test_customer where phone = '$row[2]'";
       if (empty($c = $db->fetch($sql))) {
-        $p['id'] = 0;
+        $sql = "insert into pet_test_customer (name, phone, address) values('$row[3]', '$row[2]', '')";
+        $c['id'] = $db->query($sql);
       }
-      else {
-        $sql = "select * from pet_test_pet where customerid = $c[id] and name = '$petname'";
-        if (empty($p = $db->fetch($sql))) {
-          $sql = "insert into pet_test_pet (name, customerid) values ('$petname', $c[id])";
-          $p['id'] = $db->insertid($sql);
-        }
+
+      $sql = "select * from pet_test_pet where customerid = $c[id] and name = '$petname'";
+      if (empty($p = $db->fetch($sql))) {
+        $sql = "insert into pet_test_pet (name, customerid) values ('$petname', $c[id])";
+        $p['id'] = $db->insertid($sql);
       }
   
       $datetime = explode(' ', $row[4]);
       $date = explode('/', $datetime[0]);
       $cometime = strtotime("$date[2]/$date[1]/$date[0]");
 
-
-      // $row['vaccine'] = getvacid($type[$row[0]])['name'];
-      // $row['cometime'] = date('d/m/Y', $cometime);
-      // $row['calltime'] = date('d/m/Y', $calltime);
-      // $l []= $row;
-  
       $sql = "insert into pet_test_vaccine (petid, typeid, cometime, calltime, note, status, recall, userid, time, called) values($p[id], ". $type[$row[0]] .", $cometime, $calltime, '', 5, $calltime, ". $doctor[$row[1]] .", ". time() .", 0)";
       $db->query($sql);
     }
@@ -640,7 +634,7 @@ function gettemplist() {
     else $l []= $temp;
   }
 
-  $list[0] = array_merge($e, $l);
+  $list[0] = array_merge($l, $e);
   $start = strtotime(date('Y/m/d'));
   $end = $start + 60 * 60 * 24 - 1;
   $sql = "select a.*, g.name as petname, g.customerid, b.name, b.phone, b.address, c.first_name as doctor, d.name as type from pet_test_vaccine a inner join pet_test_pet g on a.petid = g.id inner join pet_test_customer b on g.customerid = b.id inner join pet_users c on a.userid = c.userid inner join pet_test_type d on a.typeid = d.id where utemp = 1 and (time between $start and $end) $xtra order by a.id desc limit 50";
