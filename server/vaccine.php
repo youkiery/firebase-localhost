@@ -428,6 +428,7 @@ function search() {
 
 function searchdoctor() {
   global $data, $db, $result;
+  $data->keyword = trim($data->keyword);
   $sql = "select userid, username, concat(last_name, ' ', first_name) as name from pet_users where (last_name like '%$data->keyword%' or first_name like '%$data->keyword%' or username like '%$data->keyword%') and userid not in (select userid from pet_test_doctor)";
   $result['status'] = 1;
   $result['list'] = $db->all($sql);
@@ -479,8 +480,11 @@ function getlist($today = false) {
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'vaccine'";
   $role = $db->fetch($sql);
 
-  $xtra = '';
-  if ($role['type'] == 1) $xtra = " and a.userid = $userid ";
+  $xtra = array();
+  if ($role['type'] < 2) $xtra []= " a.userid = $userid ";
+  if (!empty($data->docs)) $xtra []= " a.userid in (". implode(', ', $data->docs) .") ";
+  if (count($xtra)) $xtra = "and".  implode(" and ", $xtra);
+  else $xtra = "";
 
   $start = strtotime(date('Y/m/d'));
 
@@ -504,7 +508,7 @@ function getlist($today = false) {
     }
   }
   else {
-    $key = $data->keyword;
+    $key = trim($data->keyword);
     $sql = "select a.*, c.first_name as doctor, g.name as petname, g.customerid, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_pet g on a.petid = g.id inner join pet_test_customer b on g.customerid = b.id inner join pet_test_type d on a.typeid = d.id where (b.name like '%$key%' or b.phone like '%$key%') and status < 5 order by a.calltime desc, a.recall desc limit 50";
     $list = dataCover($db->all($sql));
   }
