@@ -37,8 +37,8 @@ function managerreg() {
   $aday = 60 * 60 * 24;
   
   foreach ($data->list as $v) {
-    $time = $starttime + $v->order * ($aday - 1);
-    insert($v->uid, $time, $v->type, $v->action);
+    $time = $starttime + $v->order * $aday;
+    insert($v->uid, $time, $data->state * 2 + $v->type, $v->action);
   }
   
   $result['status'] = 1;
@@ -70,7 +70,7 @@ function userData() {
   
   $starttime = date("N", $data->time) == 1 ? strtotime(date("Y-m-d", $data->time)) : strtotime(date("Y-m-d", strtotime('last monday', $data->time)));
   $endtime = $starttime + 60 * 60 * 24 * 7 - 1;
-  $time = time();
+  $time = strtotime(date('Y/m/d')) + (8 - date("N")) * 60 * 60 * 24 - 1;
 
   for ($i = 0; $i < 7; $i++) { 
     $ct = $starttime + 60 * 60 * 24 * $i;
@@ -112,9 +112,12 @@ function managerData() {
 
   for ($i = 0; $i < 7; $i++) { 
     $ct = $starttime + 60 * 60 * 24 * $i;
-    
     $dat['day'] []= date('d/m', $ct);
   }
+
+  // thay đổi type
+  $x = $data->state * 2;
+  $y = $data->state * 2 + 1;
 
   foreach ($ul as $u) {
     $temp = array(
@@ -126,11 +129,12 @@ function managerData() {
       $temp['list'] []= 'green';
       $temp['list'] []= 'green';
     }
-    $sql = "select * from pet_test_row where user_id = $u[userid] and (type = 2 or type = 3) and (time between $starttime and $endtime)";
+    $sql = "select * from pet_test_row where user_id = $u[userid] and (type = $x or type = $y) and (time between $starttime and $endtime)";
     $rl = $db->all($sql);
 
     foreach ($rl as $r) {
-      $temp['list'][date("N", $r['time']) * 2 + ($r['type'] - 2)] = 'red';
+      $temp['list'][(date("N", $r['time']) - 1) * 2 + ($r['type'] - 2 * $data->state)] = 'red';
+      // echo date("N", $r['time']) . ": ". $r['type']. "<br>";
     }
 
     $dat['list'] []= $temp;
@@ -147,12 +151,13 @@ function getScheduleById($id) {
 }
 
 function insert($userid, $time, $type, $action) {
-  global $db;
+  global $db, $result;
   $start = $time;
   $end = $start + 60 * 60 * 24 - 1;
 
   if ($action == 'insert') {
     $sql = "select * from pet_test_row where user_id = $userid and type = $type and (time between $start and $end)";
+    // $result['sql'] []= $sql;
     $r = $db->fetch($sql);
     if (empty($r)) {
       $sql = 'insert into pet_test_row (user_id, type, time, reg_time) values('. $userid .', '. $type .', '. $time .', '. time() .')';
