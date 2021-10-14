@@ -179,8 +179,10 @@ function transfer() {
 function confirm() {
   global $data, $db, $result;
 
-  $sql = "select b.customerid, c.* from pet_test_vaccine a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id where a.id = $data->id";
-  $c = $db->fetch($sql);
+  $sql = "select a.*, c.first_name as doctor, g.name as petname, g.customerid, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_pet g on a.petid = g.id inner join pet_test_customer b on g.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.id = $data->id";
+  $c = $db->fetch();
+  $c['cometime'] = date('d/m/Y', $c['cometime']);
+  $c['calltime'] = date('d/m/Y', $c['calltime']);
 
   $userid = checkUserid();
 
@@ -189,8 +191,7 @@ function confirm() {
   $result['status'] = 1;
   $result['messenger'] = "Đã xác nhận và chuyển vào danh sách nhắc";
   $result['old'] = getOlder($c['customerid'], $data->id);  
-  $result['name'] = $c['name'];
-  $result['phone'] = $c['phone'];
+  $result['ov'] = $c;
   $result['temp'] = gettemplist();
 
   return $result;
