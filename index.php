@@ -9,21 +9,45 @@ include_once(ROOTDIR . '/server/db.php');
 include_once(ROOTDIR . '/server/global.php');
 $db = new database($config['servername'], $config['username'], $config['password'], $config['database']);
 
-$sql = "select a.*, c.name, c.phone from b3 a inner join b2 b on a.petid = b.id inner join b1 c on b.customerid = c.id";
-$list = $db->all($sql);
+/**
+ * chuyển những phiếu không thuộc bệnh viện sang cho bác sĩ
+ */
 
-foreach ($list as $row) {
-  $sql = "select a.*, b.name, b.phone from a2 a inner join a1 b on a.customerid = b.id where b.phone = '$row[phone]' and a.calltime = $row[calltime] and a.typeid = $row[diseaseid]";
-  if (empty($db->fetch($sql))) {
-    $sql = "select * from pet_test_customer where phone = '$row[phone]'";
-    if (empty($c = $db->fetch($sql))) {
-      $sql = "insert into pet_test_customer (name, phone) values('$row[name]', '$row[phone]')";
-      $c = array('id' => $db->insertid($sql));
-    }
+// $sql = "select * from pet_users where userid not in (select userid from pet_test_doctor)";
+// $doc = $db->arr($sql, 'userid');
 
-    if ($row['status'] == 1) $row['status'] = 2;
-    else if ($row['status'] == 2) $row['status'] = 3;
+// $sql = "select b.first_name from pet_test_vaccine a inner join pet_users b on a.userid = b.userid where (a.status < 3 or a.status = 5) and a.userid in (". implode(', ', $doc) .")";
+// $list = $db->arr($sql, 'first_name');
 
-    echo "insert into pet_test_vaccine (customerid, typeid, cometime, calltime, note, status, recall, userid, time, called) values ($c[id], $row[diseaseid], $row[cometime], $row[calltime], '$row[note]', $row[status], $row[calltime], $row[doctorid], $row[ctime], 0); <br>";
-  }
-}
+// $sql = "select userid from pet_test_doctor";
+// $doc = $db->arr($sql, 'userid');
+
+// $l = count($list);
+// $d = count($doc);
+// $n = (int) ($l / $d);
+
+// $c = 0;
+// for ($i = 0; $i < $l; $i++) { 
+//   if ($c < ($d - 1) && $i >= ($c + 1) * $n) $c ++;
+//   echo $doc[$c] . "<br>";
+// }
+
+/**
+ * phần dưới này chuyển hết những phiếu cũ cho người tiêm gần nhất
+ */
+
+// $sql = "select a.id, b.customerid, a.userid, c.phone, c.name from pet_test_vaccine a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id where a.status = 5 group by customerid order by calltime desc";
+// $l = $db->all($sql);
+// // lấy danh sách toàn bộ vaccine
+// // kiểm tra khách hàng, lưu lại ngày nhắc lớn nhất và người tiêm
+// $sql = "select * from pet_users";
+// $doctor = $db->obj($sql, 'userid', 'first_name');
+// foreach ($l as $row) {
+//   $sql = "select * from pet_test_vaccine a inner join pet_test_pet b on a.petid = b.id where b.customerid = $row[customerid] and userid <> $row[userid] and (status < 3 or status = 5)";
+//   $vl = $db->all($sql);
+//   foreach ($vl as $v) {
+//     // $sql = "update pet_test_vaccine set userid = ". $row['userid'] . " where id = $row[id]; <br>";
+//     // $db->query($sql);
+//     echo "Chuyển toa $row[name] ($row[phone]) của ". $doctor[$v['userid']] ." sang toa của ". $doctor[$row['userid']] . ";<br>";
+//   }
+// }
