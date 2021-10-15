@@ -352,6 +352,7 @@ function insert() {
   $sql = "insert into pet_test_vaccine (petid, typeid, cometime, calltime, note, status, called, recall, userid, time) values ($petid, $data->typeid, $data->cometime, $data->calltime, '$data->note', 0, 0, $data->calltime, $userid, ". time() .")";
   $result['status'] = 1;
   $result['vid'] = $db->insertid($sql);
+  $result['list'] = getlist();
   $result['new'] = getlist(true);
   $result['old'] = getOlder($petid, $result['vid']);
   $result['messenger'] = "Đã thêm vào danh sách nhắc";
@@ -447,6 +448,7 @@ function update() {
   $sql = "update pet_test_vaccine set petid = $petid, typeid = $data->typeid, note = '$data->note', cometime = $data->cometime, calltime = $data->calltime where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
+  $result['list'] = getlist();
   $result['new'] = getlist(true);
   $result['messenger'] = "Đã cập nhật phiếu nhắc";
   return $result;
