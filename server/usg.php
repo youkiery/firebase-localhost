@@ -32,7 +32,7 @@ function getlist($today = false) {
     $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.time between $start and ". time() . ") $xtra and a.status < 3 order by a.id desc limit 50";
     $list = dataCover($db->all($sql));
   }
-  else if (empty($data->keyword)) {
+  else if (!strlen($data->keyword)) {
     $list = array(
       0 => array(),
       array(),
@@ -107,6 +107,14 @@ function dataCover($list, $over = 0) {
 }
 
 function search() {
+  global $data, $db, $result;
+  $result['status'] = 1;
+  $result['list'] = getlist();
+
+  return $result;
+}
+
+function searchcustomer() {
   global $data, $db, $result;
   $result['status'] = 1;
   $result['list'] = getlist();
