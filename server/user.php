@@ -23,6 +23,9 @@ function session() {
     $sql = "select username, first_name, concat(last_name, ' ', first_name) as fullname from pet_users where userid = $user[userid]";
     $userinfo = $db->fetch($sql);
 
+    $sql = "select * from pet_test_doctor";
+    $doctor = $db->all($sql);
+
     $result['status'] = 1;
     $result['data'] = array(
       'userid' => $user['userid'],
@@ -31,6 +34,7 @@ function session() {
       'fullname' => $userinfo['fullname'],
       'admin' => $admin,
       'users' => $list,
+      'doctor' => $doctor,
       'today' => date('d/m/Y'),
       'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
     );
@@ -68,6 +72,9 @@ function login() {
     $sql = "select username, concat(last_name, ' ', first_name) as fullname, first_name from pet_users where userid = $user[userid]";
     $userinfo = $db->fetch($sql);
 
+    $sql = "select * from pet_test_doctor";
+    $doctor = $db->all($sql);
+
     $result['status'] = 1;
     $result['data'] = array(
       'userid' => $user['userid'],
@@ -76,6 +83,7 @@ function login() {
       'fullname' => $userinfo['fullname'],
       'admin' => $admin,
       'users' => $list,
+      'doctor' => $doctor,
       'today' => date('d/m/Y'),
       'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
     );
