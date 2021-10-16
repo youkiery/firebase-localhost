@@ -445,7 +445,7 @@ function update() {
   $data->cometime = isodatetotime($data->cometime);
   $data->calltime = isodatetotime($data->calltime);
   
-  $sql = "update pet_test_vaccine set petid = $petid, typeid = $data->typeid, note = '$data->note', cometime = $data->cometime, calltime = $data->calltime where id = $data->id";
+  $sql = "update pet_test_vaccine set petid = $petid, typeid = $data->typeid, note = '$data->note', cometime = $data->cometime, calltime = $data->calltime, recall = $data->calltime where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getlist();
