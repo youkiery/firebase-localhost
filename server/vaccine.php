@@ -312,7 +312,7 @@ function excel() {
       $sql = "select * from pet_test_customer where phone = '$row[2]'";
       if (empty($c = $db->fetch($sql))) {
         $sql = "insert into pet_test_customer (name, phone, address) values('$row[3]', '$row[2]', '')";
-        $c['id'] = $db->query($sql);
+        $c['id'] = $db->insertid($sql);
       }
 
       $sql = "select * from pet_test_pet where customerid = $c[id] and name = '$petname'";
