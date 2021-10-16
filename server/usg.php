@@ -214,7 +214,7 @@ function update() {
   if ($data->number) $recall = $data->calltime - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
   $status = intval(boolval($data->number)); // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
   
-  $sql = "update pet_test_usg set customerid = $customerid, note = '$data->note', cometime = $data->cometime, calltime = $data->calltime, recall = $data->recall, status = $status, number = $data->number where id = $data->id";
+  $sql = "update pet_test_usg set customerid = $customerid, note = '$data->note', cometime = $data->cometime, calltime = $data->calltime, recall = $recall, status = $status, number = $data->number where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getlist();
