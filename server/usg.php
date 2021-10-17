@@ -265,6 +265,20 @@ function done() {
   return $result;
 }
 
+function reprenag() {
+  global $data, $db, $result;
+
+  $time = time();
+  $recall = $time + 60 * 60 * 24 * 30 * 5;
+  $sql = "update pet_test_usg set status = 0, cometime = $time, calltime = $recall, recall = $recall, note = '$data->note' where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  $result['messenger'] = "Phiếu nhắc đã lặp lại 5 tháng sau";
+  $result['list'] = getlist();
+  
+  return $result;
+}
+
 function checkcustomer() {
   global $db, $data;
 
