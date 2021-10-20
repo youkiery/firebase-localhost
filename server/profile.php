@@ -104,7 +104,7 @@ function download() {
       else {
         $newContents = str_replace('{target'. $i .'}', '', $newContents);
         $newContents = str_replace('{res'. $i .'}', '', $newContents);
-        $newContents = str_replace('{ret'. $i .'}', '', $newContents);
+        $newContents = str_replace("{ret$i}", '', $newContents);
         $newContents = str_replace('{unit'. $i .'}', '', $newContents);
         $newContents = str_replace('{flag'. $i .'}', '', $newContents);
         $newContents = str_replace('{range'. $i .'}', '', $newContents);
