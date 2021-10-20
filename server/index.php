@@ -44,8 +44,9 @@ else {
   include_once(ROOTDIR. "/$data->type.php");
 
   $db = new database($config['servername'], $config['username'], $config['password'], $config['database']);
+  $allow = array('session', 'login', 'signip');
 
-  if ($data->action !== 'session' && $data->action !== 'login') {
+  if (in_array($data->action, $allow) == false) {
     if ($data->type !== 'user') include_once(ROOTDIR. "/user.php");
     if (check()) {
       $result['nogin'] = true;

@@ -93,6 +93,52 @@ function login() {
   return $result;
 }
 
+function signin() {
+  global $data, $db, $result;
+  $username = mb_strtolower($data->username);
+  $password = $data->password;
+
+  include_once('Encryption.php');
+  $sitekey = 'e3e052c73ae5aa678141d0b3084b9da4';
+  $crypt = new NukeViet\Core\Encryption($sitekey);
+
+  $sql = 'select userid, password from `pet_users` where LOWER(username) = "'. $username .'"';
+  if (!empty($user = $db->fetch($sql))) $result['messenger'] = 'Tên người dùng đã tồn tại';
+  else {
+    $time = time();
+    $sql = "insert into pet_users (username, first_name, last_name, password, email, photo, regdate) values ('$data->username', '$data->firstname', '$data->lastname', '". $crypt->hash_password($data->password) ."', '', '', $time)";
+    $userid = $db->insertid($sql);
+    
+    $session = randomString();
+    $admin = 0;
+
+    $sql = "select * from pet_test_user";
+    $list = $db->all($sql);
+
+    $sql = "update pet_test_user set session = '$session' where userid = $userid";
+    $db->query($sql);
+
+    $sql = "select * from pet_test_doctor";
+    $doctor = $db->all($sql);
+
+    $result['status'] = 1;
+    $result['data'] = array(
+      'userid' => $userid,
+      'username' => $data->username,
+      'name' => $data->firstname,
+      'fullname' => "$data->lastname $data->firstname",
+      'admin' => $admin,
+      'users' => $list,
+      'doctor' => $doctor,
+      'today' => date('d/m/Y'),
+      'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
+    );
+    $result['session'] = $session;
+    $result['config'] = permission($userid);
+  }
+  return $result;
+}
+
 function password() {
   global $data, $db, $result;
   include_once('Encryption.php');
