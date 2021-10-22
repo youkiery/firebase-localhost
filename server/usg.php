@@ -11,8 +11,8 @@
 $aday = 60 * 60 * 24;
 $cover = array(
   0 => array('s' => 6, 't' => 0),
-  1 => array('s' => 2, 't' => $aday * -1), 
-  2 => array('s' => 3, 't' => $aday * 7 * 3), 
+  1 => array('s' => 2, 't' => $aday * 1), 
+  2 => array('s' => 3, 't' => $aday * 7 * 4), 
   3 => array('s' => 4, 't' => $aday * 7 * 5), 
   4 => array('s' => 5, 't' => $aday * 7 * 6), 
 );
@@ -93,7 +93,7 @@ function getlist($today = false) {
   global $db, $data, $userid;
 
   $userid = checkUserid();
-  $sql = "select * from pet_test_user_per where userid = $userid and module = 'vaccine'";
+  $sql = "select * from pet_test_user_per where userid = $userid and module = 'usg'";
   $role = $db->fetch($sql);
 
   $xtra = array();
@@ -112,7 +112,7 @@ function getlist($today = false) {
   else if (!strlen($data->keyword)) {
     // danh sách nhắc hôm nay
     $lim = strtotime(date('Y/m/d')) - 1 + 60 * 60 * 24 * 3;
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status < 6 and recall < $lim order by a.recall asc";
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status < 6 and recall < $lim $xtra order by a.recall asc";
     $list = dataCover($db->all($sql));
   }
   else {
@@ -525,7 +525,7 @@ function excel() {
     }
     $exdata []= $temp;
   }
-
+  
   $l = array();
   foreach ($exdata as $row) {
     if ($row[0] == 'BVCK01025tpx') {
@@ -540,7 +540,7 @@ function excel() {
       $sql = "select * from pet_test_customer where phone = '$row[2]'";
       if (empty($c = $db->fetch($sql))) {
         $sql = "insert into pet_test_customer (name, phone, address) values('$row[3]', '$row[2]', '')";
-        $c['id'] = $db->query($sql);
+        $c['id'] = $db->insertid($sql);
       }
 
       $datetime = explode(' ', $row[4]);
@@ -549,10 +549,27 @@ function excel() {
 
       $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], ". $doctor[$row[1]] .", $cometime, $calltime, $calltime, '$number', 8, '', ". time() .", 0)";
       $db->query($sql);
-      // echo "$sql <br>";
     }
   }
   $result['list'] = gettemplist();
+
+  $sql = "select userid, count(*) as num from pet_test_usg where status = 8 group by userid order by userid";
+  $u = $db->all($sql);
+  foreach ($u as $row) {
+    $time = time();
+    $sql = "insert into pet_test_notify (userid, status, content, module, time) values($row[userid], 0, 'Có $row[num] phiếu tạm siêu âm cần xác nhận', 'usg', $time)";
+    $db->query($sql);
+  }
+
+  $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3;
+  $sql = "select userid, count(*) as num from pet_test_usg where status < 6 and time < $lim group by userid order by userid";
+  $u = $db->all($sql);
+  foreach ($u as $row) {
+    $time = time();
+    $sql = "insert into pet_test_notify (userid, status, content, module, time) values($row[userid], 0, 'Còn $row[num] phiếu nhắc siêu âm cần phải gọi', 'usg', $time)";
+    $db->query($sql);
+  }
+
   $result['messenger'] = "Đã chuyển dữ liệu Excel thành phiếu nhắc";
   return $result;
 }

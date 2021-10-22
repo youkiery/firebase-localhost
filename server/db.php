@@ -44,7 +44,7 @@ class Database {
     return $list;
   }
 
-  public function num_rows($sql) {
+  public function count($sql) {
     $query = $this->db->query($sql);
     return $query->num_rows;
   }
