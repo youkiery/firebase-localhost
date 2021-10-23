@@ -111,9 +111,16 @@ function getlist($today = false) {
   }
   else if (!strlen($data->keyword)) {
     // danh sách nhắc hôm nay
-    $lim = strtotime(date('Y/m/d')) - 1 + 60 * 60 * 24 * 3;
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status < 6 and recall < $lim $xtra order by a.recall asc";
-    $list = dataCover($db->all($sql));
+    $list = array(0 => array(), array(), array());
+    $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 60 - 1;
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 0 and a.status < 3) and recall < $lim $xtra order by a.recall asc";
+    $list[0] = dataCover($db->all($sql));
+    
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 2 and a.status < 6) and recall < $lim $xtra order by a.recall asc";
+    $list[1] = dataCover($db->all($sql));
+    
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status = 0 and recall < $lim $xtra order by a.recall asc";
+    $list[2] = dataCover($db->all($sql));
   }
   else {
     // danh sách tìm kiếm khách hàng
