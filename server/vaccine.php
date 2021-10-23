@@ -320,6 +320,10 @@ function excel() {
         $sql = "insert into pet_test_pet (name, customerid) values ('$petname', $c[id])";
         $p['id'] = $db->insertid($sql);
       }
+
+      // thay đổi trạng thái siêu âm
+      $sql = "update pet_test_usg set status = 7 where customerid = $c[id] and status = 6";
+      $db->query($sql);
   
       $datetime = explode(' ', $row[4]);
       $date = explode('/', $datetime[0]);

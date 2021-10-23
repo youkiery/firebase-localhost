@@ -1,20 +1,22 @@
 <?php
-// 0: 'Nhắc tới ngày sa lơ',
-// 1: 'Tư vấn trước sinh',
-// 2: 'Ngày sinh',
-// 3: 'Nhắc sổ giun lần 1',
-// 4: 'Nhắc sổ giun lần 2',
+// 0: 'Nhắc tiêm phòng trước salơ',
+// 1: 'Nhắc test Progesterone',
+// 2: 'Tư vấn trước sinh',
+// 3: 'Ngày sinh',
+// 4: 'Nhắc sổ giun lần 1',
 // 5: 'Nhắc tiêm vaccine',
-// 6: 'Đã hoàn thành',
-// 7: 'Không theo dõi nữa',
-// 8: 'Phiếu tạm',
+// 6: 'Đã gọi tiêm vaccine',
+// 7: 'Đã hoàn thành',
+// 8: 'Không theo dõi nữa',
+// 9: 'Phiếu tạm',
 $aday = 60 * 60 * 24;
 $cover = array(
-  0 => array('s' => 6, 't' => 0),
-  1 => array('s' => 2, 't' => $aday * 1), 
-  2 => array('s' => 3, 't' => $aday * 7 * 4), 
+  0 => array('s' => 1, 't' => $aday * 30 * 6),
+  1 => array('s' => 1, 't' => $aday * 30 * 6),
+  2 => array('s' => 3, 't' => $aday * 1), 
   3 => array('s' => 4, 't' => $aday * 7 * 5), 
   4 => array('s' => 5, 't' => $aday * 7 * 6), 
+  5 => array('s' => 6, 't' => 0), 
 );
 
 function auto() {
@@ -47,7 +49,7 @@ function gettemplist() {
   if (count($xtra)) $xtra = "and".  implode(" and ", $xtra);
   else $xtra = "";
 
-  $sql = "select a.*, d.id as customerid, d.name, d.phone, d.address, c.first_name as doctor from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer d on a.customerid = d.id where a.status = 8 $xtra order by a.id desc";
+  $sql = "select a.*, d.id as customerid, d.name, d.phone, d.address, c.first_name as doctor from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer d on a.customerid = d.id where a.status = 9 $xtra order by a.id desc";
   $v = $db->all($sql);
   $e = array();
   $l = array();
@@ -109,23 +111,23 @@ function getlist($today = false) {
     $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.time between $start and ". time() . ") $xtra and a.status < 6 order by a.id desc";
     $list = dataCover($db->all($sql));
   }
-  else if (!strlen($data->keyword)) {
+  else if (empty($data->keyword)) {
     // danh sách nhắc hôm nay
     $list = array(0 => array(), array(), array());
-    $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 60 - 1;
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 0 and a.status < 3) and recall < $lim $xtra order by a.recall asc";
+    $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3 - 1;
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 1 and a.status < 4) and recall < $lim $xtra order by a.recall asc";
     $list[0] = dataCover($db->all($sql));
     
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 2 and a.status < 6) and recall < $lim $xtra order by a.recall asc";
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 3 and a.status < 7) and recall < $lim $xtra order by a.recall asc";
     $list[1] = dataCover($db->all($sql));
     
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status = 0 and recall < $lim $xtra order by a.recall asc";
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status < 2 and recall < $lim $xtra order by a.recall asc";
     $list[2] = dataCover($db->all($sql));
   }
   else {
     // danh sách tìm kiếm khách hàng
     $key = trim($data->keyword);
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (b.name like '%$key%' or b.phone like '%$key%') and status < 8 order by a.calltime desc, a.recall desc";
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (b.name like '%$key%' or b.phone like '%$key%') and status < 8 order by a.recall desc";
     $list = dataCover($db->all($sql));
   }
 
@@ -196,7 +198,7 @@ function insert() {
     // nếu không, đặt 5 tháng sau nhắc kỳ salơ
   $recall = $data->calltime + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
   if ($data->number) $recall = $data->calltime - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
-  $status = intval(boolval($data->number)); // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
+  $status = intval(boolval($data->number)) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
 
   $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values ($customerid, $userid, $data->cometime, $data->calltime, $recall, $data->number, $status, '$data->note', ". time() .", 0)";
   $result['status'] = 1;
@@ -219,7 +221,7 @@ function update() {
   // nếu không, đặt 5 tháng sau nhắc kỳ salơ
   $recall = $data->calltime + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
   if ($data->number) $recall = $data->calltime - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
-  $status = intval(boolval($data->number)); // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
+  $status = intval(boolval($data->number)) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
   
   $sql = "update pet_test_usg set customerid = $customerid, note = '$data->note', cometime = $data->cometime, calltime = $data->calltime, recall = $recall, status = $status, number = $data->number where id = $data->id";
   $db->query($sql);
@@ -227,6 +229,23 @@ function update() {
   $result['list'] = getlist();
   $result['new'] = getlist(true);
   $result['messenger'] = "Đã cập nhật phiếu nhắc";
+  return $result;
+}
+
+function birth() {
+  global $data, $db, $result, $cover;
+
+  $time = explode('-', $data->calltime);
+  $data->calltime = totime("$time[2]/$time[1]/$time[0]");
+  $recall = $data->calltime + 60 * 60 * 24 * 7 * 5;
+  $status = 4;
+
+  $sql = "update pet_test_usg set status = $status, note = '". $data->note ."', calltime = $data->calltime, recall = $recall where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  $result['messenger'] = "Đã thay đổi trạng thái";
+  $result['list'] = getlist();
+
   return $result;
 }
 
@@ -251,7 +270,7 @@ function called() {
 function dead() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_usg set status = 7, note = '$data->note' where id = $data->id";
+  $sql = "update pet_test_usg set status = 8, note = '$data->note' where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
   $result['messenger'] = "Phiếu nhắc đã không được theo dõi nữa";
@@ -263,7 +282,7 @@ function dead() {
 function done() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_usg set status = 6, note = '$data->note' where id = $data->id";
+  $sql = "update pet_test_usg set status = 7, note = '$data->note' where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
   $result['messenger'] = "Phiếu nhắc đã không được theo dõi nữa";
@@ -272,7 +291,7 @@ function done() {
   return $result;
 }
 
-function reprenag() {
+function repregnant() {
   global $data, $db, $result;
 
   $time = time();
@@ -355,7 +374,7 @@ function doneall() {
     // nếu không, đặt 5 tháng sau nhắc kỳ salơ
     $recall = $u['calltime'] + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
     if ($u['number']) $recall = $u['calltime'] - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
-    $status = intval(boolval($u['number'])); // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
+    $status = intval(boolval($u['number'])) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
 
     $sql = "update pet_test_usg set status = $status, recall = $recall, utemp = 1, userid = $userid, time = $time where id = $id";
     $db->query($sql);
@@ -410,7 +429,7 @@ function updatehistory() {
   // nếu không, đặt 5 tháng sau nhắc kỳ salơ
   $recall = $data->calltime + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
   if ($data->number) $recall = $data->calltime - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
-  $status = intval(boolval($data->number)); // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
+  $status = intval(boolval($data->number)) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
 
   $sql = "update pet_test_usg set customerid = $customerid, cometime = $data->cometime, calltime = $data->calltime, status = $status, recall = $recall, note = '$data->note', userid = $userid, number = $data->number, utemp = 1, time = ". time() ." where id = $data->id";
   $db->query($sql);
@@ -448,7 +467,7 @@ function confirm() {
   // nếu không, đặt 5 tháng sau nhắc kỳ salơ
   $recall = $c['calltime'] + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
   if ($c['number']) $recall = $c['calltime'] - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
-  $status = intval(boolval($c['number'])); // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
+  $status = intval(boolval($c['number'])) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
   $userid = checkUserid();
 
   $sql = "update pet_test_usg set status = $status, utemp = 1, recall = $recall, userid = $userid, time = ". time() ." where id = $data->id";
@@ -554,13 +573,14 @@ function excel() {
       $date = explode('/', $datetime[0]);
       $cometime = strtotime("$date[2]/$date[1]/$date[0]");
 
-      $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], ". $doctor[$row[1]] .", $cometime, $calltime, $calltime, '$number', 8, '', ". time() .", 0)";
+      $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], ". $doctor[$row[1]] .", $cometime, $calltime, $calltime, '$number', 9, '', ". time() .", 0)";
+      // echo "$sql<br>";
       $db->query($sql);
     }
   }
   $result['list'] = gettemplist();
 
-  $sql = "select userid, count(*) as num from pet_test_usg where status = 8 group by userid order by userid";
+  $sql = "select userid, count(*) as num from pet_test_usg where status = 9 group by userid order by userid";
   $u = $db->all($sql);
   foreach ($u as $row) {
     $time = time();
