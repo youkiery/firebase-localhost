@@ -8,6 +8,17 @@ function check() {
   return false;
 }
 
+function notify() {
+  global $data, $db, $result;
+
+  $userid = checkUserid();
+  $sql = "update pet_test_notify set status = 1 where userid = $userid and status = 0";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  return $result;
+}
+
 function session() {
   global $data, $db, $result;
 
@@ -25,6 +36,14 @@ function session() {
 
     $sql = "select * from pet_test_doctor";
     $doctor = $db->all($sql);
+
+    $sql = "select * from pet_test_notify where userid = $user[userid] order by id desc limit 30";
+    $notify = $db->all($sql);
+    $result['notification'] = $notify;
+
+    $sql = "select * from pet_test_notify where userid = $user[userid] and status = 0 order by id desc limit 30";
+    $notify = $db->count($sql);
+    $result['notify'] = $notify;
 
     $result['status'] = 1;
     $result['data'] = array(
@@ -75,6 +94,14 @@ function login() {
     $sql = "select * from pet_test_doctor";
     $doctor = $db->all($sql);
 
+    $sql = "select * from pet_test_notify where userid = $user[userid] order by id desc limit 30";
+    $notify = $db->all($sql);
+    $result['notification'] = $notify;
+
+    $sql = "select * from pet_test_notify where userid = $user[userid] and status = 0 order by id desc limit 30";
+    $notify = $db->count($sql);
+    $result['notify'] = $notify;
+
     $result['status'] = 1;
     $result['data'] = array(
       'userid' => $user['userid'],
@@ -121,6 +148,8 @@ function signin() {
     $sql = "select * from pet_test_doctor";
     $doctor = $db->all($sql);
 
+    $result['notification'] = array();
+    $result['notify'] = 0;
     $result['status'] = 1;
     $result['data'] = array(
       'userid' => $userid,
