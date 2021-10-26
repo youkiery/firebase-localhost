@@ -25,57 +25,66 @@ function session() {
   $sql = "select * from pet_test_user where session = '$data->sess'";
 
   if (!empty($user = $db->fetch($sql))) {
-    $admin = 0;
-    if ($user['userid'] == 1 || $user['userid'] == 5) $admin = 1;
-
-    $sql = "select * from pet_test_user";
-    $list = $db->all($sql);
-
-    $sql = "select username, first_name, concat(last_name, ' ', first_name) as fullname from pet_users where userid = $user[userid]";
-    $userinfo = $db->fetch($sql);
-
-    $sql = "select * from pet_test_doctor";
-    $doctor = $db->all($sql);
-
-    $sql = "select * from pet_test_notify where userid = $user[userid] order by id desc limit 30";
-    $notify = $db->all($sql);
-    $result['notification'] = $notify;
-
-    $sql = "select * from pet_test_notify where userid = $user[userid] and status = 0 order by id desc limit 30";
-    $notify = $db->count($sql);
-    $result['notify'] = $notify;
-
-    $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3 - 1;
-    $sql = "select * from pet_test_usg where status < 7 and recall < $lim and userid = $user[userid]";
-    $uc = $db->count($sql);
-    $sql = "select * from pet_test_usg where status = 9 and userid = $user[userid]";
-    $ut = $db->count($sql);
-
-    $sql = "select * from pet_test_vaccine where status < 2 and recall < $lim and userid = $user[userid]";
-    $vc = $db->count($sql);
-    $sql = "select * from pet_test_vaccine where status = 5 and userid = $user[userid]";
-    $vt = $db->count($sql);
-
     $result['status'] = 1;
-    $result['data'] = array(
-      'userid' => $user['userid'],
-      'username' => $userinfo['username'],
-      'name' => $userinfo['first_name'],
-      'fullname' => $userinfo['fullname'],
-      'admin' => $admin,
-      'users' => $list,
-      'doctor' => $doctor,
-      'today' => date('d/m/Y'),
-      'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
-      'usg' => array('c' => $uc, 't' => $ut),
-      'vaccine' => array('c' => $vc, 't' => $vt),
-    );
+    $result['data'] = getinitdata($user['userid']);
     $result['config'] = permission($user['userid']);
   }
   else {
     $result['messenger'] = "Phiên đăng nhập hết hạn";
   }
   return $result;
+}
+
+function getinitdata($userid) {
+  global $db;
+  $admin = 0;
+  if ($userid == 1 || $userid == 5) $admin = 1;
+
+  $sql = "select * from pet_test_user";
+  $list = $db->all($sql);
+
+  $sql = "select username, first_name, concat(last_name, ' ', first_name) as fullname from pet_users where userid = $userid";
+  $userinfo = $db->fetch($sql);
+
+  $sql = "select * from pet_test_doctor";
+  $doctor = $db->all($sql);
+
+  $sql = "select * from pet_test_type where active = 1";
+  $type = $db->all($sql);
+
+  $sql = "select * from pet_test_notify where userid = $userid order by id desc limit 30";
+  $notify = $db->all($sql);
+  $result['notification'] = $notify;
+
+  $sql = "select * from pet_test_notify where userid = $userid and status = 0 order by id desc limit 30";
+  $notify = $db->count($sql);
+  $result['notify'] = $notify;
+
+  $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3 - 1;
+  $sql = "select * from pet_test_usg where status < 7 and recall < $lim and userid = $userid";
+  $uc = $db->count($sql);
+  $sql = "select * from pet_test_usg where status = 9 and userid = $userid";
+  $ut = $db->count($sql);
+
+  $sql = "select * from pet_test_vaccine where status < 2 and recall < $lim and userid = $userid";
+  $vc = $db->count($sql);
+  $sql = "select * from pet_test_vaccine where status = 5 and userid = $userid";
+  $vt = $db->count($sql);
+
+  return array(
+    'userid' => $userid,
+    'username' => $userinfo['username'],
+    'name' => $userinfo['first_name'],
+    'fullname' => $userinfo['fullname'],
+    'admin' => $admin,
+    'users' => $list,
+    'doctor' => $doctor,
+    'type' => $type,
+    'today' => date('d/m/Y'),
+    'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
+    'usg' => array('c' => $uc, 't' => $ut),
+    'vaccine' => array('c' => $vc, 't' => $vt),
+  );
 }
 
 function login() {
@@ -92,55 +101,11 @@ function login() {
   else if (!$crypt->validate_password($password, $user['password'])) $result['messenger'] = 'Sai mật khẩu';
   else {
     $session = randomString();
-    $admin = 0;
-    if ($user['userid'] == 1 || $user['userid'] == 5) $admin = 1;
-
-    $sql = "select * from pet_test_user";
-    $list = $db->all($sql);
-
     $sql = "update pet_test_user set session = '$session' where userid = $user[userid]";
     $db->query($sql);
-
-    $sql = "select username, concat(last_name, ' ', first_name) as fullname, first_name from pet_users where userid = $user[userid]";
-    $userinfo = $db->fetch($sql);
-
-    $sql = "select * from pet_test_doctor";
-    $doctor = $db->all($sql);
-
-    $sql = "select * from pet_test_notify where userid = $user[userid] order by id desc limit 30";
-    $notify = $db->all($sql);
-    $result['notification'] = $notify;
-
-    $sql = "select * from pet_test_notify where userid = $user[userid] and status = 0 order by id desc limit 30";
-    $notify = $db->count($sql);
-    $result['notify'] = $notify;
-
-    $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3 - 1;
-    $sql = "select * from pet_test_usg where status < 7 and recall < $lim and userid = $user[userid]";
-    $uc = $db->count($sql);
-    $sql = "select * from pet_test_usg where status = 9 and userid = $user[userid]";
-    $ut = $db->count($sql);
-
-    $sql = "select * from pet_test_vaccine where status < 2 and recall < $lim and userid = $user[userid]";
-    $vc = $db->count($sql);
-    $sql = "select * from pet_test_vaccine where status = 5 and userid = $user[userid]";
-    $vt = $db->count($sql);
-
     $result['status'] = 1;
-    $result['data'] = array(
-      'userid' => $user['userid'],
-      'username' => $userinfo['username'],
-      'name' => $userinfo['first_name'],
-      'fullname' => $userinfo['fullname'],
-      'admin' => $admin,
-      'users' => $list,
-      'doctor' => $doctor,
-      'today' => date('d/m/Y'),
-      'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
-      'usg' => array('c' => $uc, 't' => $ut),
-      'vaccine' => array('c' => $vc, 't' => $vt),
-    );
     $result['session'] = $session;
+    $result['data'] = getinitdata($user['userid']);
     $result['config'] = permission($user['userid']);
   }
   return $result;
@@ -163,45 +128,12 @@ function signin() {
     $userid = $db->insertid($sql);
     
     $session = randomString();
-    $admin = 0;
-
-    $sql = "select * from pet_test_user";
-    $list = $db->all($sql);
-
     $sql = "update pet_test_user set session = '$session' where userid = $userid";
     $db->query($sql);
 
-    $sql = "select * from pet_test_doctor";
-    $doctor = $db->all($sql);
-
-    $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3 - 1;
-    $sql = "select * from pet_test_usg where status < 7 and recall < $lim and userid = $user[userid]";
-    $uc = $db->count($sql);
-    $sql = "select * from pet_test_usg where status = 9 and userid = $user[userid]";
-    $ut = $db->count($sql);
-
-    $sql = "select * from pet_test_vaccine where status < 2 and recall < $lim and userid = $user[userid]";
-    $vc = $db->count($sql);
-    $sql = "select * from pet_test_vaccine where status = 5 and userid = $user[userid]";
-    $vt = $db->count($sql);
-
-    $result['notification'] = array();
-    $result['notify'] = 0;
     $result['status'] = 1;
-    $result['data'] = array(
-      'userid' => $userid,
-      'username' => $data->username,
-      'name' => $data->firstname,
-      'fullname' => "$data->lastname $data->firstname",
-      'admin' => $admin,
-      'users' => $list,
-      'doctor' => $doctor,
-      'today' => date('d/m/Y'),
-      'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
-      'usg' => array('c' => 0, 't' => 0),
-      'vaccine' => array('c' => 0, 't' => 0),
-    );
     $result['session'] = $session;
+    $result['data'] = getinitdata($userid);
     $result['config'] = permission($userid);
   }
   return $result;
