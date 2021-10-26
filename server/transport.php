@@ -10,11 +10,11 @@ function init() {
 function insert() {
   global $data, $db, $result;
  
-  $sql = "insert into pet_test_transport (name) values('$data->name')";
+  $sql = "insert into pet_test_transport (name, phone, address) values('$data->name', '$data->phone', '$data->address')";
   $itemid = $db->insertid($sql);
 
   foreach ($data->detail as $detail) {
-    $sql = "insert into pet_test_transport_detail (itemid, name, price) values($itemid, '$detail->name', '$detail->price')";
+    $sql = "insert into pet_test_config (module, name, value) values('transport', '$itemid', '$detail->name')";
     $db->query($sql);
   }
  
@@ -28,7 +28,7 @@ function remove() {
 
   $sql = "delete from pet_test_transport where id = $data->id";
   $db->query($sql);
-  $sql = "delete from pet_test_transport_detail where itemid = $data->id";
+  $sql = "delete from pet_test_config where module = 'transport' and name = $data->id";
   $db->query($sql);
 
   $result['status'] = 1;
@@ -42,11 +42,11 @@ function update() {
   $sql = "delete from pet_test_transport_detail where itemid = $data->id";
   $db->query($sql);
 
-  $sql = "update pet_test_transport set name = '$data->name' where id = $data->id";
+  $sql = "delete from pet_test_config where module = 'transport' and name = $data->id";
   $db->query($sql);
 
   foreach ($data->detail as $detail) {
-    $sql = "insert into pet_test_transport_detail (itemid, name, price) values($data->id, '$detail->name', '$detail->price')";
+    $sql = "insert into pet_test_config (module, name, value) values('transport', '$data->id', '$detail->name')";
     $db->query($sql);
   }
   
@@ -59,13 +59,14 @@ function getlist() {
   global $db, $data;
 
   $xtra = "";
-  if (isset($data->{'keyword'})) $xtra = "where name like '%$data->keyword%'";
-  $sql = "select * from pet_test_transport $xtra order by id desc";
+  if (isset($data->{'keyword'})) $xtra = "and b.value like '%$data->keyword%'";
+  $sql = "select a.* from pet_test_transport a inner join pet_test_config b on a.id = b.name $xtra group by a.id order by a.id desc";
   $pl = $db->all($sql);
 
   foreach ($pl as $i => $p) {
-    $sql = "select * from pet_test_transport_detail where itemid = '$p[id]' order by id asc";
+    $sql = "select value as name from pet_test_config where module = 'transport' and name = '$p[id]' order by id desc";
     $pl[$i]['detail'] = $db->all($sql);
+    $pl[$i]['detailcover'] = implode(', ', $db->arr($sql, 'name'));
   }
   return $pl;
 }
