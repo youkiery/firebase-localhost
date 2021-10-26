@@ -10,11 +10,11 @@ function init() {
 function insert() {
   global $data, $db, $result;
  
-  $sql = "insert into pet_test_price (name) values('$data->name')";
+  $sql = "insert into pet_test_transport (name) values('$data->name')";
   $itemid = $db->insertid($sql);
 
   foreach ($data->detail as $detail) {
-    $sql = "insert into pet_test_price_detail (itemid, name, price) values($itemid, '$detail->name', '$detail->price')";
+    $sql = "insert into pet_test_transport_detail (itemid, name, price) values($itemid, '$detail->name', '$detail->price')";
     $db->query($sql);
   }
  
@@ -26,9 +26,9 @@ function insert() {
 function remove() {
   global $data, $db, $result;
 
-  $sql = "delete from pet_test_price where id = $data->id";
+  $sql = "delete from pet_test_transport where id = $data->id";
   $db->query($sql);
-  $sql = "delete from pet_test_price_detail where itemid = $data->id";
+  $sql = "delete from pet_test_transport_detail where itemid = $data->id";
   $db->query($sql);
 
   $result['status'] = 1;
@@ -39,14 +39,14 @@ function remove() {
 function update() {
   global $data, $db, $result;
 
-  $sql = "delete from pet_test_price_detail where itemid = $data->id";
+  $sql = "delete from pet_test_transport_detail where itemid = $data->id";
   $db->query($sql);
 
-  $sql = "update pet_test_price set name = '$data->name' where id = $data->id";
+  $sql = "update pet_test_transport set name = '$data->name' where id = $data->id";
   $db->query($sql);
 
   foreach ($data->detail as $detail) {
-    $sql = "insert into pet_test_price_detail (itemid, name, price) values($data->id, '$detail->name', '$detail->price')";
+    $sql = "insert into pet_test_transport_detail (itemid, name, price) values($data->id, '$detail->name', '$detail->price')";
     $db->query($sql);
   }
   
@@ -60,11 +60,11 @@ function getlist() {
 
   $xtra = "";
   if (isset($data->{'keyword'})) $xtra = "where name like '%$data->keyword%'";
-  $sql = "select * from pet_test_price $xtra order by id desc";
+  $sql = "select * from pet_test_transport $xtra order by id desc";
   $pl = $db->all($sql);
 
   foreach ($pl as $i => $p) {
-    $sql = "select * from pet_test_price_detail where itemid = '$p[id]' order by id asc";
+    $sql = "select * from pet_test_transport_detail where itemid = '$p[id]' order by id asc";
     $pl[$i]['detail'] = $db->all($sql);
   }
   return $pl;

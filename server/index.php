@@ -25,13 +25,7 @@ define('DIR', str_replace('/server', '/', ROOTDIR));
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 $inputJSON = file_get_contents('php://input');
 $data = json_decode($inputJSON);
-if (!empty($_POST['action']) && !empty($_POST['type']) && !empty($_POST['session'])) {
-  $data = (object) array(
-    'session' => $_POST['session'],
-    'action' => $_POST['action'],
-    'type' => $_POST['type']
-  );
-}
+if (!empty($_POST['action']) && !empty($_POST['type']) && !empty($_POST['session'])) $data = (object) $_POST;
 
 $result = array(
   'status' => 0

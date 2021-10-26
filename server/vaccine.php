@@ -332,8 +332,29 @@ function excel() {
       $sql = "insert into pet_test_vaccine (petid, typeid, cometime, calltime, note, status, recall, userid, time, called) values($p[id], ". $type[$row[0]] .", $cometime, $calltime, '', 5, $calltime, ". $doctor[$row[1]] .", ". time() .", 0)";
       $db->query($sql);
     }
+    else if ($row[0] == 'BVCK01025tpx') {
+      $dat = explode(';', $row[5]);
+      if (count($dat) >= 2) $number = intval($dat[1]);
+      else $number = 0;
+      $date = explode('/', $dat[0]);
+
+      if (count($date) == 3) $calltime = strtotime("$date[2]/$date[1]/$date[0]");
+      else $calltime = 0;
+      
+      $sql = "select * from pet_test_customer where phone = '$row[2]'";
+      if (empty($c = $db->fetch($sql))) {
+        $sql = "insert into pet_test_customer (name, phone, address) values('$row[3]', '$row[2]', '')";
+        $c['id'] = $db->insertid($sql);
+      }
+
+      $datetime = explode(' ', $row[4]);
+      $date = explode('/', $datetime[0]);
+      $cometime = strtotime("$date[2]/$date[1]/$date[0]");
+
+      $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], ". $doctor[$row[1]] .", $cometime, $calltime, $calltime, '$number', 9, '', ". time() .", 0)";
+      $db->query($sql);
+    }
   }
-  $result['list'] = gettemplist();
 
   $sql = "select userid, count(*) as num from pet_test_vaccine where status = 5 group by userid order by userid";
   $u = $db->all($sql);
@@ -349,6 +370,23 @@ function excel() {
   foreach ($u as $row) {
     $time = time();
     $sql = "insert into pet_test_notify (userid, status, content, module, time) values($row[userid], 0, 'Còn $row[num] phiếu nhắc vaccine cần phải gọi', 'vaccine', $time)";
+    $db->query($sql);
+  }
+
+  $sql = "select userid, count(*) as num from pet_test_usg where status = 9 group by userid order by userid";
+  $u = $db->all($sql);
+  foreach ($u as $row) {
+    $time = time();
+    $sql = "insert into pet_test_notify (userid, status, content, module, time) values($row[userid], 0, 'Có $row[num] phiếu tạm siêu âm cần xác nhận', 'usg', $time)";
+    $db->query($sql);
+  }
+
+  $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3;
+  $sql = "select userid, count(*) as num from pet_test_usg where status < 6 and time < $lim group by userid order by userid";
+  $u = $db->all($sql);
+  foreach ($u as $row) {
+    $time = time();
+    $sql = "insert into pet_test_notify (userid, status, content, module, time) values($row[userid], 0, 'Còn $row[num] phiếu nhắc siêu âm cần phải gọi', 'usg', $time)";
     $db->query($sql);
   }
 

@@ -497,6 +497,7 @@ function excel() {
 
   $dir = str_replace('/server', '/', ROOTDIR);
   // $des = $dir ."export/DanhSachChiTietHoaDon_KV16102021-152929-688-1634373156.xlsx";
+  $result['list'] = gettemplist();
 
   $raw = $_FILES['file']['tmp_name'];
   $ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
@@ -598,6 +599,7 @@ function excel() {
   }
 
   $result['messenger'] = "Đã chuyển dữ liệu Excel thành phiếu nhắc";
+  $result['status'] = 1;
   return $result;
 }
 

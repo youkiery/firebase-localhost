@@ -45,6 +45,17 @@ function session() {
     $notify = $db->count($sql);
     $result['notify'] = $notify;
 
+    $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3 - 1;
+    $sql = "select * from pet_test_usg where status < 7 and recall < $lim and userid = $user[userid]";
+    $uc = $db->count($sql);
+    $sql = "select * from pet_test_usg where status = 9 and userid = $user[userid]";
+    $ut = $db->count($sql);
+
+    $sql = "select * from pet_test_vaccine where status < 2 and recall < $lim and userid = $user[userid]";
+    $vc = $db->count($sql);
+    $sql = "select * from pet_test_vaccine where status = 5 and userid = $user[userid]";
+    $vt = $db->count($sql);
+
     $result['status'] = 1;
     $result['data'] = array(
       'userid' => $user['userid'],
@@ -56,6 +67,8 @@ function session() {
       'doctor' => $doctor,
       'today' => date('d/m/Y'),
       'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
+      'usg' => array('c' => $uc, 't' => $ut),
+      'vaccine' => array('c' => $vc, 't' => $vt),
     );
     $result['config'] = permission($user['userid']);
   }
@@ -102,6 +115,17 @@ function login() {
     $notify = $db->count($sql);
     $result['notify'] = $notify;
 
+    $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3 - 1;
+    $sql = "select * from pet_test_usg where status < 7 and recall < $lim and userid = $user[userid]";
+    $uc = $db->count($sql);
+    $sql = "select * from pet_test_usg where status = 9 and userid = $user[userid]";
+    $ut = $db->count($sql);
+
+    $sql = "select * from pet_test_vaccine where status < 2 and recall < $lim and userid = $user[userid]";
+    $vc = $db->count($sql);
+    $sql = "select * from pet_test_vaccine where status = 5 and userid = $user[userid]";
+    $vt = $db->count($sql);
+
     $result['status'] = 1;
     $result['data'] = array(
       'userid' => $user['userid'],
@@ -113,6 +137,8 @@ function login() {
       'doctor' => $doctor,
       'today' => date('d/m/Y'),
       'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
+      'usg' => array('c' => $uc, 't' => $ut),
+      'vaccine' => array('c' => $vc, 't' => $vt),
     );
     $result['session'] = $session;
     $result['config'] = permission($user['userid']);
@@ -148,6 +174,17 @@ function signin() {
     $sql = "select * from pet_test_doctor";
     $doctor = $db->all($sql);
 
+    $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3 - 1;
+    $sql = "select * from pet_test_usg where status < 7 and recall < $lim and userid = $user[userid]";
+    $uc = $db->count($sql);
+    $sql = "select * from pet_test_usg where status = 9 and userid = $user[userid]";
+    $ut = $db->count($sql);
+
+    $sql = "select * from pet_test_vaccine where status < 2 and recall < $lim and userid = $user[userid]";
+    $vc = $db->count($sql);
+    $sql = "select * from pet_test_vaccine where status = 5 and userid = $user[userid]";
+    $vt = $db->count($sql);
+
     $result['notification'] = array();
     $result['notify'] = 0;
     $result['status'] = 1;
@@ -161,6 +198,8 @@ function signin() {
       'doctor' => $doctor,
       'today' => date('d/m/Y'),
       'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
+      'usg' => array('c' => 0, 't' => 0),
+      'vaccine' => array('c' => 0, 't' => 0),
     );
     $result['session'] = $session;
     $result['config'] = permission($userid);

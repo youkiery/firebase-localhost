@@ -9,6 +9,16 @@ include_once(ROOTDIR . '/server/db.php');
 include_once(ROOTDIR . '/server/global.php');
 $db = new database($config['servername'], $config['username'], $config['password'], $config['database']);
 
+$sql = "select id, name from province";
+$pl = $db->all($sql);
+
+foreach ($pl as $key => $p) {
+  $sql = "select name from district where provinceid = $p[id]";
+  $pl[$key]['d'] = $db->arr($sql, 'name');
+}
+
+echo json_encode($pl);die();
+
 /**
  * chuyển những phiếu không thuộc bệnh viện sang cho bác sĩ
  */
