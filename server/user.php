@@ -71,6 +71,9 @@ function getinitdata($userid) {
   $sql = "select * from pet_test_vaccine where status = 5 and userid = $userid";
   $vt = $db->count($sql);
 
+  $sql = "select id, value, 0 as `check` from pet_test_config where module = 'spa'";
+  $spa = $db->all($sql);
+
   return array(
     'userid' => $userid,
     'username' => $userinfo['username'],
@@ -80,6 +83,7 @@ function getinitdata($userid) {
     'users' => $list,
     'doctor' => $doctor,
     'type' => $type,
+    'spa' => $spa,
     'today' => date('d/m/Y'),
     'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
     'usg' => array('c' => $uc, 't' => $ut),

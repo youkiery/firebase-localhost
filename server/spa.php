@@ -22,7 +22,6 @@ function init() {
 
   $result['status'] = 1;
   $result['time'] = time();
-  $result['type'] = gettypeobj();
   $result['list'] = getList();
   return $result;
 }
@@ -52,6 +51,39 @@ function auto() {
 
   return $result;
 }
+
+function removetype() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_config set active = 0 where id = $db->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = gettypelist();
+  return $result;
+}
+
+function updatetype() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_config set value = '$data->name' where id = $db->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = gettypelist();
+  return $result;
+}
+
+// function insert() {
+//   global $data, $db, $result;
+
+//   $sql = "insert into pet_test_config (module, name, value) values('spa', '', '$data->name')";
+//   $db->query($sql);
+
+//   $result['status'] = 1;
+//   $result['list'] = gettypelist();
+//   return $result;
+// }
 
 function remove() {
   global $data, $db, $result;
@@ -375,15 +407,10 @@ function getList() {
   return $list;
 }
 
-function gettypeobj() {
+function gettypelist() {
   global $db;
-  $list = array();
-  $sql = "select id, value from pet_test_config where module = 'spa'";
-  $query = $db->query($sql);
 
-  while ($row = $query->fetch_assoc()) {
-    $row ['check'] = 0;
-    $list[]= $row;
-  }
-  return $list;
+  $sql = "select id, value, 0 as check from pet_test_config where module = 'spa'";
+  $spa = $db->all($sql);
+  return $spa;
 }
