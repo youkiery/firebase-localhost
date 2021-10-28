@@ -52,10 +52,21 @@ function auto() {
   return $result;
 }
 
+function toggle() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_config set module = 'spa-deleted' where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = gettypelist();
+  return $result;
+}
+
 function removetype() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_config set active = 0 where id = $db->id";
+  $sql = "update pet_test_config set module = 'spa-deleted' where id = $data->id";
   $db->query($sql);
 
   $result['status'] = 1;
@@ -66,7 +77,7 @@ function removetype() {
 function updatetype() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_config set value = '$data->name' where id = $db->id";
+  $sql = "update pet_test_config set name = '$data->name' where id = $data->id";
   $db->query($sql);
 
   $result['status'] = 1;
@@ -74,16 +85,87 @@ function updatetype() {
   return $result;
 }
 
-// function insert() {
-//   global $data, $db, $result;
+function inserttype() {
+  global $data, $db, $result;
 
-//   $sql = "insert into pet_test_config (module, name, value) values('spa', '', '$data->name')";
-//   $db->query($sql);
+  $sql = "insert into pet_test_config (module, name, value) values('spa', '$data->name', '')";
+  $db->query($sql);
 
-//   $result['status'] = 1;
-//   $result['list'] = gettypelist();
-//   return $result;
-// }
+  $result['status'] = 1;
+  $result['list'] = gettypelist();
+  return $result;
+}
+
+function uptype() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_config set id = 0 where id = $data->id";
+  $db->query($sql);
+  $sql = "update pet_test_config set id = $data->id where id = $data->id2";
+  $db->query($sql);
+  $sql = "update pet_test_config set id = $data->id2 where id = 0";
+  $db->query($sql);
+
+  $sql = "select id, name, value from pet_test_config where module = 'spa' order by id asc";
+  $spa = $db->all($sql);
+  $ds = array();
+
+  foreach ($spa as $key => $s) {
+    if ($s['value']) $ds []= $s['id'];
+    $spa[$key]['check'] = 0;
+  }
+
+  $result['status'] = 1;
+  $result['list'] = $spa;
+  $result['default'] = $ds;
+  return $result;
+}
+
+function downtype() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_config set id = 0 where id = $data->id2";
+  $db->query($sql);
+  $sql = "update pet_test_config set id = $data->id2 where id = $data->id";
+  $db->query($sql);
+  $sql = "update pet_test_config set id = $data->id where id = 0";
+  $db->query($sql);
+
+  $sql = "select id, name, value from pet_test_config where module = 'spa' order by id asc";
+  $spa = $db->all($sql);
+  $ds = array();
+
+  foreach ($spa as $key => $s) {
+    if ($s['value']) $ds []= $s['id'];
+    $spa[$key]['check'] = 0;
+  }
+
+  $result['status'] = 1;
+  $result['list'] = $spa;
+  $result['default'] = $ds;
+  return $result;
+}
+
+function toggletype() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_config set value = '". (intval(!$data->value) ? 1 : '') ."' where id = $data->id";
+  $db->query($sql);
+
+  $sql = "select id, name, value from pet_test_config where module = 'spa'";
+  $spa = $db->all($sql);
+  $ds = array();
+
+  foreach ($spa as $key => $s) {
+    if ($s['value']) $ds []= $s['id'];
+    $spa[$key]['check'] = 0;
+  }
+
+  $result['status'] = 1;
+  $result['list'] = $spa;
+  $result['default'] = $ds;
+  return $result;
+}
 
 function remove() {
   global $data, $db, $result;
@@ -410,7 +492,12 @@ function getList() {
 function gettypelist() {
   global $db;
 
-  $sql = "select id, value, 0 as check from pet_test_config where module = 'spa'";
+  $sql = "select id, name, value from pet_test_config where module = 'spa' order by id asc";
   $spa = $db->all($sql);
+
+  foreach ($spa as $key => $s) {
+    $spa[$key]['check'] = 0;
+  }
+
   return $spa;
 }

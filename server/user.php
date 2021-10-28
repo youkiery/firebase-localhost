@@ -46,7 +46,7 @@ function getinitdata($userid) {
   $sql = "select username, first_name, concat(last_name, ' ', first_name) as fullname from pet_users where userid = $userid";
   $userinfo = $db->fetch($sql);
 
-  $sql = "select * from pet_test_doctor";
+  $sql = "select a.*, b.username from pet_test_doctor a inner join pet_users b on a.userid = b.userid";
   $doctor = $db->all($sql);
 
   $sql = "select * from pet_test_type where active = 1";
@@ -71,8 +71,30 @@ function getinitdata($userid) {
   $sql = "select * from pet_test_vaccine where status = 5 and userid = $userid";
   $vt = $db->count($sql);
 
-  $sql = "select id, value, 0 as `check` from pet_test_config where module = 'spa'";
+  $sql = "select id, name, value from pet_test_config where module = 'spa' order by id asc";
   $spa = $db->all($sql);
+  $ds = array();
+
+  foreach ($spa as $key => $s) {
+    if ($s['value']) $ds []= $s['id'];
+    $spa[$key]['check'] = 0;
+  }
+
+  $sql = "select * from pet_test_config where module = 'docs' and name = '$userid'";
+  if (empty($docs = $db->fetch($sql))) {
+    $sql = "insert into pet_test_config (module, name, value) values ('docs', $userid, '')";
+    $db->query($sql);
+    $docs['value'] = '';
+  }
+  $sql = "select * from pet_test_config where module = 'docscover' and name = '$userid'";
+  if (empty($docscover = $db->fetch($sql))) {
+    $sql = "insert into pet_test_config (module, name, value) values ('docscover', $userid, '')";
+    $db->query($sql);
+    $docscover['value'] = '';
+  }
+  if (!strlen($docs['value'])) $docs = array();
+  else $docs = explode(', ', $docs['value']);
+
 
   return array(
     'userid' => $userid,
@@ -88,6 +110,11 @@ function getinitdata($userid) {
     'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
     'usg' => array('c' => $uc, 't' => $ut),
     'vaccine' => array('c' => $vc, 't' => $vt),
+    'default' => array(
+      'spa' => $ds,
+      'docs' => $docs,
+      'docscover' => $docscover['value']
+    )
   );
 }
 

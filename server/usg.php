@@ -38,10 +38,17 @@ function gettemplist() {
 
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'usg'";
   $role = $db->fetch($sql);
+  $docs = implode(', ', $data->docs);
 
   $xtra = array();
   if ($role['type'] < 2) $xtra []= " a.userid = $userid ";
-  if (!empty($data->docs)) $xtra []= " a.userid in (". implode(', ', $data->docs) .") ";
+  if (!empty($data->docs)) {
+    $xtra []= " a.userid in ($docs) ";
+  }
+  $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
+  $db->query($sql);
+  $sql = "update pet_test_config set value = '$data->docscover' where module = 'docscover' and name = '$userid'";
+  $db->query($sql);
   if (!empty($data->time)) {
     $data->time = isodatetotime($data->time) + 60 * 60 * 24 - 1;
     $xtra []= " a.time < $data->time ";
@@ -97,10 +104,17 @@ function getlist($today = false) {
   $userid = checkUserid();
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'usg'";
   $role = $db->fetch($sql);
+  $docs = implode(', ', $data->docs);
 
   $xtra = array();
   if ($role['type'] < 2) $xtra []= " a.userid = $userid ";
-  if (!empty($data->docs)) $xtra []= " a.userid in (". implode(', ', $data->docs) .") ";
+  if (!empty($data->docs)) {
+    $xtra []= " a.userid in ($docs) ";
+  }
+  $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
+  $db->query($sql);
+  $sql = "update pet_test_config set value = '$data->docscover' where module = 'docscover' and name = '$userid'";
+  $db->query($sql);
   if (count($xtra)) $xtra = "and".  implode(" and ", $xtra);
   else $xtra = "";
 
@@ -395,27 +409,6 @@ function history() {
   return $result;
 }
 
-function inserthistory() {
-  global $data, $db, $result;
-
-  $customerid = checkcustomer();
-  
-  $data->cometime = isodatetotime($data->cometime);
-  $data->calltime = isodatetotime($data->calltime);
-  $userid = checkUserid();
-
-  $sql = "update pet_test_usg set status = 3 where id = $data->id";
-  $db->query($sql);
-
-  $sql = "insert into pet_test_usg (customerid, typeid, cometime, calltime, note, status, called, recall, userid, time) values ($customerid, $data->typeid, $data->cometime, $data->calltime, '$data->note', 0, 0, $data->calltime, $userid, ". time() .")";
-  $db->query($sql);
-  $result['status'] = 1;
-  $result['messenger'] = 'Đã xác nhận và hoàn thành phiếu nhắc cũ';
-  $result['new'] = getlist(true);
-
-  return $result;
-}
-
 function updatehistory() {
   global $data, $db, $result;
 
@@ -492,127 +485,6 @@ function donerecall() {
   return $result;
 }
 
-function excel() {
-  global $data, $db, $result, $_FILES;
-
-  $dir = str_replace('/server', '/', ROOTDIR);
-  // $des = $dir ."export/DanhSachChiTietHoaDon_KV16102021-152929-688-1634373156.xlsx";
-  $result['list'] = gettemplist();
-
-  $raw = $_FILES['file']['tmp_name'];
-  $ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
-  $name = pathinfo($_FILES['file']['name'], PATHINFO_FILENAME);
-  $file_name = $name . "-". time() . ".". $ext;
-  $des = $dir ."export/$file_name";
-  move_uploaded_file($raw, $des);
-
-  $x = array();
-  $xr = array(0 => 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AM', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD', 'BE', 'BF', 'BG', 'BH', 'HI', 'BJ');
-  foreach ($xr as $key => $value) {
-    $x[$value] = $key;
-  }
-
-  include $dir .'PHPExcel/IOFactory.php';
-    
-  $inputFileType = PHPExcel_IOFactory::identify($des);
-  $objReader = PHPExcel_IOFactory::createReader($inputFileType);
-  $objReader->setReadDataOnly(true);
-  $objPHPExcel = $objReader->load($des);
-  
-  $sheet = $objPHPExcel->getSheet(0); 
-
-  $highestRow = $sheet->getHighestRow(); 
-  $highestColumn = $sheet->getHighestColumn();
-
-  $sql = "select * from pet_test_doctor";
-  $doctor = $db->obj($sql, 'name', 'userid');
-
-  $col = array(
-    'Mã hàng' => '', // 0
-    'Người bán' => '', // 1
-    'Điện thoại' => '', // 2
-    'Tên khách hàng' => '', // 3
-    'Thời gian' => '', // 4 01/10/2021 18:58:47
-    'Ghi chú' => '' // 5
-  );
-
-  for ($j = 0; $j <= $x[$highestColumn]; $j ++) {
-    $val = $sheet->getCell($xr[$j] . '1')->getValue();
-    foreach ($col as $key => $value) {
-      if ($key == $val) $col[$key] = $j;
-    }
-  }
-
-  $exdata = array();
-  for ($i = 2; $i <= $highestRow; $i ++) { 
-    $temp = array();
-    foreach ($col as $key => $j) {
-      $val = $sheet->getCell($xr[$j] . $i)->getValue();
-      $temp []= $val;
-    }
-    $exdata []= $temp;
-  }
-  
-  $l = array();
-  foreach ($exdata as $row) {
-    if ($row[0] == 'BVCK01025tpx') {
-      $dat = explode(';', $row[5]);
-      if (count($dat) >= 2) $number = intval($dat[1]);
-      else $number = 0;
-      $date = explode('/', $dat[0]);
-
-      if (count($date) == 3) $calltime = strtotime("$date[2]/$date[1]/$date[0]");
-      else $calltime = 0;
-      
-      $sql = "select * from pet_test_customer where phone = '$row[2]'";
-      if (empty($c = $db->fetch($sql))) {
-        $sql = "insert into pet_test_customer (name, phone, address) values('$row[3]', '$row[2]', '')";
-        $c['id'] = $db->insertid($sql);
-      }
-
-      $datetime = explode(' ', $row[4]);
-      $date = explode('/', $datetime[0]);
-      $cometime = strtotime("$date[2]/$date[1]/$date[0]");
-
-      $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], ". $doctor[$row[1]] .", $cometime, $calltime, $calltime, '$number', 9, '', ". time() .", 0)";
-      // echo "$sql<br>";
-      $db->query($sql);
-    }
-  }
-  $result['list'] = gettemplist();
-
-  $sql = "select userid, count(*) as num from pet_test_usg where status = 9 group by userid order by userid";
-  $u = $db->all($sql);
-  foreach ($u as $row) {
-    $time = time();
-    $sql = "insert into pet_test_notify (userid, status, content, module, time) values($row[userid], 0, 'Có $row[num] phiếu tạm siêu âm cần xác nhận', 'usg', $time)";
-    $db->query($sql);
-  }
-
-  $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3;
-  $sql = "select userid, count(*) as num from pet_test_usg where status < 6 and time < $lim group by userid order by userid";
-  $u = $db->all($sql);
-  foreach ($u as $row) {
-    $time = time();
-    $sql = "insert into pet_test_notify (userid, status, content, module, time) values($row[userid], 0, 'Còn $row[num] phiếu nhắc siêu âm cần phải gọi', 'usg', $time)";
-    $db->query($sql);
-  }
-
-  $result['messenger'] = "Đã chuyển dữ liệu Excel thành phiếu nhắc";
-  $result['status'] = 1;
-  return $result;
-}
-
-function removevaccine() {
-  global $data, $db, $result;
-  $sql = "delete from pet_test_usg where id = $data->id";
-  $db->query($sql);
-  $result['status'] = 1;
-  $result['new'] = getlist(true);
-  $result['messenger'] = "Đã xóa phiếu nhắc";
-  return $result;
-}
-
 function removetemp() {
   global $data, $db, $result;
   $sql = "delete from pet_test_usg where id = $data->id";
@@ -621,15 +493,4 @@ function removetemp() {
   $result['list'] = gettemplist();
   $result['messenger'] = "Đã xóa phiếu tạm";
   return $result;
-}
-
-function getOlder($customerid, $vid) {
-  global $db;
-
-  $sql = "select * from pet_test_pet where id = $customerid";
-  $p = $db->fetch($sql);
-  $customerid = $p['customerid'];
-
-  $sql = "select a.*, c.first_name as doctor, b.phone, b.name, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status < 3 and g.customerid = $customerid and a.id <> $vid order by a.id asc";
-  return dataCover($db->all($sql));
 }

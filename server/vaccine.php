@@ -13,6 +13,14 @@ function auto() {
   return $result;
 }
 
+function searchcustomer() {
+  global $data, $db, $result;
+
+  $result['status'] = 1;
+  $result['list'] = getlist();
+  return $result;
+}
+
 function tempauto() {
   global $data, $db, $result;
 
@@ -542,10 +550,17 @@ function getlist($today = false) {
   $userid = checkUserid();
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'vaccine'";
   $role = $db->fetch($sql);
+  $docs = implode(', ', $data->docs);
 
   $xtra = array();
   if ($role['type'] < 2) $xtra []= " a.userid = $userid ";
-  if (!empty($data->docs)) $xtra []= " a.userid in (". implode(', ', $data->docs) .") ";
+  if (!empty($data->docs)) {
+    $xtra []= " a.userid in ($docs) ";
+  }
+  $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
+  $db->query($sql);
+  $sql = "update pet_test_config set value = '$data->docscover' where module = 'docscover' and name = '$userid'";
+  $db->query($sql);
   if (count($xtra)) $xtra = "and".  implode(" and ", $xtra);
   else $xtra = "";
 
@@ -645,10 +660,17 @@ function gettemplist() {
 
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'vaccine'";
   $role = $db->fetch($sql);
+  $docs = implode(', ', $data->docs);
 
   $xtra = array();
   if ($role['type'] < 2) $xtra []= " a.userid = $userid ";
-  if (!empty($data->docs)) $xtra []= " a.userid in (". implode(', ', $data->docs) .") ";
+  if (!empty($data->docs)) {
+    $xtra []= " a.userid in ($docs) ";
+  }
+  $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
+  $db->query($sql);
+  $sql = "update pet_test_config set value = '$data->docscover' where module = 'docscover' and name = '$userid'";
+  $db->query($sql);
   if (!empty($data->time)) {
     $data->time = isodatetotime($data->time) + 60 * 60 * 24 - 1;
     $xtra []= " a.time < $data->time ";
