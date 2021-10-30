@@ -188,7 +188,7 @@ function confirm() {
   global $data, $db, $result;
 
   $sql = "select a.*, c.first_name as doctor, g.name as petname, g.customerid, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_pet g on a.petid = g.id inner join pet_test_customer b on g.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.id = $data->id";
-  $c = $db->fetch();
+  $c = $db->fetch($sql);
   $c['cometime'] = date('d/m/Y', $c['cometime']);
   $c['calltime'] = date('d/m/Y', $c['calltime']);
 
