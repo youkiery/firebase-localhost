@@ -212,15 +212,9 @@ function auto() {
   global $data, $db, $result;
     
   $sql = "select id, name, customer, phone, time from pet_test_profile where phone like '%$data->key%' or customer like '%$data->key%' order by id desc limit 10 offset ". ($data->page - 1) * 10;
-  $query = $db->query($sql);
-  $list = array();
-  
-  while ($row = $query->fetch_assoc()) {
-    $list []= $row;
-  }
 
   $result['status'] = 1;
-  $result['list'] = getlist();
+  $result['list'] = $db->all($sql);
 
   return $result;
 }
