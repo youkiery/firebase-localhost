@@ -2,7 +2,7 @@
 function checkUserid() {
   global $db, $data;
 
-  $sql = "select * from pet_test_user where session = '$data->session'";
+  $sql = "select * from pet_users where session = '$data->session'";
   $user = $db->fetch($sql);
   return $user['userid'];
 }

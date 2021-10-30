@@ -2,7 +2,7 @@
 function check() {
   global $data, $db, $result;
 
-  $sql = "select * from pet_test_user where session = '$data->session'";
+  $sql = "select * from pet_users where session = '$data->session'";
 
   if (empty($user = $db->fetch($sql))) return true;
   return false;
@@ -22,7 +22,7 @@ function notify() {
 function session() {
   global $data, $db, $result;
 
-  $sql = "select * from pet_test_user where session = '$data->sess'";
+  $sql = "select * from pet_users where session = '$data->sess'";
 
   if (!empty($user = $db->fetch($sql))) {
     $result['status'] = 1;
@@ -95,6 +95,8 @@ function getinitdata($userid) {
   if (!strlen($docs['value'])) $docs = array();
   else $docs = explode(', ', $docs['value']);
 
+  $sql = "select id, name from pet_test_config where module = 'usg'";
+  $usgcode = $db->all($sql);
 
   return array(
     'userid' => $userid,
@@ -106,6 +108,7 @@ function getinitdata($userid) {
     'doctor' => $doctor,
     'type' => $type,
     'spa' => $spa,
+    'usgcode' => $usgcode,
     'today' => date('d/m/Y'),
     'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
     'usg' => array('c' => $uc, 't' => $ut),
@@ -132,7 +135,7 @@ function login() {
   else if (!$crypt->validate_password($password, $user['password'])) $result['messenger'] = 'Sai mật khẩu';
   else {
     $session = randomString();
-    $sql = "update pet_test_user set session = '$session' where userid = $user[userid]";
+    $sql = "update pet_users set session = '$session' where userid = $user[userid]";
     $db->query($sql);
     $result['status'] = 1;
     $result['session'] = $session;
@@ -159,7 +162,7 @@ function signin() {
     $userid = $db->insertid($sql);
     
     $session = randomString();
-    $sql = "update pet_test_user set session = '$session' where userid = $userid";
+    $sql = "update pet_users set session = '$session' where userid = $userid";
     $db->query($sql);
 
     $result['status'] = 1;
