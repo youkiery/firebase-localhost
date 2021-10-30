@@ -494,3 +494,43 @@ function removetemp() {
   $result['messenger'] = "Đã xóa phiếu tạm";
   return $result;
 }
+
+function removetype() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_config set module = 'usg-deleted' where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = gettypelist();
+  return $result;
+}
+
+function updatetype() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_config set name = '$data->name' where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = gettypelist();
+  return $result;
+}
+
+function inserttype() {
+  global $data, $db, $result;
+
+  $sql = "insert into pet_test_config (module, name, value) values('usg', '$data->name', '')";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = gettypelist();
+  return $result;
+}
+
+function gettypelist() {
+  global $db;
+
+  $sql = "select id, name from pet_test_config where module = 'usg'";
+  return $db->all($sql);
+}

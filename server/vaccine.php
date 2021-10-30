@@ -280,6 +280,9 @@ function excel() {
   $sql = "select * from pet_test_type where active = 1";
   $type = $db->obj($sql, 'code', 'id');
 
+  $sql = "select id, name from pet_test_config where module = 'usg'";
+  $usg = $db->obj($sql, 'name', 'id');
+
   $col = array(
     'Mã hàng' => '', // 0
     'Người bán' => '', // 1
@@ -310,6 +313,7 @@ function excel() {
   foreach ($exdata as $row) {
     if (isset($type[$row[0]])) {
       $dat = explode(';', $row[5]);
+      if (!isset($dat[2])) $dat[2] = '';
       if (count($dat) >= 2) $petname = $dat[1];
       else $petname = "";
       $date = explode('/', $dat[0]);
@@ -337,11 +341,12 @@ function excel() {
       $date = explode('/', $datetime[0]);
       $cometime = strtotime("$date[2]/$date[1]/$date[0]");
 
-      $sql = "insert into pet_test_vaccine (petid, typeid, cometime, calltime, note, status, recall, userid, time, called) values($p[id], ". $type[$row[0]] .", $cometime, $calltime, '', 5, $calltime, ". $doctor[$row[1]] .", ". time() .", 0)";
+      $sql = "insert into pet_test_vaccine (petid, typeid, cometime, calltime, note, status, recall, userid, time, called) values($p[id], ". $type[$row[0]] .", $cometime, $calltime, '$dat[2]', 5, $calltime, ". $doctor[$row[1]] .", ". time() .", 0)";
       $db->query($sql);
     }
-    else if ($row[0] == 'BVCK01025tpx') {
+    else if (isset($usg[$row[0]])) {
       $dat = explode(';', $row[5]);
+      if (!isset($dat[2])) $dat[2] = '';
       if (count($dat) >= 2) $number = intval($dat[1]);
       else $number = 0;
       $date = explode('/', $dat[0]);
@@ -359,7 +364,7 @@ function excel() {
       $date = explode('/', $datetime[0]);
       $cometime = strtotime("$date[2]/$date[1]/$date[0]");
 
-      $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], ". $doctor[$row[1]] .", $cometime, $calltime, $calltime, '$number', 9, '', ". time() .", 0)";
+      $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], ". $doctor[$row[1]] .", $cometime, $calltime, $calltime, '$number', 9, '$dat[2]', ". time() .", 0)";
       $db->query($sql);
     }
   }
