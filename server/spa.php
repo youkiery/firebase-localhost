@@ -261,8 +261,8 @@ function coverData($data) {
 
   $list = array();
   foreach ($data as $key => $row) {
-    $sql = "select b.value from pet_test_spa_row a inner join pet_test_config b on a.spaid = $row[id] and a.typeid = b.id";
-    $service = $db->arr($sql, 'value');
+    $sql = "select b.name from pet_test_spa_row a inner join pet_test_config b on a.spaid = $row[id] and a.typeid = b.id";
+    $service = $db->arr($sql, 'name');
   
     $sql = "select first_name as name from pet_users where userid = $row[duser]";
     $d = $db->fetch($sql);
@@ -446,8 +446,8 @@ function getList() {
 
   $list = array();
   foreach ($spa as $row) {
-    $sql = "select b.value from pet_test_spa_row a inner join pet_test_config b on a.spaid = $row[id] and a.typeid = b.id";
-    $service = $db->arr($sql, 'value');
+    $sql = "select b.name from pet_test_spa_row a inner join pet_test_config b on a.spaid = $row[id] and a.typeid = b.id";
+    $service = $db->arr($sql, 'name');
 
     $sql = "select b.id from pet_test_spa_row a inner join pet_test_config b on a.spaid = $row[id] and a.typeid = b.id";
     $option = $db->arr($sql, 'id');
