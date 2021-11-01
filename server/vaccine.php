@@ -313,10 +313,13 @@ function excel() {
   foreach ($exdata as $row) {
     if (isset($type[$row[0]])) {
       $dat = explode(';', $row[5]);
+      if (!isset($dat[1])) $dat[1] = '';
       if (!isset($dat[2])) $dat[2] = '';
+      $dat[1] = trim($dat[1]);
+      $dat[2] = trim($dat[2]);
+      $date = explode('/', trim($dat[0]));
       if (count($dat) >= 2) $petname = $dat[1];
       else $petname = "";
-      $date = explode('/', $dat[0]);
 
       if (count($date) == 3) $calltime = strtotime("$date[2]/$date[1]/$date[0]");
       else $calltime = 0;
@@ -346,10 +349,13 @@ function excel() {
     }
     else if (isset($usg[$row[0]])) {
       $dat = explode(';', $row[5]);
+      if (!isset($dat[1])) $dat[1] = '';
       if (!isset($dat[2])) $dat[2] = '';
+      $dat[1] = trim($dat[1]);
+      $dat[2] = trim($dat[2]);
+      $date = explode('/', trim($dat[0]));
       if (count($dat) >= 2) $number = intval($dat[1]);
       else $number = 0;
-      $date = explode('/', $dat[0]);
 
       if (count($date) == 3) $calltime = strtotime("$date[2]/$date[1]/$date[0]");
       else $calltime = 0;
