@@ -48,7 +48,21 @@ else {
       die();
     }
   }
-  
+
+  $sql = "select * from pet_test_config where module = 'version'";
+  if (empty($v = $db->fetch($sql))) {
+    $sql = "insert into pet_test_config (module, name, value) values('version', '$data->version', '')";
+    $db->query($sql);
+    $v = array('name' => $data->version);
+  }
+
+  if ($v['name'] != $data->version) {
+    $result['outdate'] = true;
+    $result['link'] = $v['name'];
+    echo json_encode($result);
+    die();
+  }  
+
   $action = $data->action;
   if (function_exists($action)) $result = $action();
 }

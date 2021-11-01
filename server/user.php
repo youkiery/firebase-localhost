@@ -39,6 +39,10 @@ function getinitdata($userid) {
   global $db;
   $admin = 0;
   if ($userid == 1 || $userid == 5) $admin = 1;
+  else {
+    $sql = "select * from pet_test_user_per where userid = $userid and module = 'admin' and type = 2";
+    if (!empty($db->fetch($sql))) $admin = 1;
+  }
 
   $sql = "select * from pet_test_user";
   $list = $db->all($sql);
