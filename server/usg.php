@@ -213,7 +213,7 @@ function insert() {
 
   // nếu số con > 0, đặt trạng thái sắp sinh, ngày nhắc là 1 tuần trước sinh
     // nếu không, đặt 5 tháng sau nhắc kỳ salơ
-  $recall = $data->calltime + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
+  $recall = $data->cometime + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
   if ($data->number) $recall = $data->calltime - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
   $status = intval(boolval($data->number)) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
 
@@ -236,7 +236,7 @@ function update() {
 
   // nếu số con > 0, đặt trạng thái sắp sinh, ngày nhắc là 1 tuần trước sinh
   // nếu không, đặt 5 tháng sau nhắc kỳ salơ
-  $recall = $data->calltime + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
+  $recall = $data->come + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
   if ($data->number) $recall = $data->calltime - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
   $status = intval(boolval($data->number)) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
   
@@ -272,7 +272,8 @@ function called() {
   $sql = "select * from pet_test_usg where id = $data->id";
   $u = $db->fetch($sql);
   $time = time();
-  $recall = $u['calltime'] + $cover[$u['status']]['t'];
+  if ($u['status'] == 0) $recall = $u['cometime'] + $cover[$u['status']]['t'];
+  else $recall = $u['calltime'] + $cover[$u['status']]['t'];
   $status = $cover[$u['status']]['s'];
 
   $sql = "update pet_test_usg set status = $status, note = '". $data->note ."', called = $time, recall = $recall where id = $data->id";
@@ -389,7 +390,7 @@ function doneall() {
     $u = $db->fetch($sql);
     // nếu số con > 0, đặt trạng thái sắp sinh, ngày nhắc là 1 tuần trước sinh
     // nếu không, đặt 5 tháng sau nhắc kỳ salơ
-    $recall = $u['calltime'] + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
+    $recall = $u['come'] + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
     if ($u['number']) $recall = $u['calltime'] - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
     $status = intval(boolval($u['number'])) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
 
@@ -423,7 +424,7 @@ function updatehistory() {
 
   // nếu số con > 0, đặt trạng thái sắp sinh, ngày nhắc là 1 tuần trước sinh
   // nếu không, đặt 5 tháng sau nhắc kỳ salơ
-  $recall = $data->calltime + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
+  $recall = $data->cometime + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
   if ($data->number) $recall = $data->calltime - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
   $status = intval(boolval($data->number)) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
 
@@ -461,7 +462,7 @@ function confirm() {
 
   // nếu số con > 0, đặt trạng thái sắp sinh, ngày nhắc là 1 tuần trước sinh
   // nếu không, đặt 5 tháng sau nhắc kỳ salơ
-  $recall = $c['calltime'] + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
+  $recall = $c['come'] + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
   if ($c['number']) $recall = $c['calltime'] - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
   $status = intval(boolval($c['number'])) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
   $userid = checkUserid();
