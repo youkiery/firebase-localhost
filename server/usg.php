@@ -252,6 +252,21 @@ function update() {
 function birth() {
   global $data, $db, $result, $cover;
 
+  // nếu có ngày nhắc ngày salơ chó mẹ
+  if (!empty($data->repregnant)) {
+    $time = explode('-', $data->repregnant);
+    $data->repregnant = totime("$time[2]/$time[1]/$time[0]");
+    $recall = $data->repregnant + 60 * 60 * 24 * 7 * 5;
+
+    $userid = checkUserid();
+    $time = time();
+    $sql = "select customerid from pet_test_usg where id = $data->id";
+    $usg = $db->fetch($sql);
+
+    $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values ($usg[customerid], $userid, $time, $recall, $recall, 0, 0, '$data->note', $time, 0)";
+    $db->query($sql);
+  }
+
   $time = explode('-', $data->calltime);
   $data->calltime = totime("$time[2]/$time[1]/$time[0]");
   $recall = $data->calltime + 60 * 60 * 24 * 7 * 5;
