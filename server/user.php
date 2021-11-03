@@ -115,8 +115,8 @@ function getinitdata($userid) {
     'usgcode' => $usgcode,
     'today' => date('d/m/Y'),
     'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),
-    'usg' => array('c' => $uc, 't' => $ut),
-    'vaccine' => array('c' => $vc, 't' => $vt),
+    'usg' => $uc + $ut,
+    'vaccine' => $vc + $vt,
     'default' => array(
       'spa' => $ds,
       'docs' => $docs,
