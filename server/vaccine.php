@@ -3,12 +3,17 @@ function auto() {
   global $data, $db, $result;
 
   $result['status'] = 1;
-  $result['list'] = getlist();
-  $result['new'] = getlist(true);
-  $result['type'] = gettypeobj();
-  $result['doctor'] = getDoctor();
-  $result['temp'] = gettemplist();
-  $result['over'] = getOverlist();
+  $result['vaccine'] = array(
+    'list' => getlist(),
+    'new' => getlist(true),
+    'temp' => gettemplist(),
+    'over' => getOverlist(),
+  );
+  $result['usg'] = array(
+    'list' => getusglist(),
+    'new' => getusglist(true),
+    'temp' => getusgtemplist(),
+  );
   
   return $result;
 }
@@ -811,4 +816,158 @@ function checkcustomer() {
     $p['id'] = $db->insertid($sql);
   }
   return $p['id'];
+}
+
+function getusglist($today = false) {
+  global $db, $data, $userid;
+
+  $userid = checkUserid();
+  $sql = "select * from pet_test_user_per where userid = $userid and module = 'usg'";
+  $role = $db->fetch($sql);
+  $docs = implode(', ', $data->docs);
+
+  $xtra = array();
+  if ($role['type'] < 2) $xtra []= " a.userid = $userid ";
+  if (!empty($data->docs)) {
+    $xtra []= " a.userid in ($docs) ";
+  }
+  if (!isset($data->{'docscover'})) $data->docscover = '';
+
+  $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
+  $db->query($sql);
+  $sql = "update pet_test_config set value = '$data->docscover' where module = 'docscover' and name = '$userid'";
+  $db->query($sql);
+
+  if (count($xtra)) $xtra = "and".  implode(" and ", $xtra);
+  else $xtra = "";
+
+  $start = strtotime(date('Y/m/d'));
+
+  if ($today) {
+    // danh sách đã thêm hôm nay
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.time between $start and ". time() . ") $xtra and a.status < 6 order by a.id desc";
+    $list = usgdataCover($db->all($sql));
+  }
+  else if (empty($data->keyword)) {
+    // danh sách nhắc hôm nay
+    $list = array(0 => array(), array(), array());
+    $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3 - 1;
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 1 and a.status < 4) and recall < $lim $xtra order by a.recall asc";
+    $list[0] = usgdataCover($db->all($sql));
+    
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 3 and a.status < 7) and recall < $lim $xtra order by a.recall asc";
+    $list[1] = usgdataCover($db->all($sql));
+    
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status < 2 and recall < $lim $xtra order by a.recall asc";
+    $list[2] = usgdataCover($db->all($sql));
+  }
+  else {
+    // danh sách tìm kiếm khách hàng
+    $key = trim($data->keyword);
+    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (b.name like '%$key%' or b.phone like '%$key%') and status < 8 order by a.recall desc";
+    $list = usgdataCover($db->all($sql));
+  }
+
+  return $list;
+}
+
+function usgdataCover($list) {
+  global $start;
+  $lim = strtotime(date('Y/m/d')) - 1 + 60 * 60 * 24 * 3;
+  $v = array();
+  $stoday = strtotime(date('Y/m/d'));
+  $etoday = $stoday + 60 * 60 * 24  - 1;
+
+  foreach ($list as $row) {
+    // thời gian gọi
+    if (!$row['called']) $called = '-';
+    else if ($row['called'] >= $stoday && $row['called'] <= $etoday) $called = 'Hôm hay đã gọi';
+    else $called = date('d/m/Y', $row['called']);
+    // nếu status < 6, kiểm tra recall < lim hay không
+    // nếu không thì bỏ qua
+    $over = (($row['status'] < 6 && $row['recall'] < $lim) ? 1 : 0);  
+    $v []= array(
+      'id' => $row['id'],
+      'note' => $row['note'],
+      'doctor' => $row['doctor'],
+      'customerid' => $row['customerid'],
+      'name' => $row['name'],
+      'phone' => $row['phone'],
+      'address' => $row['address'],
+      'number' => $row['number'],
+      'status' => $row['status'],
+      'over' => $over,
+      'called' => $called,
+      'cometime' => date('d/m/Y', $row['cometime']),
+      'calltime' => date('d/m/Y', $row['calltime']),
+      'recall' => date('d/m/Y', $row['recall']),
+    );
+  }
+  return $v;
+}
+
+function getusgtemplist() {
+  global $db, $data;
+  $userid = checkUserid();
+
+  $sql = "select * from pet_test_user_per where userid = $userid and module = 'usg'";
+  $role = $db->fetch($sql);
+  $docs = implode(', ', $data->docs);
+
+  $xtra = array();
+  if ($role['type'] < 2) $xtra []= " a.userid = $userid ";
+  if (!empty($data->docs)) {
+    $xtra []= " a.userid in ($docs) ";
+  }
+  $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
+  $db->query($sql);
+  $sql = "update pet_test_config set value = '$data->docscover' where module = 'docscover' and name = '$userid'";
+  $db->query($sql);
+  if (!empty($data->time)) {
+    $data->time = isodatetotime($data->time) + 60 * 60 * 24 - 1;
+    $xtra []= " a.time < $data->time ";
+  }
+  if (count($xtra)) $xtra = "and".  implode(" and ", $xtra);
+  else $xtra = "";
+
+  $sql = "select a.*, d.id as customerid, d.name, d.phone, d.address, c.first_name as doctor from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer d on a.customerid = d.id where a.status = 9 $xtra order by a.id desc";
+  $v = $db->all($sql);
+  $e = array();
+  $l = array();
+  $list = array(
+    0 => array(), array()
+  );
+
+  foreach ($v as $row) {
+    $temp = tempdatacover($row);
+    if (empty($temp['phone']) || !$row['calltime']) $e []= $temp;
+    else $l []= $temp;
+  }
+
+  $list[0] = array_merge($l, $e);
+  $start = strtotime(date('Y/m/d'));
+  $end = $start + 60 * 60 * 24 - 1;
+  $sql = "select a.*, d.id as customerid, d.name, d.phone, d.address, c.first_name as doctor from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer d on a.customerid = d.id where utemp = 1 and (time between $start and $end) $xtra order by a.id desc";
+  $l = $db->all($sql);
+
+  foreach ($l as $row) {
+    $list[1] []= tempdatacover($row);
+  }
+  return $list;
+}
+
+function tempdatacover($data) {
+  return array(
+    'id' => $data['id'],
+    'note' => $data['note'],
+    'doctor' => $data['doctor'],
+    'customerid' => $data['customerid'],
+    'name' => $data['name'],
+    'phone' => $data['phone'],
+    'address' => $data['address'],
+    'number' => $data['number'],
+    'called' => ($data['called'] ? date('d/m/Y', $data['called']) : ''),
+    'cometime' => date('d/m/Y', $data['cometime']),
+    'calltime' => ($data['calltime'] ? date('d/m/Y', $data['calltime']) : ''),
+  );
 }
