@@ -16,23 +16,72 @@ function filter() {
   return $result;
 }
 
+function doctor() {
+  global $db, $data, $result;
+
+  $sql = "select * from pet_test_user_per where userid = $data->userid and module = 'doctor'";
+  if (empty($p = $db->fetch($sql))){
+    $sql = "insert into pet_test_user_per (userid, module, type) values ($data->userid, 'doctor', 1)";
+    $db->query($sql);
+  }
+  else {
+    $sql = "update pet_test_user_per set type = ". intval(!$p['type']) ." where id = $p[id]";
+    $db->query($sql);
+  }
+
+  $result['status'] = 1;
+  $result['config'] = getConfig();
+  $result['list'] = getList();
+  return $result;
+}
+
+function manager() {
+  global $db, $data, $result;
+
+  $sql = "select * from pet_test_user_per where userid = $data->userid and module = 'manager'";
+  if (empty($p = $db->fetch($sql))){
+    $sql = "insert into pet_test_user_per (userid, module, type) values ($data->userid, 'manager', 1)";
+    $db->query($sql);
+  }
+  else {
+    $sql = "update pet_test_user_per set type = ". intval(!$p['type']) ." where id = $p[id]";
+    $db->query($sql);
+  }
+
+  $result['status'] = 1;
+  $result['config'] = getConfig();
+  $result['list'] = getList();
+  return $result;
+}
+
+function admin() {
+  global $db, $data, $result;
+
+  $sql = "select * from pet_test_user_per where userid = $data->userid and module = 'admin'";
+  if (empty($p = $db->fetch($sql))){
+    $sql = "insert into pet_test_user_per (userid, module, type) values ($data->userid, 'admin', 1)";
+    $db->query($sql);
+  }
+  else {
+    $sql = "update pet_test_user_per set type = ". intval(!$p['type']) ." where id = $p[id]";
+    $db->query($sql);
+  }
+
+  $result['status'] = 1;
+  $result['config'] = getConfig();
+  $result['list'] = getList();
+  return $result;
+}
+
 function insert() {
   global $db, $data, $result;
 
-  $sql = 'select * from pet_test_user where userid = '. $data->id;
-  $userinfo = $db->fetch($sql);
-  
-  if (!empty($userinfo)) {
-    $result['messenger'] = 'Nhân viên đã tồn tại';
-  }
-  else {
-    $sql = "insert into pet_test_user (userid, manager, `except`, daily, kaizen) values($data->id, 0, 0, 0, 0)";
-    $db->query($sql);
-
-    $result['status'] = 1;
-    $result['list'] = filterUser();
-    $result['messenger'] = 'Đã thêm nhân viên';
-  }
+  $sql = "update pet_users set active = 1 where userid = $data->userid";
+  $db->query($sql);
+  $result['status'] = 1;
+  $result['list'] = filterUser();
+  $result['admin'] = getList();
+  $result['messenger'] = 'Đã thêm nhân viên';
   
   return $result;
 }
@@ -40,21 +89,24 @@ function insert() {
 function update() {
   global $db, $data, $result;
   
+  $sql = "update pet_users set fullname = '$data->fullname', name = '$data->name' where userid = $data->userid";
+  $db->query($sql);
+
   foreach ($data->module as $name => $value) {
-    $sql = "select * from pet_test_user_per where module = '$name' and userid = $data->id";
+    $sql = "select * from pet_test_user_per where module = '$name' and userid = $data->userid";
     $userinfo = $db->fetch($sql);
   
     if (empty($userinfo)) {
-      $sql = "insert into pet_test_user_per (userid, module, type) values ($data->id, '$name', '$value')";
+      $sql = "insert into pet_test_user_per (userid, module, type) values ($data->userid, '$name', '$value')";
     }
     else {
-      $sql = "update pet_test_user_per set type = '$value' where module = '$name' and userid = $data->id";
+      $sql = "update pet_test_user_per set type = '$value' where module = '$name' and userid = $data->userid";
     }
     $db->query($sql);
   }
     
   $result['status'] = 1;
-  $result['data'] = auto();
+  $result['list'] = getList();
   $result['config'] = getConfig();
   return $result;
 }
@@ -62,7 +114,7 @@ function update() {
 function remove() {
   global $db, $data, $result;
   
-  $sql = 'delete from pet_test_user where userid = '. $data->id;
+  $sql = "update from pet_users set active = 0 where userid = $data->userid";
   $query = $db->query($sql);
     
   $result['status'] = 1;
@@ -75,7 +127,7 @@ function getList() {
 
   $module = getPer();
 
-  $sql = 'select username, concat(a.last_name, " ", a.first_name) as fullname, a.userid from pet_users a inner join pet_test_user b on a.userid = b.userid';
+  $sql = 'select name, username, fullname, userid from pet_users where active = 1';
   $list = $db->all($sql);
   
   foreach ($list as $index => $row) {
@@ -109,10 +161,10 @@ function getConfig() {
 function filterUser() {
   global $db, $data;
   
-  $sql = 'select userid from pet_test_user';
+  $sql = 'select userid from pet_users';
   $list = $db->obj($sql, 'userid', 'userid');
   
-  $sql = "select userid, concat(last_name, ' ', first_name) as fullname, username from pet_users where userid not in (". implode(', ', $list) .") and (username like '%$data->key%' or first_name like '%$data->key%' or last_name like '%$data->key%')";
+  $sql = "select userid, fullname, username from pet_users where active = 0 and (username like '%$data->key%' or fullname like '%$data->key%')";
 
   return $db->all($sql);
 }

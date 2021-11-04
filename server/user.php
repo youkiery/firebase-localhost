@@ -47,7 +47,7 @@ function getinitdata($userid) {
   $sql = "select * from pet_test_user";
   $list = $db->all($sql);
 
-  $sql = "select username, first_name, concat(last_name, ' ', first_name) as fullname from pet_users where userid = $userid";
+  $sql = "select username, name, fullname from pet_users where userid = $userid";
   $userinfo = $db->fetch($sql);
 
   $sql = "select a.*, b.username from pet_test_doctor a inner join pet_users b on a.userid = b.userid";
@@ -105,7 +105,7 @@ function getinitdata($userid) {
   return array(
     'userid' => $userid,
     'username' => $userinfo['username'],
-    'name' => $userinfo['first_name'],
+    'name' => $userinfo['name'],
     'fullname' => $userinfo['fullname'],
     'admin' => $admin,
     'users' => $list,

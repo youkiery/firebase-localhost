@@ -107,7 +107,7 @@ function managerData() {
   $endtime = $starttime + 60 * 60 * 24 * 7 - 1;
   $time = time();
 
-  $sql = "select b.userid, b.first_name from pet_test_user a inner join pet_users b on a.userid = b.userid where daily = 1";
+  $sql = "select b.userid, b.name from pet_test_user_per a inner join pet_users b on a.userid = b.userid where module = 'doctor' and type = 1";
   $ul = $db->all($sql);
 
   for ($i = 0; $i < 7; $i++) { 
@@ -173,14 +173,14 @@ function insert($userid, $time, $type, $action) {
 function getScheduleUser() {
   global $db;
 
-  $sql = "select first_name as name from pet_test_user a inner join pet_users b on a.userid = b.userid where a.daily = 1";
+  $sql = "select b.userid, b.name from pet_test_user_per a inner join pet_users b on a.userid = b.userid where module = 'doctor' and type = 1";
   return $db->arr($sql, 'name');
 }
 
 function getExcept() {
   global $db;
 
-  $sql = "select first_name as name from pet_test_user a inner join pet_users b on a.userid = b.userid where a.except = 1";
+  $sql = "select b.userid, b.name from pet_test_user_per a inner join pet_users b on a.userid = b.userid where module = 'except' and type = 1";
   return $db->arr($sql, 'name');
 }
 
