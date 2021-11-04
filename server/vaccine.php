@@ -18,6 +18,15 @@ function auto() {
   return $result;
 }
 
+function filter() {
+  global $data, $db, $result;
+
+  $result['status'] = 1;
+  $result['list'] = getlist();
+  
+  return $result;
+}
+
 function searchcustomer() {
   global $data, $db, $result;
 
