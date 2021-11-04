@@ -11,9 +11,9 @@ function auto() {
 function insert() {
   global $data, $db, $spa_option;
 
-  $sql = "select * from pet_test_heal_medicine where name = '$data->name' limit 1";
+  $sql = "select * from pet_test_drug where name = '$data->name' limit 1";
   if (empty($db->fetch($sql))) {
-    $sql = "insert into pet_test_heal_medicine (code, name, unit, system, limits, effect, effective, disease, note, sideeffect, mechanic, image) values('', '$data->name', '', '', '$data->limits', '$data->effect', '', '', '', '$data->sideeffect', '$data->mechanic', '". implode(', ', $data->image) ."')";
+    $sql = "insert into pet_test_drug (code, name, unit, system, limits, effect, effective, disease, note, sideeffect, mechanic, image) values('', '$data->name', '', '', '$data->limits', '$data->effect', '', '', '', '$data->sideeffect', '$data->mechanic', '". implode(', ', $data->image) ."')";
     $db->query($sql);
     $result['status'] = 1;
     $data = $data->filter;
@@ -28,9 +28,9 @@ function insert() {
 function update() {
   global $data, $db, $spa_option;
 
-  $sql = "select * from pet_test_heal_medicine where name = '$data->name' and id <> $data->id limit 1";
+  $sql = "select * from pet_test_drug where name = '$data->name' and id <> $data->id limit 1";
   if (empty($db->fetch($sql))) {
-    $sql = "update pet_test_heal_medicine set name = '$data->name', limits = '$data->limits', effect = '$data->effect', sideeffect = '$data->sideeffect', mechanic = '$data->mechanic', image = '".implode(', ', $data->image)."' where id = $data->id";
+    $sql = "update pet_test_drug set name = '$data->name', limits = '$data->limits', effect = '$data->effect', sideeffect = '$data->sideeffect', mechanic = '$data->mechanic', image = '".implode(', ', $data->image)."' where id = $data->id";
     $db->query($sql);
     $result['status'] = 1;
     $data = $data->filter;
@@ -45,7 +45,7 @@ function update() {
 function remove() {
   global $data, $db, $spa_option;
 
-  $sql = 'delete from pet_test_heal_medicine where id = '. $data->id;
+  $sql = 'delete from pet_test_drug where id = '. $data->id;
   $query = $db->query($sql);
   $result['status'] = 1;
   $result['list'] = getList();
@@ -61,7 +61,7 @@ function getList() {
   if (count($xtra)) $xtra = 'where '. implode(' and ', $xtra);
   else $xtra = '';
 
-  $sql = 'select * from pet_test_heal_medicine '. $xtra .' order by name limit 30';
+  $sql = 'select * from pet_test_drug '. $xtra .' order by name limit 30';
   $query = $db->query($sql);
   $list = array();
 
