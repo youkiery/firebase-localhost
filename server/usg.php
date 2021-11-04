@@ -95,6 +95,7 @@ function tempdatacover($data) {
     'called' => ($data['called'] ? date('d/m/Y', $data['called']) : ''),
     'cometime' => date('d/m/Y', $data['cometime']),
     'calltime' => ($data['calltime'] ? date('d/m/Y', $data['calltime']) : ''),
+    'time' => date('d/m/Y', $data['time']),
   );
 }
 
@@ -401,15 +402,15 @@ function doneall() {
   $userid = checkUserid();
   $time = time();
   foreach ($data->list as $id) {
-    $sql = "select a.number, a.calltime, b.* from pet_test_usg a inner join pet_test_pet b on a.customerid = b.id where a.id = $id";
+    $sql = "select a.number, a.calltime, a.cometime, b.* from pet_test_usg a inner join pet_test_pet b on a.customerid = b.id where a.id = $id";
     $u = $db->fetch($sql);
     // nếu số con > 0, đặt trạng thái sắp sinh, ngày nhắc là 1 tuần trước sinh
     // nếu không, đặt 5 tháng sau nhắc kỳ salơ
-    $recall = $u['come'] + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
+    $recall = $u['cometime'] + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
     if ($u['number']) $recall = $u['calltime'] - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
     $status = intval(boolval($u['number'])) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
 
-    $sql = "update pet_test_usg set status = $status, recall = $recall, utemp = 1, userid = $userid, time = $time where id = $id";
+    $sql = "update pet_test_usg set status = $status, recall = $recall, utemp = 1, time = $time where id = $id";
     $db->query($sql);
   }
 
@@ -443,7 +444,7 @@ function updatehistory() {
   if ($data->number) $recall = $data->calltime - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
   $status = intval(boolval($data->number)) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
 
-  $sql = "update pet_test_usg set customerid = $customerid, cometime = $data->cometime, calltime = $data->calltime, status = $status, recall = $recall, note = '$data->note', userid = $userid, number = $data->number, utemp = 1, time = ". time() ." where id = $data->id";
+  $sql = "update pet_test_usg set customerid = $customerid, cometime = $data->cometime, calltime = $data->calltime, status = $status, recall = $recall, note = '$data->note', number = $data->number, utemp = 1, time = ". time() ." where id = $data->id";
   $db->query($sql);
 
   $result['status'] = 1;
@@ -477,12 +478,12 @@ function confirm() {
 
   // nếu số con > 0, đặt trạng thái sắp sinh, ngày nhắc là 1 tuần trước sinh
   // nếu không, đặt 5 tháng sau nhắc kỳ salơ
-  $recall = $c['come'] + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
+  $recall = $c['cometime'] + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
   if ($c['number']) $recall = $c['calltime'] - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
   $status = intval(boolval($c['number'])) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
   $userid = checkUserid();
 
-  $sql = "update pet_test_usg set status = $status, utemp = 1, recall = $recall, userid = $userid, time = ". time() ." where id = $data->id";
+  $sql = "update pet_test_usg set status = $status, utemp = 1, recall = $recall, time = ". time() ." where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
   $result['messenger'] = "Đã xác nhận và chuyển vào danh sách nhắc";

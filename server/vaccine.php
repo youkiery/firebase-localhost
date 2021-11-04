@@ -77,7 +77,7 @@ function doneall() {
     $v = $db->fetch($sql);
     $c []= $v['customerid'];
   
-    $sql = "update pet_test_vaccine set status = 0, recall = calltime, utemp = 1, userid = $userid, time = ". time() ." where id = $id";
+    $sql = "update pet_test_vaccine set status = 0, recall = calltime, utemp = 1, time = ". time() ." where id = $id";
     $db->query($sql);
   }
 
@@ -128,7 +128,7 @@ function updatehistory() {
   $data->calltime = isodatetotime($data->calltime);
   $userid = checkUserid();
 
-  $sql = "update pet_test_vaccine set petid = $petid, typeid = $data->typeid, cometime = $data->cometime, calltime = $data->calltime, status = 0, recall = $data->calltime, note = '$data->note', userid = $userid, utemp = 1, time = ". time() ." where id = $data->id";
+  $sql = "update pet_test_vaccine set petid = $petid, typeid = $data->typeid, cometime = $data->cometime, calltime = $data->calltime, status = 0, recall = $data->calltime, note = '$data->note', utemp = 1, time = ". time() ." where id = $data->id";
   $db->query($sql);
 
   $result['status'] = 1;
@@ -199,7 +199,7 @@ function confirm() {
 
   $userid = checkUserid();
 
-  $sql = "update pet_test_vaccine set status = 0, utemp = 1, recall = calltime, userid = $userid, time = ". time() ." where id = $data->id";
+  $sql = "update pet_test_vaccine set status = 0, utemp = 1, recall = calltime, time = ". time() ." where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
   $result['messenger'] = "Đã xác nhận và chuyển vào danh sách nhắc";
@@ -362,7 +362,8 @@ function excel() {
       if (count($dat) >= 2) $number = intval($dat[1]);
       else $number = 0;
 
-      if (count($date) == 3) $calltime = strtotime("$date[2]/$date[1]/$date[0]");
+      if ($number = 0) $calltime = time();
+      else if (count($date) == 3) $calltime = strtotime("$date[2]/$date[1]/$date[0]");
       else $calltime = 0;
       
       $sql = "select * from pet_test_customer where phone = '$row[2]'";
@@ -969,5 +970,6 @@ function tempdatacover($data) {
     'called' => ($data['called'] ? date('d/m/Y', $data['called']) : ''),
     'cometime' => date('d/m/Y', $data['cometime']),
     'calltime' => ($data['calltime'] ? date('d/m/Y', $data['calltime']) : ''),
+    'time' => date('d/m/Y', $data['time']),
   );
 }
