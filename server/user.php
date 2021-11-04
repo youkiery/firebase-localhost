@@ -162,7 +162,7 @@ function signin() {
   if (!empty($user = $db->fetch($sql))) $result['messenger'] = 'Tên người dùng đã tồn tại';
   else {
     $time = time();
-    $sql = "insert into pet_users (username, first_name, last_name, password, email, photo, regdate) values ('$data->username', '$data->firstname', '$data->lastname', '". $crypt->hash_password($data->password) ."', '', '', $time)";
+    $sql = "insert into pet_users (username, name, last_name, password, email, photo, regdate) values ('$data->username', '$data->firstname', '$data->lastname', '". $crypt->hash_password($data->password) ."', '', '', $time)";
     $userid = $db->insertid($sql);
     
     $session = randomString();

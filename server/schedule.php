@@ -81,8 +81,8 @@ function userData() {
       'list' => array()
     );
     for ($j = 0; $j < 4; $j++) {
-      $sql = "select b.first_name from pet_test_row a inner join pet_users b on a.user_id = b.userid where (a.time between $ct and $ce) and type = $j";
-      $l = $db->arr($sql, 'first_name');
+      $sql = "select b.name from pet_test_row a inner join pet_users b on a.user_id = b.userid where (a.time between $ct and $ce) and type = $j";
+      $l = $db->arr($sql, 'name');
       $temp['list'] []= array(
         'name' =>  implode(', ', $l),
         'color' =>  'green',
@@ -121,7 +121,7 @@ function managerData() {
 
   foreach ($ul as $u) {
     $temp = array(
-      'name' => $u['first_name'],
+      'name' => $u['name'],
       'uid' => $u['userid'],
       'list' => array()
     );

@@ -60,7 +60,7 @@ function download() {
     $sql = 'select * from pet_users where userid = '. $prof['doctor'];
     $doctor = $db->fetch($sql);
     
-    $prof['doctor'] = $doctor['last_name'] . ' '. $doctor['first_name'];
+    $prof['doctor'] = $doctor['last_name'] . ' '. $doctor['name'];
     
     $oldContents = $zip->getFromName($fileToModify);
   
@@ -183,7 +183,7 @@ function get() {
   $query = $db->query($sql);
   $doctor = $query->fetch_assoc();
   
-  $data['doctor'] = $doctor['last_name'] . ' '. $doctor['first_name'];
+  $data['doctor'] = $doctor['last_name'] . ' '. $doctor['name'];
   
   $result['status'] = 1;
   $result['data'] = $data;
@@ -315,7 +315,7 @@ function printword() {
   $sql = 'select * from pet_users where userid = '. $prof['doctor'];
   $doctor = $db->fetch($sql);
 
-  $prof['doctor'] = $doctor['last_name'] . ' '. $doctor['first_name'];
+  $prof['doctor'] = $doctor['last_name'] . ' '. $doctor['name'];
 
   $html = file_get_contents ( DIR. '/export/template.php');
 

@@ -32,7 +32,7 @@ function statistic() {
   $data->from = isodatetotime($data->from);
   $data->end = isodatetotime($data->end) + 60 * 60 * 24 - 1;
 
-  $sql = "select a.*, b.name as pet, c.name as customer, c.phone, d.first_name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where (a.time between $data->from and $data->end) order by id desc";
+  $sql = "select a.*, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where (a.time between $data->from and $data->end) order by id desc";
   $list = $db->all($sql);
   $data = array();
   
@@ -155,7 +155,7 @@ function detail() {
   $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, image, status, time) values($data->id, $userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '', '$data->status', $time)";
   $id = $db->insertid($sql);
   
-  $sql = "select a.*, b.first_name as doctor, a.time from pet_test_xray_row a inner join pet_users b on a.doctorid = b.userid where a.id = $id order by time asc";
+  $sql = "select a.*, b.name as doctor, a.time from pet_test_xray_row a inner join pet_users b on a.doctorid = b.userid where a.id = $id order by time asc";
   $row = $db->fetch($sql);
   $row['time'] = date('d/m/Y', $row['time']);
   
@@ -183,11 +183,11 @@ function getlist($id = 0) {
   $data->from = isodatetotime($data->from);
   $data->end = isodatetotime($data->end) + 60 * 60 * 24 - 1;
 
-  $sql = "select a.*, b.name as pet, c.name as customer, c.phone, d.first_name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where (a.time between $data->from and $data->end) or (a.time < $data->from and a.insult = 0) ". ($id ? " and a.id = $id " : '') ." order by id desc";
+  $sql = "select a.*, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where (a.time between $data->from and $data->end) or (a.time < $data->from and a.insult = 0) ". ($id ? " and a.id = $id " : '') ." order by id desc";
   $list = $db->all($sql);
   
   foreach ($list as $key => $value) {
-    $sql = "select a.*, b.first_name as doctor, a.time from pet_test_xray_row a inner join pet_users b on a.doctorid = b.userid where a.xrayid = $value[id] order by time asc";
+    $sql = "select a.*, b.name as doctor, a.time from pet_test_xray_row a inner join pet_users b on a.doctorid = b.userid where a.xrayid = $value[id] order by time asc";
     $row = $db->all($sql);
     foreach ($row as $index => $detail) {
       $row[$index]['time'] = date('d/m/Y', $detail['time']);

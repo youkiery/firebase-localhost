@@ -124,7 +124,7 @@ function getList() {
       'time' => date('d/m', $row['time']),
       'id' => $item['id'],
       'typeid' => $item['type'],
-      'doctor' => (!empty($user['first_name']) ? $user['first_name'] : ''),
+      'doctor' => (!empty($user['name']) ? $user['name'] : ''),
       'type' => $item['type']
     );
     $len = count($list) - 1;

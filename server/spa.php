@@ -264,7 +264,7 @@ function coverData($data) {
     $sql = "select b.name from pet_test_spa_row a inner join pet_test_config b on a.spaid = $row[id] and a.typeid = b.id";
     $service = $db->arr($sql, 'name');
   
-    $sql = "select first_name as name from pet_users where userid = $row[duser]";
+    $sql = "select name as name from pet_users where userid = $row[duser]";
     $d = $db->fetch($sql);
   
     $image = explode(', ', $row['image']);
@@ -290,7 +290,7 @@ function coverData($data) {
 function search() {
   global $data, $db, $result;
 
-  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (b.name like '%$data->keyword%' or b.phone like '%$data->keyword%') order by time desc limit 30";
+  $sql = "select a.*, b.name, b.phone, c.name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (b.name like '%$data->keyword%' or b.phone like '%$data->keyword%') order by time desc limit 30";
   
   $result['status'] = 1;
   $result['list'] = coverData($db->all($sql));
@@ -304,7 +304,7 @@ function rate() {
   $sql = "update pet_test_spa set rate = $data->rate where id = $data->id";
   $db->query($sql);
 
-  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (b.name like '%$data->keyword%' or b.phone like '%$data->keyword%') order by time desc limit 30";
+  $sql = "select a.*, b.name, b.phone, c.name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (b.name like '%$data->keyword%' or b.phone like '%$data->keyword%') order by time desc limit 30";
   
   $result['status'] = 1;
   $result['list'] = coverData($db->all($sql));
@@ -320,7 +320,7 @@ function statrate() {
 
   $data->from = totime($data->from);
   $data->end = totime($data->end);
-  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (a.time between $data->from and $data->end) order by time desc";
+  $sql = "select a.*, b.name, b.phone, c.name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (a.time between $data->from and $data->end) order by time desc";
   
   $result['status'] = 1;
   $result['list'] = coverData($db->all($sql));
@@ -333,7 +333,7 @@ function statistic() {
 
   $data->from = totime($data->from);
   $data->end = totime($data->end) + 60 * 60 * 24 - 1;
-  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (a.time between $data->from and $data->end) order by time desc";
+  $sql = "select a.*, b.name, b.phone, c.name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (a.time between $data->from and $data->end) order by time desc";
   
   $result['status'] = 1;
   $result['list'] = coverData($db->all($sql));
@@ -435,10 +435,10 @@ function getList() {
 
   $time = strtotime(date('Y/m/d', $data->time / 1000));
   $end = $time + 60 * 60 * 24 - 1;
-  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (time between $time and $end) and status < 3 order by utime desc";
+  $sql = "select a.*, b.name, b.phone, c.name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (time between $time and $end) and status < 3 order by utime desc";
   $spa = $db->all($sql);
   
-  $sql = "select a.*, b.name, b.phone, c.first_name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (time between $time and $end) and status = 3 order by utime desc";
+  $sql = "select a.*, b.name, b.phone, c.name as user from pet_test_spa a inner join pet_test_customer b on a.customerid = b.id inner join pet_users c on a.doctorid = c.userid where (time between $time and $end) and status = 3 order by utime desc";
   $spa = array_merge($spa, $db->all($sql));
 
   $sql = "select * from pet_test_config where module = 'spa'";
@@ -455,10 +455,10 @@ function getList() {
     $sql = "select name, phone from pet_test_customer where id = $row[customerid2]";
     $c = $db->fetch($sql);
 
-    $sql = "select first_name as name from pet_users where userid = $row[luser]";
+    $sql = "select name as name from pet_users where userid = $row[luser]";
     $u = $db->fetch($sql);
 
-    $sql = "select first_name as name from pet_users where userid = $row[duser]";
+    $sql = "select name as name from pet_users where userid = $row[duser]";
     $d = $db->fetch($sql);
 
     $image = explode(', ', $row['image']);

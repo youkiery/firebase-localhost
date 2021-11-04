@@ -59,7 +59,7 @@ function getlist() {
     $sql = "SELECT * FROM `wp_postmeta` where post_id = $data[id]";
     $info = $db->obj($sql, 'meta_key', 'meta_value');
     $list[$index]['method'] = $info['_payment_method_title'];
-    $list[$index]['customer'] = $info['_billing_last_name'] . ' '. $info['_billing_first_name'];
+    $list[$index]['customer'] = $info['_billing_last_name'] . ' '. $info['_billing_name'];
     $list[$index]['address'] = $info['_billing_address_1'] . ', '. $info['_billing_city'];
     $list[$index]['mail'] = $info['_billing_email'];
     $list[$index]['phone'] = $info['_billing_phone'];

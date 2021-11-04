@@ -26,8 +26,8 @@ echo json_encode($pl);die();
 // $sql = "select * from pet_users where userid not in (select userid from pet_test_doctor)";
 // $doc = $db->arr($sql, 'userid');
 
-// $sql = "select b.first_name from pet_test_vaccine a inner join pet_users b on a.userid = b.userid where (a.status < 3 or a.status = 5) and a.userid in (". implode(', ', $doc) .")";
-// $list = $db->arr($sql, 'first_name');
+// $sql = "select b.name from pet_test_vaccine a inner join pet_users b on a.userid = b.userid where (a.status < 3 or a.status = 5) and a.userid in (". implode(', ', $doc) .")";
+// $list = $db->arr($sql, 'name');
 
 // $sql = "select userid from pet_test_doctor";
 // $doc = $db->arr($sql, 'userid');
@@ -51,7 +51,7 @@ echo json_encode($pl);die();
 // // lấy danh sách toàn bộ vaccine
 // // kiểm tra khách hàng, lưu lại ngày nhắc lớn nhất và người tiêm
 // $sql = "select * from pet_users";
-// $doctor = $db->obj($sql, 'userid', 'first_name');
+// $doctor = $db->obj($sql, 'userid', 'name');
 // foreach ($l as $row) {
 //   $sql = "select * from pet_test_vaccine a inner join pet_test_pet b on a.petid = b.id where b.customerid = $row[customerid] and userid <> $row[userid] and (status < 3 or status = 5)";
 //   $vl = $db->all($sql);

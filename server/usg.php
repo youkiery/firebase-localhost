@@ -56,7 +56,7 @@ function gettemplist() {
   if (count($xtra)) $xtra = "and".  implode(" and ", $xtra);
   else $xtra = "";
 
-  $sql = "select a.*, d.id as customerid, d.name, d.phone, d.address, c.first_name as doctor from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer d on a.customerid = d.id where a.status = 9 $xtra order by a.id desc";
+  $sql = "select a.*, d.id as customerid, d.name, d.phone, d.address, c.name as doctor from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer d on a.customerid = d.id where a.status = 9 $xtra order by a.id desc";
   $v = $db->all($sql);
   $e = array();
   $l = array();
@@ -73,7 +73,7 @@ function gettemplist() {
   $list[0] = array_merge($l, $e);
   $start = strtotime(date('Y/m/d'));
   $end = $start + 60 * 60 * 24 - 1;
-  $sql = "select a.*, d.id as customerid, d.name, d.phone, d.address, c.first_name as doctor from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer d on a.customerid = d.id where utemp = 1 and (time between $start and $end) $xtra order by a.id desc";
+  $sql = "select a.*, d.id as customerid, d.name, d.phone, d.address, c.name as doctor from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer d on a.customerid = d.id where utemp = 1 and (time between $start and $end) $xtra order by a.id desc";
   $l = $db->all($sql);
 
   foreach ($l as $row) {
@@ -126,26 +126,26 @@ function getlist($today = false) {
 
   if ($today) {
     // danh sách đã thêm hôm nay
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.time between $start and ". time() . ") $xtra and a.status < 6 order by a.id desc";
+    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.time between $start and ". time() . ") $xtra and a.status < 6 order by a.id desc";
     $list = dataCover($db->all($sql));
   }
   else if (empty($data->keyword)) {
     // danh sách nhắc hôm nay
     $list = array(0 => array(), array(), array());
     $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3 - 1;
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 1 and a.status < 4) and recall < $lim $xtra order by a.recall asc";
+    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 1 and a.status < 4) and recall < $lim $xtra order by a.recall asc";
     $list[0] = dataCover($db->all($sql));
     
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 3 and a.status < 7) and recall < $lim $xtra order by a.recall asc";
+    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 3 and a.status < 7) and recall < $lim $xtra order by a.recall asc";
     $list[1] = dataCover($db->all($sql));
     
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status < 2 and recall < $lim $xtra order by a.recall asc";
+    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status < 2 and recall < $lim $xtra order by a.recall asc";
     $list[2] = dataCover($db->all($sql));
   }
   else {
     // danh sách tìm kiếm khách hàng
     $key = trim($data->keyword);
-    $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (b.name like '%$key%' or b.phone like '%$key%') and status < 8 order by a.recall desc";
+    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (b.name like '%$key%' or b.phone like '%$key%') and status < 8 order by a.recall desc";
     $list = dataCover($db->all($sql));
   }
 
@@ -423,7 +423,7 @@ function doneall() {
 function history() {
   global $data, $db, $result;
 
-  $sql = "select a.*, c.first_name as doctor, b.phone, b.name, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status < 3 and b.phone = '$data->phone' order by a.id asc";
+  $sql = "select a.*, c.name as doctor, b.phone, b.name, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status < 3 and b.phone = '$data->phone' order by a.id asc";
   $result['status'] = 1;
   $result['old'] = dataCover($db->all($sql));
   return $result;
@@ -473,7 +473,7 @@ function transfer() {
 function confirm() {
   global $data, $db, $result;
 
-  $sql = "select a.*, c.first_name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.id = $data->id";
+  $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.id = $data->id";
   $c = $db->fetch($sql);
 
   // nếu số con > 0, đặt trạng thái sắp sinh, ngày nhắc là 1 tuần trước sinh
