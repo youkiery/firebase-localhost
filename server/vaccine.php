@@ -348,8 +348,9 @@ function excel() {
       $datetime = explode(' ', $row[4]);
       $date = explode('/', $datetime[0]);
       $cometime = strtotime("$date[2]/$date[1]/$date[0]");
+      $userid = checkExcept($doctor[$row[1]]);
 
-      $sql = "insert into pet_test_vaccine (petid, typeid, cometime, calltime, note, status, recall, userid, time, called) values($p[id], ". $type[$row[0]] .", $cometime, $calltime, '$dat[2]', 5, $calltime, ". $doctor[$row[1]] .", ". time() .", 0)";
+      $sql = "insert into pet_test_vaccine (petid, typeid, cometime, calltime, note, status, recall, userid, time, called) values($p[id], ". $type[$row[0]] .", $cometime, $calltime, '$dat[2]', 5, $calltime, $userid, ". time() .", 0)";
       $db->query($sql);
     }
     else if (isset($usg[$row[0]])) {
@@ -375,8 +376,9 @@ function excel() {
       $datetime = explode(' ', $row[4]);
       $date = explode('/', $datetime[0]);
       $cometime = strtotime("$date[2]/$date[1]/$date[0]");
+      $userid = checkExcept($doctor[$row[1]]);
 
-      $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], ". $doctor[$row[1]] .", $cometime, $calltime, $calltime, '$number', 9, '$dat[2]', ". time() .", 0)";
+      $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], $userid, $cometime, $calltime, $calltime, '$number', 9, '$dat[2]', ". time() .", 0)";
       $db->query($sql);
     }
   }
@@ -417,6 +419,19 @@ function excel() {
 
   $result['messenger'] = "Đã chuyển dữ liệu Excel thành phiếu nhắc";
   return $result;
+}
+
+function checkExcept($userid) {
+  global $db;
+
+  // kiểm tra userid có trong danh sách manager hay không
+  $sql = "select * from pet_test_user_per where module = 'doctor' and type = 1 and userid = $userid";
+  if (empty($p = $db->fetch($sql))) {
+    $sql = "select * from pet_test_user_per where module = 'doctor' and type = 1 order by rand()";
+    $u = $db->fetch($sql);
+    return $u['userid'];
+  }
+  return $userid;
 }
 
 function getvacid($id) {

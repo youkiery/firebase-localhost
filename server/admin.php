@@ -114,8 +114,8 @@ function update() {
 function remove() {
   global $db, $data, $result;
   
-  $sql = "update from pet_users set active = 0 where userid = $data->userid";
-  $query = $db->query($sql);
+  $sql = "update pet_users set active = 0 where userid = $data->userid";
+  $db->query($sql);
     
   $result['status'] = 1;
   $result['list'] = getList();
