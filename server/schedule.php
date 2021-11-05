@@ -66,30 +66,53 @@ function getList($data) {
 
 function userData() {
   global $db, $data;
+  $datearr = array(
+    1 => 'Thứ 2',
+    'Thứ 3',
+    'Thứ 4',
+    'Thứ 5',
+    'Thứ 6',
+    'Thứ 7',
+    'CN',
+  );
+  $checkprevent = array(
+    1 => 2, 2, 2, 2, 2, 1, 1    
+  );
   $dat = array();
   
   $starttime = date("N", $data->time) == 1 ? strtotime(date("Y-m-d", $data->time)) : strtotime(date("Y-m-d", strtotime('last monday', $data->time)));
   $endtime = $starttime + 60 * 60 * 24 * 7 - 1;
   $time = strtotime(date('Y/m/d')) + (8 - date("N")) * 60 * 60 * 24 - 1;
 
+  $userid = checkUserid();
+  $sql = "select * from pet_test_user_per where module = 'manager' and userid = $userid";
+  if (empty($p = $db->fetch($sql))) $p = array('type' => '0');
+
   for ($i = 0; $i < 7; $i++) { 
     $ct = $starttime + 60 * 60 * 24 * $i;
     $ce = $starttime + 60 * 60 * 24 * ($i + 1) - 1;
     $temp = array(
-      'day' => date('N', $ct),
+      'day' => $datearr[date('N', $ct)],
       'date' => date('d/m', $ct),
       'list' => array()
     );
     for ($j = 0; $j < 4; $j++) {
+      // lấy danh sách nhân viên đăng ký
       $sql = "select b.name from pet_test_row a inner join pet_users b on a.user_id = b.userid where (a.time between $ct and $ce) and type = $j";
       $l = $db->arr($sql, 'name');
       $temp['list'] []= array(
         'name' =>  implode(', ', $l),
         'color' =>  'green',
       );
-      
-      if ($ct < $time) $temp['list'][$j]['color'] = 'gray';
-      else if (strpos($temp['list'][$j]['name'], $data->name) !== false) $temp['list'][$j]['color'] = 'orange';
+
+      if ($ct < $time) $temp['list'][$j]['color'] = 'gray'; // nếu thời gian quá tuần, chặn đăng ký
+      else if (strpos($temp['list'][$j]['name'], $data->name) !== false) $temp['list'][$j]['color'] = 'orange'; // nếu có tên người dùng, cho hủy đăng ký
+      else {
+        // kiểm tra nếu nhân viên thuộc diện cá biệt, bỏ qua
+        if ($p['type'] == '0') {
+          if ($checkprevent[date('N', $ct)] <= count($l)) $temp['list'][$j]['color'] = 'gray';
+        }
+      }
     }
     $dat []= $temp;
   }
