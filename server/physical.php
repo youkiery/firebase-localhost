@@ -11,11 +11,11 @@ function download() {
   
   copy($wordDoc, $exportDoc);
   if ($zip->open($exportDoc) === TRUE) {
-    $sql = "select * from pet_test_profile where id = $data->id";
+    $sql = "select * from pet_test_physical where id = $data->id";
     $query = $db->query($sql);
     $prof = $query->fetch_assoc();
     
-    $sql = "select a.value, b.name, b.unit, b.flag, b.up, b.down from pet_test_profile_data a inner join pet_test_target b on a.pid = $data->id and a.tid = b.id and b.module = 'profile'";
+    $sql = "select a.value, b.name, b.unit, b.flag, b.up, b.down from pet_test_physical_data a inner join pet_test_target b on a.pid = $data->id and a.tid = b.id and b.module = 'physical'";
     $query = $db->query($sql);
     $prof['target'] = array();
     while ($row = $query->fetch_assoc()) {
@@ -85,19 +85,19 @@ function download() {
   
     for ($i = 1; $i <= 18; $i++) { 
       if (!empty($prof['target'][$i - 1])) {
-        $profile = $prof['target'][$i - 1];
-        $newContents = str_replace('{target'. $i .'}', $profile['name'] ,$newContents);
-        $newContents = str_replace('{unit'. $i .'}', $profile['unit'], $newContents);
-        $newContents = str_replace('{flag'. $i .'}', $profile['tick'], $newContents);
-        $newContents = str_replace('{range'. $i .'}', $profile['flag'], $newContents);
-        $newContents = str_replace('{restar'. $i .'}', $profile['tar'], $newContents);
+        $physical = $prof['target'][$i - 1];
+        $newContents = str_replace('{target'. $i .'}', $physical['name'] ,$newContents);
+        $newContents = str_replace('{unit'. $i .'}', $physical['unit'], $newContents);
+        $newContents = str_replace('{flag'. $i .'}', $physical['tick'], $newContents);
+        $newContents = str_replace('{range'. $i .'}', $physical['flag'], $newContents);
+        $newContents = str_replace('{restar'. $i .'}', $physical['tar'], $newContents);
   
-        if (!empty($profile['tick'])) {
-          $newContents = str_replace('{ret'. $i .'}', $profile['value'], $newContents);
+        if (!empty($physical['tick'])) {
+          $newContents = str_replace('{ret'. $i .'}', $physical['value'], $newContents);
           $newContents = str_replace('{res'. $i .'}', '', $newContents);
         }
         else {
-          $newContents = str_replace('{res'. $i .'}', $profile['value'], $newContents);
+          $newContents = str_replace('{res'. $i .'}', $physical['value'], $newContents);
           $newContents = str_replace('{ret'. $i .'}', '', $newContents);
         }
       }
@@ -129,10 +129,10 @@ function download() {
 function get() {
   global $data, $db, $result;
     
-  $sql = 'select * from pet_test_profile where id = '. $id;
+  $sql = 'select * from pet_test_physical where id = '. $id;
   $query = $db->query($sql);
   $data = $query->fetch_assoc();
-  $sql = "select a.value, b.name, b.unit, b.flag, b.up, b.down from pet_test_profile_data a inner join pet_test_target b on a.pid = $id and a.tid = b.id and b.module = 'profile'";
+  $sql = "select a.value, b.name, b.unit, b.flag, b.up, b.down from pet_test_physical_data a inner join pet_test_target b on a.pid = $id and a.tid = b.id and b.module = 'physical'";
   $query = $db->query($sql);
   $data['target'] = array();
   $i = 1;
@@ -194,7 +194,7 @@ function get() {
 function init() {
   global $data, $db, $result;
     
-  $sql = "select * from pet_test_config where module = 'profile' and name = 'serial' limit 1";
+  $sql = "select * from pet_test_config where module = 'physical' and name = 'serial' limit 1";
   if (empty($serial = $db->fetch($sql))) $serial = 0;
   $serial = intval($serial) + 1;
 
@@ -211,7 +211,7 @@ function init() {
 function auto() {
   global $data, $db, $result;
     
-  $sql = "select id, name, customer, phone, time from pet_test_profile where phone like '%$data->key%' or customer like '%$data->key%' order by id desc limit 10 offset ". ($data->page - 1) * 10;
+  $sql = "select id, name, customer, phone, time from pet_test_physical where phone like '%$data->key%' or customer like '%$data->key%' order by id desc limit 10 offset ". ($data->page - 1) * 10;
 
   $result['status'] = 1;
   $result['list'] = $db->all($sql);
@@ -224,18 +224,18 @@ function insert() {
 
   $customerid = checkcustomer();
 
-  $sql = "select * from pet_test_target where active = 1 and module = 'profile' order by id asc";
+  $sql = "select * from pet_test_target where active = 1 and module = 'physical' order by id asc";
   $query = $db->query($sql);
   $list = $db->all($sql);
   $userid = checkUserid();
 
   $time = time();
-  $sql = "insert into pet_test_profile (customer, phone, address, name, weight, age, gender, species, serial, sampletype, samplenumber, samplesymbol, samplestatus, symptom, doctor, time) values ('$data->name', '$data->phone', '$data->address', '$data->petname', '$data->weight', '$data->age', '$data->gender', $data->species, '$data->serial', $data->sampletype, '$data->samplenumber', '$data->samplesymbol', '$data->samplestatus', '$data->symptom', $userid, $time)";
+  $sql = "insert into pet_test_physical (customer, phone, address, name, weight, age, gender, species, serial, sampletype, samplenumber, samplesymbol, samplestatus, symptom, doctor, time) values ('$data->name', '$data->phone', '$data->address', '$data->petname', '$data->weight', '$data->age', '$data->gender', $data->species, '$data->serial', $data->sampletype, '$data->samplenumber', '$data->samplesymbol', '$data->samplestatus', '$data->symptom', $userid, $time)";
   $id = $db->insertid($sql);
   // $id = 18;
 
   foreach ($list as $target) {
-    $sql = "insert into pet_test_profile_data (pid, tid, value) values ($id, $target[id], '". $data->target->{$target['id']} ."')";
+    $sql = "insert into pet_test_physical_data (pid, tid, value) values ($id, $target[id], '". $data->target->{$target['id']} ."')";
     $db->query($sql);
   }
 
@@ -243,8 +243,8 @@ function insert() {
   $sql = 'select * from pet_test_config where name = "serial"';
   $query = $db->query($sql);
   $config = $query->fetch_assoc();
-  if (empty($config)) $sql = "insert into pet_test_config (module, name, value) values('profile', 'serial', '$serial')";
-  else $sql = "update pet_test_config set value = '$serial' where module = 'profile' and name = 'serial'";
+  if (empty($config)) $sql = "insert into pet_test_config (module, name, value) values('physical', 'serial', '$serial')";
+  else $sql = "update pet_test_config set value = '$serial' where module = 'physical' and name = 'serial'";
   $db->query($sql);
 
   $data = array(
@@ -264,10 +264,10 @@ function insert() {
 function printword() {
   global $data, $db, $result;
 
-  $sql = "select * from pet_test_profile where id = $data->id";
+  $sql = "select * from pet_test_physical where id = $data->id";
   $prof = $db->fetch($sql);
 
-  $sql = "select a.value, b.name, b.unit, b.flag, b.up, b.down from pet_test_profile_data a inner join pet_test_target b on a.pid = $data->id and a.tid = b.id and b.module = 'profile'";
+  $sql = "select a.value, b.name, b.unit, b.flag, b.up, b.down from pet_test_physical_data a inner join pet_test_target b on a.pid = $data->id and a.tid = b.id and b.module = 'physical'";
   $l = $db->all($sql);
   $prof['target'] = array();
   $i = 1;
@@ -341,19 +341,19 @@ function printword() {
 
   for ($i = 1; $i <= 18; $i++) { 
     if (!empty($prof['target'][$i - 1])) {
-      $profile = $prof['target'][$i - 1];
-      $html = str_replace('{target'. $i .'}', $profile['name'] ,$html);
-      $html = str_replace('{unit'. $i .'}', $profile['unit'], $html);
-      $html = str_replace('{flag'. $i .'}', $profile['tick'], $html);
-      $html = str_replace('{range'. $i .'}', $profile['flag'], $html);
-      $html = str_replace('{restar'. $i .'}', $profile['tar'], $html);
+      $physical = $prof['target'][$i - 1];
+      $html = str_replace('{target'. $i .'}', $physical['name'] ,$html);
+      $html = str_replace('{unit'. $i .'}', $physical['unit'], $html);
+      $html = str_replace('{flag'. $i .'}', $physical['tick'], $html);
+      $html = str_replace('{range'. $i .'}', $physical['flag'], $html);
+      $html = str_replace('{restar'. $i .'}', $physical['tar'], $html);
 
-      if (!empty($profile['tick'])) {
-        $html = str_replace('{ret'. $i .'}', $profile['value'], $html);
+      if (!empty($physical['tick'])) {
+        $html = str_replace('{ret'. $i .'}', $physical['value'], $html);
         $html = str_replace('{res'. $i .'}', '', $html);
       }
       else {
-        $html = str_replace('{res'. $i .'}', $profile['value'], $html);
+        $html = str_replace('{res'. $i .'}', $physical['value'], $html);
         $html = str_replace('{ret'. $i .'}', '', $html);
       }
     }
@@ -377,12 +377,12 @@ function printword() {
 function remove() {
   global $data, $db, $result;
 
-  $sql = 'delete from pet_test_profile where id = '. $id;
+  $sql = 'delete from pet_test_physical where id = '. $id;
   $query = $db->query($sql);
-  $sql = 'delete from pet_test_profile_data where pid = '. $id;
+  $sql = 'delete from pet_test_physical_data where pid = '. $id;
   $query = $db->query($sql);
 
-  $sql = 'select id, name, customer, time from pet_test_profile where name like "%'. $filter['keyword'] .'%" or customer like "%'. $filter['keyword'] .'%" order by id desc limit '. $filter['page'] * 10;
+  $sql = 'select id, name, customer, time from pet_test_physical where name like "%'. $filter['keyword'] .'%" or customer like "%'. $filter['keyword'] .'%" order by id desc limit '. $filter['page'] * 10;
   $query = $db->query($sql);
   $list = array();
 
@@ -399,9 +399,9 @@ function remove() {
 function insertselect() {
   global $data, $db, $result;
 
-  $sql = "select * from pet_test_config where module = 'profile' and name = '$data->typename' and value = '$data->typevalue'";
+  $sql = "select * from pet_test_config where module = 'physical' and name = '$data->typename' and value = '$data->typevalue'";
   if (empty($c = $db->fetch($sql))) {
-    $sql = "insert into pet_test_config (module, name, value) values('profile', '$data->typename', '$data->typevalue')";
+    $sql = "insert into pet_test_config (module, name, value) values('physical', '$data->typename', '$data->typevalue')";
     $db->query($sql);
   }
 
@@ -461,7 +461,7 @@ function checkcustomer() {
 function getlist() {
   global $db, $data;
 
-  $sql = "select id, name, customer, phone, time from pet_test_profile where phone like '%$data->key%' or customer like '%$data->key%' order by id desc limit 10 offset 0";
+  $sql = "select id, name, customer, phone, time from pet_test_physical where phone like '%$data->key%' or customer like '%$data->key%' order by id desc limit 10 offset 0";
   $query = $db->query($sql);
   $list = array();
   
@@ -475,21 +475,21 @@ function getlist() {
 function typelist() {
   global $db;
 
-  $sql = "select id, value as name from pet_test_config where module = 'profile' and name = 'sampletype' order by value asc";
+  $sql = "select id, value as name from pet_test_config where module = 'physical' and name = 'sampletype' order by value asc";
   return $db->all($sql);
 }
 
 function specieslist() {
   global $db;
 
-  $sql = "select id, value as name from pet_test_config where module = 'profile' and name = 'species' order by value asc";
+  $sql = "select id, value as name from pet_test_config where module = 'physical' and name = 'species' order by value asc";
   return $db->all($sql);
 }
 
 function targetlist() {
   global $db;
 
-  $sql = "select * from pet_test_target where active = 1 and module = 'profile' order by id asc";
+  $sql = "select * from pet_test_target where active = 1 and module = 'physical' order by id asc";
 
   return $db->all($sql);
 }

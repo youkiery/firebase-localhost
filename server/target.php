@@ -11,9 +11,9 @@ function init() {
 function insert() {
   global $data, $db, $result;
 
-  $sql = "select * from pet_test_target where name = '$data->name'";
+  $sql = "select * from pet_test_target where name = '$data->name' and module = '$data->module'";
   if (empty($row = $db->fetch($sql))) {
-    $sql = "insert into pet_test_target (name, number, active, unit, intro, flag, up, down, disease, aim) values('$data->name', 0, 1, '$data->unit', '$data->intro', '$data->flag', '$data->up', '$data->down', '$data->disease', '$data->aim')";
+    $sql = "insert into pet_test_target (name, number, active, unit, intro, flag, up, down, disease, aim, module) values('$data->name', 0, 1, '$data->unit', '$data->intro', '$data->flag', '$data->up', '$data->down', '$data->disease', '$data->aim', '$data->module')";
     $query = $db->query($sql);
   }
   else {
@@ -81,7 +81,6 @@ function update() {
 
 function getlist() {
   global $db, $data;
-  $sql = 'select * from pet_test_target where active = 1 and name like "%'. $data->key .'%" order by id asc ';
-  $query = $db->query($sql);
+  $sql = "select * from pet_test_target where active = 1 and module = '$data->module' and name like '%$data->key%' order by id asc ";
   return $db->all($sql);
 }
