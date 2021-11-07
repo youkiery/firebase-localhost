@@ -80,8 +80,10 @@ function insert() {
 function init() {
   global $db, $data, $result;
 
-  $data->start = time() - 60 * 60 * 24 * 7;
-  $data->end = time() + 60 * 60 * 24 - 1;
+  if (empty($data->start)) $data->start = time() - 60 * 60 * 24 * 7;
+  else $data->start = totime($data->start);
+  if (empty($data->end)) $data->end = time() + 60 * 60 * 24 - 1;
+  else $data->end = totime($data->end);
 
   $result['start'] = date('d/m/Y', $data->start);
   $result['end'] = date('d/m/Y');

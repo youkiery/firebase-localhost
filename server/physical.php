@@ -207,6 +207,7 @@ function init() {
 
   $result['status'] = 1;
   $result['list'] = getlist();
+  $result['import'] = getImport();
   $result['serial'] = $serial;
   $result['type'] = typelist();
   $result['species'] = specieslist();
@@ -215,13 +216,76 @@ function init() {
   return $result;
 }
 
+function import() {
+  global $data, $db, $result;
+
+  $userid = checkUserid();
+  $data->name = str_replace(',', '', $data->name);
+  $sql = "insert into pet_test_import (price, module, userid, note, time) values($data->name, 'physical', $userid, '$data->note', ". time() .")";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['import'] = getImport();
+  return $result;
+}
+
+function statistic() {
+  global $data, $db, $result;
+
+  $data->start = strtotime(str_replace('-', '/', $data->start));
+  $data->end = strtotime(str_replace('-', '/', $data->end)) + 60 * 60 * 24 - 1;
+
+  $statis = array(
+    'total' => 0,
+    'price' => 0,
+    'last' => '',
+    'cycle' => ''
+  );
+
+  $sql = "select id from pet_test_physical where time between $data->start and $data->end";
+  $statis['total'] = $db->count($sql);
+
+  $sql = "select sum(price) as price from pet_test_import where module = 'physical' and (time between $data->start and $data->end)";
+  $i = $db->fetch($sql);
+  $statis['price'] = $i['price'];
+
+  $sql = "select * from pet_test_import where module = 'physical' order by time desc limit 2";
+  $l = $db->all($sql);
+  $c = count($l);
+
+  switch ($c) {
+    case 1:
+      $statis['last'] = number_format($l[0]['price'], 0, '', ',') ." vào ngày ". date('d/m/Y', $l[0]['time']);
+      $statis['cycle'] = intval((time() - $l[0]['time']) / 60 / 60 / 24) . " ngày";
+      break;
+    case 2:
+      $statis['last'] = number_format($l[0]['price'], 0, '', ',') ." vào ngày ". date('d/m/Y', $l[0]['time']);
+      $statis['cycle'] = intval(($l[0]['time'] - $l[1]['time']) / 60 / 60 / 24) . " ngày";
+      break;
+    default:
+    $statis['last'] = "";
+    $statis['cycle'] = "";
+}
+
+  $result['status'] = 1;
+  $result['data'] = $statis;
+  return $result;
+}
+
 function auto() {
   global $data, $db, $result;
     
-  $sql = "select id, name, customer, phone, time from pet_test_physical where phone like '%$data->key%' or customer like '%$data->key%' order by id desc limit 10 offset ". ($data->page - 1) * 10;
+  $sql = "select a.id, a.name, a.customer, a.phone, a.time, c.name as doctor from pet_test_physical a inner join pet_users c on a.doctor = c.userid where a.phone like '%$data->key%' or a.customer like '%$data->key%' order by id desc limit 10 offset ". ($data->page - 1) * 10;
+  $query = $db->query($sql);
+  $list = array();
+  
+  while ($row = $query->fetch_assoc()) {
+    $row['time'] = date('d/m/Y', $row['time']);
+    $list []= $row;
+  }
 
   $result['status'] = 1;
-  $result['list'] = $db->all($sql);
+  $result['list'] = $list;
 
   return $result;
 }
@@ -470,10 +534,22 @@ function checkcustomer() {
   return $c['id'];
 }
 
+function getImport() {
+  global $db, $data;
+
+  $sql = "select a.id, a.price, a.time, a.note, b.name from pet_test_import a inner join pet_users b on a.userid = b.userid where a.module = 'physical' order by id desc limit 20";
+  $l = $db->all($sql);
+
+  foreach ($l as $i => $row) {
+    $l[$i]['time'] = date('d/m/Y', $row['time']);
+  }
+  return $l;
+}
+
 function getlist() {
   global $db, $data;
 
-  $sql = "select id, name, customer, phone, time from pet_test_physical where phone like '%$data->key%' or customer like '%$data->key%' order by id desc limit 10 offset 0";
+  $sql = "select a.id, a.name, a.customer, a.phone, a.time, c.name as doctor from pet_test_physical a inner join pet_users c on a.doctor = c.userid where a.phone like '%$data->key%' or a.customer like '%$data->key%' order by id desc limit 10 offset 0";
   $query = $db->query($sql);
   $list = array();
   

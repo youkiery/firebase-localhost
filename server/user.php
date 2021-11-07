@@ -103,6 +103,7 @@ function getinitdata($userid) {
   $usgcode = $db->all($sql);
 
   return array(
+    'month' => array('start' => date('Y-m-01'), 'end' => date('Y-m-t')),
     'userid' => $userid,
     'username' => $userinfo['username'],
     'name' => $userinfo['name'],

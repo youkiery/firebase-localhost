@@ -218,11 +218,17 @@ function init() {
 function auto() {
   global $data, $db, $result;
     
-  $sql = "select id, name, customer, phone, time from pet_test_profile where phone like '%$data->key%' or customer like '%$data->key%' order by id desc limit 10 offset ". ($data->page - 1) * 10;
+  $sql = "select a.id, a.name, a.customer, a.phone, a.time, c.name as doctor from pet_test_profile a inner join pet_users c on a.doctor = c.userid where a.phone like '%$data->key%' or a.customer like '%$data->key%' order by id desc limit 10 offset ". ($data->page - 1) * 10;
+  $query = $db->query($sql);
+  $list = array();
+  
+  while ($row = $query->fetch_assoc()) {
+    $row['time'] = date('d/m/Y', $row['time']);
+    $list []= $row;
+  }
 
   $result['status'] = 1;
-  $result['list'] = $db->all($sql);
-
+  $result['list'] = $list;
   return $result;
 }
 
@@ -473,7 +479,7 @@ function checkcustomer() {
 function getlist() {
   global $db, $data;
 
-  $sql = "select id, name, customer, phone, time from pet_test_profile where phone like '%$data->key%' or customer like '%$data->key%' order by id desc limit 10 offset 0";
+  $sql = "select a.id, a.name, a.customer, a.phone, a.time, c.name as doctor from pet_test_profile a inner join pet_users c on a.doctor = c.userid where a.phone like '%$data->key%' or a.customer like '%$data->key%' order by id desc limit 10 offset 0";
   $query = $db->query($sql);
   $list = array();
   
