@@ -31,11 +31,11 @@ function download() {
       $tick = '';
       $tar = '';
       if ($value < $s) {
-        $tick = 'v';
+        $tick = '<';
         $tar = $row['name'] .' giảm: '. $row['down'];
       }
       else if ($value > $e) {
-        $tick = '^'; 
+        $tick = '>'; 
         $tar = $row['name'] .' tăng: '. $row['up'];
       }
       
@@ -88,23 +88,30 @@ function download() {
         $profile = $prof['target'][$i - 1];
         $newContents = str_replace('{target'. $i .'}', $profile['name'] ,$newContents);
         $newContents = str_replace('{unit'. $i .'}', $profile['unit'], $newContents);
-        $newContents = str_replace('{flag'. $i .'}', $profile['tick'], $newContents);
         $newContents = str_replace('{range'. $i .'}', $profile['flag'], $newContents);
         $newContents = str_replace('{restar'. $i .'}', $profile['tar'], $newContents);
   
-        if (!empty($profile['tick'])) {
-          $newContents = str_replace('{ret'. $i .'}', $profile['value'], $newContents);
-          $newContents = str_replace('{res'. $i .'}', '', $newContents);
+        if ($profile['tick'] == '<') {
+          $newContents = str_replace('{rg'. $i .'}', $profile['value'], $newContents);
+          $newContents = str_replace('{rn'. $i .'}', '', $newContents);
+          $newContents = str_replace('{rt'. $i .'}', '', $newContents);
+        }
+        else if ($profile['tick'] == '>') {
+          $newContents = str_replace('{rt'. $i .'}', $profile['value'], $newContents);
+          $newContents = str_replace('{rn'. $i .'}', '', $newContents);
+          $newContents = str_replace('{rg'. $i .'}', '', $newContents);
         }
         else {
-          $newContents = str_replace('{res'. $i .'}', $profile['value'], $newContents);
-          $newContents = str_replace('{ret'. $i .'}', '', $newContents);
+          $newContents = str_replace('{rn'. $i .'}', $profile['value'], $newContents);
+          $newContents = str_replace('{rt'. $i .'}', '', $newContents);
+          $newContents = str_replace('{rg'. $i .'}', '', $newContents);
         }
       }
       else {
         $newContents = str_replace('{target'. $i .'}', '', $newContents);
-        $newContents = str_replace('{res'. $i .'}', '', $newContents);
-        $newContents = str_replace("{ret$i}", '', $newContents);
+        $newContents = str_replace("{rn$i}", '', $newContents);
+        $newContents = str_replace("{rt$i}", '', $newContents);
+        $newContents = str_replace("{rg$i}", '', $newContents);
         $newContents = str_replace('{unit'. $i .'}', '', $newContents);
         $newContents = str_replace('{flag'. $i .'}', '', $newContents);
         $newContents = str_replace('{range'. $i .'}', '', $newContents);
@@ -284,13 +291,12 @@ function printword() {
     $tick = '';
     $tar = '';
     if ($value < $s) {
-      $tick = 'v';
-      $tar = '<b>'. $i . '. '. $row['name'] .' giảm:</b> '. $row['down'];
-      $i ++;
+      $tick = '<';
+      $tar = '<b>'. $row['name'] .' giảm:</b> '. $row['down'];
     }
     else if ($value > $e) {
-      $tick = '^'; 
-      $tar = '<b>'. $i . '. '. $row['name'] .' tăng:</b> '. $row['up'];
+      $tick = '>'; 
+      $tar = '<b>'. $row['name'] .' tăng:</b> '. $row['up'];
       $i ++;
     }
 
@@ -344,25 +350,31 @@ function printword() {
       $profile = $prof['target'][$i - 1];
       $html = str_replace('{target'. $i .'}', $profile['name'] ,$html);
       $html = str_replace('{unit'. $i .'}', $profile['unit'], $html);
-      $html = str_replace('{flag'. $i .'}', $profile['tick'], $html);
       $html = str_replace('{range'. $i .'}', $profile['flag'], $html);
       $html = str_replace('{restar'. $i .'}', $profile['tar'], $html);
 
-      if (!empty($profile['tick'])) {
-        $html = str_replace('{ret'. $i .'}', $profile['value'], $html);
-        $html = str_replace('{res'. $i .'}', '', $html);
+      if ($profile['tick'] == '<') {
+        $html = str_replace('{rg'. $i .'}', $profile['value'], $html);
+        $html = str_replace('{rn'. $i .'}', '', $html);
+        $html = str_replace('{rt'. $i .'}', '', $html);
+      }
+      else if ($profile['tick'] == '>') {
+        $html = str_replace('{rt'. $i .'}', $profile['value'], $html);
+        $html = str_replace('{rn'. $i .'}', '', $html);
+        $html = str_replace('{rg'. $i .'}', '', $html);
       }
       else {
-        $html = str_replace('{res'. $i .'}', $profile['value'], $html);
-        $html = str_replace('{ret'. $i .'}', '', $html);
+        $html = str_replace('{rn'. $i .'}', $profile['value'], $html);
+        $html = str_replace('{rt'. $i .'}', '', $html);
+        $html = str_replace('{rg'. $i .'}', '', $html);
       }
     }
     else {
       $html = str_replace('{target'. $i .'}', '', $html);
-      $html = str_replace('{res'. $i .'}', '', $html);
-      $html = str_replace('{ret'. $i .'}', '', $html);
+      $html = str_replace('{rn'. $i .'}', '', $html);
+      $html = str_replace('{rt'. $i .'}', '', $html);
+      $html = str_replace('{rg'. $i .'}', '', $html);
       $html = str_replace('{unit'. $i .'}', '', $html);
-      $html = str_replace('{flag'. $i .'}', '', $html);
       $html = str_replace('{range'. $i .'}', '', $html);
       $html = str_replace('{restar'. $i .'}', '', $html);
     }

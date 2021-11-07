@@ -5,7 +5,7 @@ function download() {
   $zip = new ZipArchive;
   
   $fileToModify = 'word/document.xml';
-  $wordDoc = DIR. "/export/template.docx";
+  $wordDoc = DIR. "/export/template2.docx";
   $name = "analysis-". time() .".docx";
   $exportDoc = DIR. "/export/". $name;
   
@@ -31,11 +31,11 @@ function download() {
       $tick = '';
       $tar = '';
       if ($value < $s) {
-        $tick = 'v';
+        $tick = '<';
         $tar = $row['name'] .' giảm: '. $row['down'];
       }
       else if ($value > $e) {
-        $tick = '^'; 
+        $tick = '>'; 
         $tar = $row['name'] .' tăng: '. $row['up'];
       }
       
@@ -88,23 +88,30 @@ function download() {
         $physical = $prof['target'][$i - 1];
         $newContents = str_replace('{target'. $i .'}', $physical['name'] ,$newContents);
         $newContents = str_replace('{unit'. $i .'}', $physical['unit'], $newContents);
-        $newContents = str_replace('{flag'. $i .'}', $physical['tick'], $newContents);
         $newContents = str_replace('{range'. $i .'}', $physical['flag'], $newContents);
         $newContents = str_replace('{restar'. $i .'}', $physical['tar'], $newContents);
   
-        if (!empty($physical['tick'])) {
-          $newContents = str_replace('{ret'. $i .'}', $physical['value'], $newContents);
-          $newContents = str_replace('{res'. $i .'}', '', $newContents);
+        if ($physical['tick'] == '<') {
+          $newContents = str_replace('{rg'. $i .'}', $physical['value'], $newContents);
+          $newContents = str_replace('{rn'. $i .'}', '', $newContents);
+          $newContents = str_replace('{rt'. $i .'}', '', $newContents);
+        }
+        else if ($physical['tick'] == '>') {
+          $newContents = str_replace('{rt'. $i .'}', $physical['value'], $newContents);
+          $newContents = str_replace('{rn'. $i .'}', '', $newContents);
+          $newContents = str_replace('{rg'. $i .'}', '', $newContents);
         }
         else {
-          $newContents = str_replace('{res'. $i .'}', $physical['value'], $newContents);
-          $newContents = str_replace('{ret'. $i .'}', '', $newContents);
+          $newContents = str_replace('{rn'. $i .'}', $physical['value'], $newContents);
+          $newContents = str_replace('{rt'. $i .'}', '', $newContents);
+          $newContents = str_replace('{rg'. $i .'}', '', $newContents);
         }
       }
       else {
         $newContents = str_replace('{target'. $i .'}', '', $newContents);
-        $newContents = str_replace('{res'. $i .'}', '', $newContents);
-        $newContents = str_replace("{ret$i}", '', $newContents);
+        $newContents = str_replace("{rn$i}", '', $newContents);
+        $newContents = str_replace("{rt$i}", '', $newContents);
+        $newContents = str_replace("{rg$i}", '', $newContents);
         $newContents = str_replace('{unit'. $i .'}', '', $newContents);
         $newContents = str_replace('{flag'. $i .'}', '', $newContents);
         $newContents = str_replace('{range'. $i .'}', '', $newContents);
@@ -284,13 +291,12 @@ function printword() {
     $tick = '';
     $tar = '';
     if ($value < $s) {
-      $tick = 'v';
-      $tar = '<b>'. $i . '. '. $row['name'] .' giảm:</b> '. $row['down'];
-      $i ++;
+      $tick = '<';
+      $tar = '<b>'. $row['name'] .' giảm:</b> '. $row['down'];
     }
     else if ($value > $e) {
-      $tick = '^'; 
-      $tar = '<b>'. $i . '. '. $row['name'] .' tăng:</b> '. $row['up'];
+      $tick = '>'; 
+      $tar = '<b>'. $row['name'] .' tăng:</b> '. $row['up'];
       $i ++;
     }
 
@@ -317,7 +323,7 @@ function printword() {
 
   $prof['doctor'] = $doctor['fullname'];
 
-  $html = file_get_contents ( DIR. '/export/template.php');
+  $html = file_get_contents ( DIR. '/export/template2.php');
 
   $html = str_replace('{customer}', $prof['customer'], $html);
   $html = str_replace('{address}', $prof['address'], $html);
@@ -344,25 +350,31 @@ function printword() {
       $physical = $prof['target'][$i - 1];
       $html = str_replace('{target'. $i .'}', $physical['name'] ,$html);
       $html = str_replace('{unit'. $i .'}', $physical['unit'], $html);
-      $html = str_replace('{flag'. $i .'}', $physical['tick'], $html);
       $html = str_replace('{range'. $i .'}', $physical['flag'], $html);
       $html = str_replace('{restar'. $i .'}', $physical['tar'], $html);
 
-      if (!empty($physical['tick'])) {
-        $html = str_replace('{ret'. $i .'}', $physical['value'], $html);
-        $html = str_replace('{res'. $i .'}', '', $html);
+      if ($physical['tick'] == '<') {
+        $html = str_replace('{rg'. $i .'}', $physical['value'], $html);
+        $html = str_replace('{rn'. $i .'}', '', $html);
+        $html = str_replace('{rt'. $i .'}', '', $html);
+      }
+      else if ($physical['tick'] == '>') {
+        $html = str_replace('{rt'. $i .'}', $physical['value'], $html);
+        $html = str_replace('{rn'. $i .'}', '', $html);
+        $html = str_replace('{rg'. $i .'}', '', $html);
       }
       else {
-        $html = str_replace('{res'. $i .'}', $physical['value'], $html);
-        $html = str_replace('{ret'. $i .'}', '', $html);
+        $html = str_replace('{rn'. $i .'}', $physical['value'], $html);
+        $html = str_replace('{rt'. $i .'}', '', $html);
+        $html = str_replace('{rg'. $i .'}', '', $html);
       }
     }
     else {
       $html = str_replace('{target'. $i .'}', '', $html);
-      $html = str_replace('{res'. $i .'}', '', $html);
-      $html = str_replace('{ret'. $i .'}', '', $html);
+      $html = str_replace('{rn'. $i .'}', '', $html);
+      $html = str_replace('{rt'. $i .'}', '', $html);
+      $html = str_replace('{rg'. $i .'}', '', $html);
       $html = str_replace('{unit'. $i .'}', '', $html);
-      $html = str_replace('{flag'. $i .'}', '', $html);
       $html = str_replace('{range'. $i .'}', '', $html);
       $html = str_replace('{restar'. $i .'}', '', $html);
     }
