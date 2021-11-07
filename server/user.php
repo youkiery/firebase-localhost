@@ -177,6 +177,17 @@ function signin() {
   return $result;
 }
 
+function changename() {
+  global $data, $db, $result;
+
+  $userid = checkUserid();
+  $sql = "update pet_users set name = '$data->name' where userid = $userid";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  return $result;
+}
+
 function password() {
   global $data, $db, $result;
   include_once('Encryption.php');
