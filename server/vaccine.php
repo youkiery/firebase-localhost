@@ -80,7 +80,7 @@ function doneall() {
   global $data, $db, $result;
 
   $c = array();
-  $userid = checkUserid();
+  $userid = checkuserid();
   foreach ($data->list as $id) {
     $sql = "select b.* from pet_test_vaccine a inner join pet_test_pet b on a.petid = b.id where a.id = $id";
     $v = $db->fetch($sql);
@@ -114,7 +114,7 @@ function inserthistory() {
   
   $data->cometime = isodatetotime($data->cometime);
   $data->calltime = isodatetotime($data->calltime);
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $sql = "update pet_test_vaccine set status = 3 where id = $data->id";
   $db->query($sql);
@@ -135,7 +135,7 @@ function updatehistory() {
   
   $data->cometime = isodatetotime($data->cometime);
   $data->calltime = isodatetotime($data->calltime);
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $sql = "update pet_test_vaccine set petid = $petid, typeid = $data->typeid, cometime = $data->cometime, calltime = $data->calltime, status = 0, recall = $data->calltime, note = '$data->note', utemp = 1, time = ". time() ." where id = $data->id";
   $db->query($sql);
@@ -206,7 +206,7 @@ function confirm() {
   $c['cometime'] = date('d/m/Y', $c['cometime']);
   $c['calltime'] = date('d/m/Y', $c['calltime']);
 
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $sql = "update pet_test_vaccine set status = 0, utemp = 1, recall = calltime, time = ". time() ." where id = $data->id";
   $db->query($sql);
@@ -456,7 +456,7 @@ function insert() {
   
   $data->cometime = isodatetotime($data->cometime);
   $data->calltime = isodatetotime($data->calltime);
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $sql = "insert into pet_test_vaccine (petid, typeid, cometime, calltime, note, status, called, recall, userid, time) values ($petid, $data->typeid, $data->cometime, $data->calltime, '$data->note', 0, 0, $data->calltime, $userid, ". time() .")";
   $result['status'] = 1;
@@ -588,7 +588,7 @@ function updatetype() {
 function getlist($today = false) {
   global $db, $data, $userid;
 
-  $userid = checkUserid();
+  $userid = checkuserid();
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'vaccine'";
   $role = $db->fetch($sql);
   $docs = implode(', ', $data->docs);
@@ -698,7 +698,7 @@ function dataCover($list, $over = 0) {
 
 function gettemplist() {
   global $db, $data;
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'vaccine'";
   $role = $db->fetch($sql);
@@ -846,7 +846,7 @@ function checkcustomer() {
 function getusglist($today = false) {
   global $db, $data, $userid;
 
-  $userid = checkUserid();
+  $userid = checkuserid();
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'usg'";
   $role = $db->fetch($sql);
   $docs = implode(', ', $data->docs);
@@ -933,7 +933,7 @@ function usgdataCover($list) {
 
 function getusgtemplist() {
   global $db, $data;
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'usg'";
   $role = $db->fetch($sql);

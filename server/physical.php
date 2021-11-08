@@ -219,7 +219,7 @@ function init() {
 function import() {
   global $data, $db, $result;
 
-  $userid = checkUserid();
+  $userid = checkuserid();
   $data->name = str_replace(',', '', $data->name);
   $sql = "insert into pet_test_import (price, module, userid, note, time) values($data->name, 'physical', $userid, '$data->note', ". time() .")";
   $db->query($sql);
@@ -298,7 +298,7 @@ function insert() {
   $sql = "select * from pet_test_target where active = 1 and module = 'physical' order by id asc";
   $query = $db->query($sql);
   $list = $db->all($sql);
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $time = time();
   $sql = "insert into pet_test_physical (customer, phone, address, name, weight, age, gender, species, serial, sampletype, samplenumber, samplesymbol, samplestatus, symptom, doctor, time) values ('$data->name', '$data->phone', '$data->address', '$data->petname', '$data->weight', '$data->age', '$data->gender', $data->species, '$data->serial', $data->sampletype, '$data->samplenumber', '$data->samplesymbol', '$data->samplestatus', '$data->symptom', $userid, $time)";

@@ -32,7 +32,12 @@ function statistic() {
   $data->from = isodatetotime($data->from);
   $data->end = isodatetotime($data->end) + 60 * 60 * 24 - 1;
 
-  $sql = "select a.*, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where (a.time between $data->from and $data->end) order by id desc";
+  $userid = checkuserid();
+  $sql = "select * from pet_test_user_per where userid = $userid and module = 'his' and type = 2";
+  $xtra = "";
+  if (empty($p = $db->fetch($sql))) $xtra = "a.doctorid = $userid and";
+
+  $sql = "select a.*, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where $xtra (a.time between $data->from and $data->end) order by id desc";
   $list = $db->all($sql);
   $data = array();
   
@@ -115,7 +120,7 @@ function insert() {
   global $data, $db, $result;
 
   $petid = checkpet();
-  $userid = checkUserid();
+  $userid = checkuserid();
   
   $sql = "insert into pet_test_xray(petid, doctorid, insult, time) values($petid, $userid, 0, ". time() .")";
   $id = $db->insertid($sql);
@@ -142,7 +147,7 @@ function detail() {
   global $data, $db, $result;
 
   $time = time();
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, image, status, time) values($data->id, $userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '', '$data->status', $time)";
   $id = $db->insertid($sql);
@@ -205,10 +210,10 @@ function checkpet() {
     $c['id'] = $db->insertid($sql);
   }
   
-  $sql = "select * from pet_test_pet where id = $data->pet";
+  $sql = "select * from pet_test_pet where name = '$data->pet'";
   if (empty($p = $db->fetch($sql))) {
-    $sql = "insert into pet_test_pet (name, customerid) values('Chưa đặt tên', $c[id])";
+    $sql = "insert into pet_test_pet (name, customerid) values('$data->pet', $c[id])";
     $p['id'] = $db->insertid($sql);
   }
-  return $pet['id'];
+  return $p['id'];
 }

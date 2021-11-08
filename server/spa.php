@@ -11,7 +11,7 @@ function filter() {
 function init() {
   global $data, $db, $result;
 
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $sql = "select * from pet_test_user_per where module = 'spa' and type = 2 and userid = $userid";
   if (!empty($db->fetch($sql))) {
@@ -188,7 +188,7 @@ function done() {
     $sql = "select * from pet_test_spa where id = $data->id";
     $s = $db->fetch($sql);
     if (!$s['duser']) {
-      $userid = checkUserid();
+      $userid = checkuserid();
       $sql = "update pet_test_spa set utime = ". time() .", status = 1, duser = $userid where id = $data->id";
     }
     else $sql = "update pet_test_spa set utime = ". time() .", status = 1 where id = $data->id";
@@ -210,7 +210,7 @@ function called() {
     $sql = "select * from pet_test_spa where id = $data->id";
     $s = $db->fetch($sql);
     if (!$s['duser']) {
-      $userid = checkUserid();
+      $userid = checkuserid();
       $sql = "update pet_test_spa set utime = ". time() .", status = 1, duser = $userid where id = $data->id";
     }
     else $sql = "update pet_test_spa set utime = ". time() .", status = 2 where id = $data->id";
@@ -232,7 +232,7 @@ function returned() {
     $sql = "select * from pet_test_spa where id = $data->id";
     $s = $db->fetch($sql);
     if (!$s['duser']) {
-      $userid = checkUserid();
+      $userid = checkuserid();
       $sql = "update pet_test_spa set utime = ". time() .", status = 1, duser = $userid where id = $data->id";
     }
     else $sql = "update pet_test_spa set utime = ". time() .", status = 3 where id = $data->id";
@@ -367,7 +367,7 @@ function insert() {
     }
   }
 
-  $userid = checkUserid();
+  $userid = checkuserid();
   
   $sql = "insert into pet_test_spa (customerid, customerid2, doctorid, note, time, utime, weight, image) values($customer[id], $customer2[id], $userid, '$data->note', '" . time() . "', '" . time() . "', $data->weight, '". implode(', ', $data->image)."')";
   $id = $db->insertid($sql);
@@ -410,7 +410,7 @@ function update() {
     }
   }
   
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $sql = "update pet_test_spa set customerid = $customer[id], customerid2 = $customer2[id], doctorid = $userid, note = '$data->note', image = '". implode(', ', $data->image)."', weight = $data->weight, utime = ". time() .", luser = $userid, ltime = ". time() .", status = 0, duser = 0 where id = $data->id";
   $db->query($sql);  

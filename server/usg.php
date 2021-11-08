@@ -43,7 +43,7 @@ function filter() {
 
 function gettemplist() {
   global $db, $data;
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'usg'";
   $role = $db->fetch($sql);
@@ -111,7 +111,7 @@ function tempdatacover($data) {
 function getlist($today = false) {
   global $db, $data, $userid;
 
-  $userid = checkUserid();
+  $userid = checkuserid();
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'usg'";
   $role = $db->fetch($sql);
   $docs = implode(', ', $data->docs);
@@ -219,7 +219,7 @@ function insert() {
   
   $data->cometime = isodatetotime($data->cometime);
   $data->calltime = isodatetotime($data->calltime);
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   // nếu số con > 0, đặt trạng thái sắp sinh, ngày nhắc là 1 tuần trước sinh
     // nếu không, đặt 5 tháng sau nhắc kỳ salơ
@@ -268,7 +268,7 @@ function birth() {
     $data->repregnant = totime("$time[2]/$time[1]/$time[0]");
     $recall = $data->repregnant + 60 * 60 * 24 * 7 * 5;
 
-    $userid = checkUserid();
+    $userid = checkuserid();
     $time = time();
     $sql = "select customerid from pet_test_usg where id = $data->id";
     $usg = $db->fetch($sql);
@@ -408,7 +408,7 @@ function removeall() {
 function doneall() {
   global $data, $db, $result;
 
-  $userid = checkUserid();
+  $userid = checkuserid();
   $time = time();
   foreach ($data->list as $id) {
     $sql = "select a.number, a.calltime, a.cometime, b.* from pet_test_usg a inner join pet_test_pet b on a.customerid = b.id where a.id = $id";
@@ -445,7 +445,7 @@ function updatehistory() {
   
   $data->cometime = isodatetotime($data->cometime);
   $data->calltime = isodatetotime($data->calltime);
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   // nếu số con > 0, đặt trạng thái sắp sinh, ngày nhắc là 1 tuần trước sinh
   // nếu không, đặt 5 tháng sau nhắc kỳ salơ
@@ -490,7 +490,7 @@ function confirm() {
   $recall = $c['cometime'] + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
   if ($c['number']) $recall = $c['calltime'] - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
   $status = intval(boolval($c['number'])) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $sql = "update pet_test_usg set status = $status, utemp = 1, recall = $recall, time = ". time() ." where id = $data->id";
   $db->query($sql);

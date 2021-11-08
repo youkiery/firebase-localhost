@@ -153,7 +153,7 @@ function getPer() {
 function getConfig() {
   global $db;
   
-  $userid = checkUserid();
+  $userid = checkuserid();
   $sql = 'select * from pet_test_user_per where userid = '. $userid;
   return $db->obj($sql, 'module', 'type');
 }

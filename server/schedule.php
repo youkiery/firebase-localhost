@@ -51,7 +51,7 @@ function managerreg() {
 function getRole() {
   global $db;
 
-  $userid = checkUserid();
+  $userid = checkuserid();
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'schedule'";
   $role = $db->fetch($sql);
   return $role['type'];
@@ -84,7 +84,7 @@ function userData() {
   $endtime = $starttime + 60 * 60 * 24 * 7 - 1;
   $time = strtotime(date('Y/m/d')) + (8 - date("N")) * 60 * 60 * 24 - 1;
 
-  $userid = checkUserid();
+  $userid = checkuserid();
   $sql = "select * from pet_test_user_per where module = 'manager' and userid = $userid";
   if (empty($p = $db->fetch($sql))) $p = array('type' => '0');
 

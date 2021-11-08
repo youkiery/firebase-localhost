@@ -11,7 +11,7 @@ function check() {
 function notify() {
   global $data, $db, $result;
 
-  $userid = checkUserid();
+  $userid = checkuserid();
   $sql = "update pet_test_notify set status = 1 where userid = $userid and status = 0";
   $db->query($sql);
 
@@ -181,7 +181,7 @@ function signin() {
 function changename() {
   global $data, $db, $result;
 
-  $userid = checkUserid();
+  $userid = checkuserid();
   $sql = "update pet_users set name = '$data->name' where userid = $userid";
   $db->query($sql);
 
@@ -198,7 +198,7 @@ function password() {
   if (empty($data->old)) $result['messenger'] = 'Mật khẩu cũ trống';
   else if (empty($data->new)) $result['messenger'] = 'Mật khẩu mới trống';
   else {
-    $userid = checkUserid();
+    $userid = checkuserid();
     $sql = 'select password from `pet_users` where userid = '. $userid;
     $user_info = $db->fetch($sql);
     if (empty($user_info)) $result['messenger'] = 'Người dùng không tồn tại';

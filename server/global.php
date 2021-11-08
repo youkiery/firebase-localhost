@@ -1,5 +1,5 @@
 <?php
-function checkUserid() {
+function checkuserid() {
   global $db, $data;
 
   $sql = "select * from pet_users where session = '$data->session'";

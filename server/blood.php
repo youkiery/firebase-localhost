@@ -10,7 +10,7 @@ function in() {
   update_blood_sample($data->number);
   $sql = 'update `pet_config` set config_value = ' . $data->total . ' where config_name = "test_blood_number"';
   $db->query($sql);
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $result['status'] = 1;
   $result['total'] = check_last_blood();
@@ -24,7 +24,7 @@ function out() {
   $targetid = check_blood_remind('Chạy hóa chất tự động');
   $sample_number = check_last_blood();
   $end = $sample_number - $data->number;
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $sql = 'insert into pet_test_blood_row (time, number, start, end, doctor, target) values(' . time() . ', ' . $data->number . ', ' . $sample_number . ', ' . $end . ', ' . $userid . ', ' . $targetid . ')';
   if ($query = $db->query($sql)) {
@@ -48,7 +48,7 @@ function import() {
   die($sql);
   $db->query($sql);
   update_blood_sample($data->number);
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $result['status'] = 1;
   $result['total'] = check_last_blood();
@@ -64,7 +64,7 @@ function insert() {
   $sample_number = check_last_blood();
   $end = $sample_number - $data->number;
   $time = time();
-  $userid = checkUserid();
+  $userid = checkuserid();
 
   $sql = 'insert into pet_test_blood_row (time, number, start, end, doctor, target) values(' . $time . ', ' . $data->number . ', ' . $sample_number . ', ' . $end . ', ' . $userid . ', ' . $targetid . ')';
   if ($db->query($sql)) {

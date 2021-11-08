@@ -20,7 +20,7 @@ function connect() {
 function pick() {
   global $data;
   
-  $userid = checkUserid();
+  $userid = checkuserid();
   $db = connect();
 
   $sql = "update wp_posts set post_status = 'wc-processing', post_content = '$userid' where id = $data->id";
@@ -45,7 +45,7 @@ function done() {
 
 function getlist() {
   global $data;
-  $userid = checkUserid();
+  $userid = checkuserid();
   $db = connect();
   $status = array(
     'wc-on-hold' => 'Chưa nhận',
@@ -99,7 +99,7 @@ function getlist() {
 
 //   $data->cometime = totime($data->cometime);
 //   $data->calltime = totime($data->calltime);
-//   $userid = checkUserid();
+//   $userid = checkuserid();
 //   $sql = "insert into pet_test_usg2 (customerid, userid, cometime, calltime, called, recall, number, status, note, time) values ($customer[id], $userid, $data->cometime, $data->calltime, 0, $data->calltime, $data->number, 0, '', ". time() .")";
 //   $db->query($sql);
 //   $result['status'] = 1;
@@ -113,7 +113,7 @@ function getlist() {
 
 //   $data->cometime = totime($data->cometime);
 //   $data->calltime = totime($data->calltime);
-//   $userid = checkUserid();
+//   $userid = checkuserid();
 //   $sql = "update pet_test_usg2 set number = $data->number, cometime = $data->cometime, calltime = $data->calltime where id = $data->id";
 //   // die($sql);
 //   $db->query($sql);
