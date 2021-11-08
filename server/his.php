@@ -89,13 +89,17 @@ function pet() {
   global $data, $db, $result;
 
   $sql = "select * from pet_test_customer where phone = '$data->phone'";
+
   if (empty($c = $db->fetch($sql))) {
-    $sql = "insert into pet_test_customer (name, phone, addess) values('$data->customer', '$data->phone', '')";
+    $sql = "insert into pet_test_customer (name, phone, addess) values('$data->name', '$data->phone', '')";
     $c['id'] = $db->insertid($sql);
   }
   
-  $sql = "insert into pet_test_pet (name, customerid) values('$data->name', $c[id])";
-  $p['id'] = $db->insertid($sql);
+  $sql = "select * from pet_test_pet where id = $data->pet";
+  if (empty($p = $db->fetch($sql))) {
+    $sql = "insert into pet_test_pet (name, customerid) values('Chưa đặt tên', $c[id])";
+    $p['id'] = $db->insertid($sql);
+  }
   
   $sql = "select id, name from pet_test_pet where customerid = $c[id]";
   $list = $db->all($sql);
@@ -110,22 +114,10 @@ function pet() {
 function insert() {
   global $data, $db, $result;
 
-  $sql = "select * from pet_test_customer where phone = '$data->phone'";
-
-  if (empty($c = $db->fetch($sql))) {
-    $sql = "insert into pet_test_customer (name, phone, addess) values('$data->name', '$data->phone', '')";
-    $c['id'] = $db->insertid($sql);
-  }
-  
-  $sql = "select * from pet_test_pet where id = $data->pet";
-  if (empty($p = $db->fetch($sql))) {
-    $sql = "insert into pet_test_pet (name, customerid) values('Chưa đặt tên', $c[id])";
-    $p['id'] = $db->insertid($sql);
-  }
-
+  $petid = checkpet();
   $userid = checkUserid();
   
-  $sql = "insert into pet_test_xray(petid, doctorid, insult, time) values($p[id], $userid, 0, ". time() .")";
+  $sql = "insert into pet_test_xray(petid, doctorid, insult, time) values($petid, $userid, 0, ". time() .")";
   $id = $db->insertid($sql);
   
   $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, image, status, time) values($id, $userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '', '$data->status', ". time() .")";
@@ -202,4 +194,21 @@ function getlist($id = 0) {
     $list[$key]['his'] = implode(', ', $his);
   }
   return $list;
+}
+
+function checkpet() {
+  global $data, $db;
+  $sql = "select * from pet_test_customer where phone = '$data->phone'";
+
+  if (empty($c = $db->fetch($sql))) {
+    $sql = "insert into pet_test_customer (name, phone, addess) values('$data->name', '$data->phone', '')";
+    $c['id'] = $db->insertid($sql);
+  }
+  
+  $sql = "select * from pet_test_pet where id = $data->pet";
+  if (empty($p = $db->fetch($sql))) {
+    $sql = "insert into pet_test_pet (name, customerid) values('Chưa đặt tên', $c[id])";
+    $p['id'] = $db->insertid($sql);
+  }
+  return $pet['id'];
 }
