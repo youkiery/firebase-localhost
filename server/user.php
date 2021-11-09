@@ -67,12 +67,12 @@ function getinitdata($userid) {
   $sql = "select * from pet_test_vaccine where status = 5 and userid = $userid";
   $vt = $db->count($sql);
 
-  $sql = "select id, name, value from pet_test_config where module = 'spa' order by id asc";
+  $sql = "select id, name, value, alt from pet_test_config where module = 'spa' order by value asc";
   $spa = $db->all($sql);
   $ds = array();
 
   foreach ($spa as $key => $s) {
-    if ($s['value']) $ds []= $s['id'];
+    if ($s['alt']) $ds []= $s['id'];
     $spa[$key]['check'] = 0;
   }
 

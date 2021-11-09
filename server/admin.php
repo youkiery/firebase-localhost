@@ -8,6 +8,30 @@ function auto() {
   return $result;
 }
 
+function spa() {
+  global $db, $data, $result;
+  $sql = "select id, name, value, alt from pet_test_config where module = 'spa' order by value asc";
+  $result['status'] = 1;
+  $result['list'] = $db->all($sql);
+  return $result;
+}
+
+function type() {
+  global $db, $data, $result;
+  $sql = "select * from pet_test_type where active = 1";
+  $result['status'] = 1;
+  $result['list'] = $db->all($sql);
+  return $result;
+}
+
+function usg() {
+  global $db, $data, $result;
+  $sql = "select id, name from pet_test_config where module = 'usg'";
+  $result['status'] = 1;
+  $result['list'] = $db->all($sql);
+  return $result;
+}
+
 function filter() {
   global $db, $data, $result;
   

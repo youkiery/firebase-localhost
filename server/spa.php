@@ -88,7 +88,10 @@ function updatetype() {
 function inserttype() {
   global $data, $db, $result;
 
-  $sql = "insert into pet_test_config (module, name, value) values('spa', '$data->name', '')";
+  $sql = "select * from pet_test_config order by value desc limit 1";
+  $c = $db->fetch($sql);
+
+  $sql = "insert into pet_test_config (module, name, value) values('spa', '$data->name', ". (intval($c['value'] + 1)) .")";
   $db->query($sql);
 
   $result['status'] = 1;
@@ -99,19 +102,22 @@ function inserttype() {
 function uptype() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_config set id = 0 where id = $data->id";
+  $sql = "select * from pet_test_config where id = $data->id";
+  $c = $db->fetch($sql);
+  $sql = "select * from pet_test_config where id = $data->id2";
+  $c2 = $db->fetch($sql);
+
+  $sql = "update pet_test_config set alt = $c[alt] where id = $data->id2";
   $db->query($sql);
-  $sql = "update pet_test_config set id = $data->id where id = $data->id2";
-  $db->query($sql);
-  $sql = "update pet_test_config set id = $data->id2 where id = 0";
+  $sql = "update pet_test_config set alt = $c2[alt] where id = $data->id";
   $db->query($sql);
 
-  $sql = "select id, name, value from pet_test_config where module = 'spa' order by id asc";
+  $sql = "select id, name, value, alt from pet_test_config where module = 'spa' order by value asc";
   $spa = $db->all($sql);
   $ds = array();
 
   foreach ($spa as $key => $s) {
-    if ($s['value']) $ds []= $s['id'];
+    if ($s['alt']) $ds []= $s['id'];
     $spa[$key]['check'] = 0;
   }
 
@@ -124,19 +130,22 @@ function uptype() {
 function downtype() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_config set id = 0 where id = $data->id2";
+  $sql = "select * from pet_test_config where id = $data->id";
+  $c = $db->fetch($sql);
+  $sql = "select * from pet_test_config where id = $data->id2";
+  $c2 = $db->fetch($sql);
+
+  $sql = "update pet_test_config set alt = $c[alt] where id = $data->id2";
   $db->query($sql);
-  $sql = "update pet_test_config set id = $data->id2 where id = $data->id";
-  $db->query($sql);
-  $sql = "update pet_test_config set id = $data->id where id = 0";
+  $sql = "update pet_test_config set alt = $c2[alt] where id = $data->id";
   $db->query($sql);
 
-  $sql = "select id, name, value from pet_test_config where module = 'spa' order by id asc";
+  $sql = "select id, name, value, alt from pet_test_config where module = 'spa' order by value asc";
   $spa = $db->all($sql);
   $ds = array();
 
   foreach ($spa as $key => $s) {
-    if ($s['value']) $ds []= $s['id'];
+    if ($s['alt']) $ds []= $s['id'];
     $spa[$key]['check'] = 0;
   }
 
@@ -149,15 +158,15 @@ function downtype() {
 function toggletype() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_config set value = '". (intval(!$data->value) ? 1 : '') ."' where id = $data->id";
+  $sql = "update pet_test_config set alt = '". (intval(!$data->alt) ? 1 : '') ."' where id = $data->id";
   $db->query($sql);
 
-  $sql = "select id, name, value from pet_test_config where module = 'spa'";
+  $sql = "select id, name, value, alt from pet_test_config where module = 'spa' order by value asc";
   $spa = $db->all($sql);
   $ds = array();
 
   foreach ($spa as $key => $s) {
-    if ($s['value']) $ds []= $s['id'];
+    if ($s['alt']) $ds []= $s['id'];
     $spa[$key]['check'] = 0;
   }
 
@@ -492,7 +501,7 @@ function getList() {
 function gettypelist() {
   global $db;
 
-  $sql = "select id, name, value from pet_test_config where module = 'spa' order by id asc";
+  $sql = "select id, name, value, alt from pet_test_config where module = 'spa' order by value asc";
   $spa = $db->all($sql);
 
   foreach ($spa as $key => $s) {
