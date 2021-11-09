@@ -323,9 +323,15 @@ function excel() {
     $exdata []= $temp;
   }
 
+  $res = array(
+    'on' => 1, 'total' => 0, 'vaccine' => 0, 'insert' => '', 'error' => array()
+  );
+
   $l = array();
   foreach ($exdata as $row) {
+    $res['total'] ++;
     if (isset($type[$row[0]])) {
+      $res['vaccine'] ++;
       $dat = explode(';', $row[5]);
       if (!isset($dat[1])) $dat[1] = '';
       if (!isset($dat[2])) $dat[2] = '';
@@ -360,9 +366,17 @@ function excel() {
       $userid = checkExcept($doctor[$row[1]]);
 
       $sql = "insert into pet_test_vaccine (petid, typeid, cometime, calltime, note, status, recall, userid, time, called) values($p[id], ". $type[$row[0]] .", $cometime, $calltime, '$dat[2]', 5, $calltime, $userid, ". time() .", 0)";
-      $db->query($sql);
+      if ($db->query($sql)) $res['insert'] ++;
+      else {
+        $res['error'][] = array(
+          'name' => $row[3],
+          'phone' => $row[2],
+          'note' => $row[5],
+        );
+      }
     }
     else if (isset($usg[$row[0]])) {
+      $res['vaccine'] ++;
       $dat = explode(';', $row[5]);
       if (!isset($dat[1])) $dat[1] = '';
       if (!isset($dat[2])) $dat[2] = '';
@@ -388,11 +402,19 @@ function excel() {
       $userid = checkExcept($doctor[$row[1]]);
 
       $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], $userid, $cometime, $calltime, $calltime, '$number', 9, '$dat[2]', ". time() .", 0)";
-      $db->query($sql);
+      if ($db->query($sql)) $res['insert'] ++;
+      else {
+        $res['error'][] = array(
+          'name' => $row[3],
+          'phone' => $row[2],
+          'note' => $row[5],
+        );
+      }
     }
   }
 
   $result['messenger'] = "Đã chuyển dữ liệu Excel thành phiếu nhắc";
+  $result['data'] = $res;
   return $result;
 }
 
