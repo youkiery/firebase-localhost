@@ -56,14 +56,6 @@ function getinitdata($userid) {
   $sql = "select * from pet_test_type where active = 1";
   $type = $db->all($sql);
 
-  $sql = "select * from pet_test_notify where userid = $userid order by id desc limit 30";
-  $notify = $db->all($sql);
-  $result['notification'] = $notify;
-
-  $sql = "select * from pet_test_notify where userid = $userid and status = 0 order by id desc limit 30";
-  $notify = $db->count($sql);
-  $result['notify'] = $notify;
-
   $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3 - 1;
   $sql = "select * from pet_test_usg where status < 7 and recall < $lim and userid = $userid";
   $uc = $db->count($sql);

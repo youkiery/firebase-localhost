@@ -392,40 +392,6 @@ function excel() {
     }
   }
 
-  $sql = "select userid, count(*) as num from pet_test_vaccine where status = 5 group by userid order by userid";
-  $u = $db->all($sql);
-  foreach ($u as $row) {
-    $time = time();
-    $sql = "insert into pet_test_notify (userid, status, content, module, time) values($row[userid], 0, 'Có $row[num] phiếu tạm vaccine cần xác nhận', 'vaccine', $time)";
-    $db->query($sql);
-  }
-
-  $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3;
-  $sql = "select userid, count(*) as num from pet_test_vaccine where status < 2 and time < $lim group by userid order by userid";
-  $u = $db->all($sql);
-  foreach ($u as $row) {
-    $time = time();
-    $sql = "insert into pet_test_notify (userid, status, content, module, time) values($row[userid], 0, 'Còn $row[num] phiếu nhắc vaccine cần phải gọi', 'vaccine', $time)";
-    $db->query($sql);
-  }
-
-  $sql = "select userid, count(*) as num from pet_test_usg where status = 9 group by userid order by userid";
-  $u = $db->all($sql);
-  foreach ($u as $row) {
-    $time = time();
-    $sql = "insert into pet_test_notify (userid, status, content, module, time) values($row[userid], 0, 'Có $row[num] phiếu tạm siêu âm cần xác nhận', 'usg', $time)";
-    $db->query($sql);
-  }
-
-  $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3;
-  $sql = "select userid, count(*) as num from pet_test_usg where status < 6 and time < $lim group by userid order by userid";
-  $u = $db->all($sql);
-  foreach ($u as $row) {
-    $time = time();
-    $sql = "insert into pet_test_notify (userid, status, content, module, time) values($row[userid], 0, 'Còn $row[num] phiếu nhắc siêu âm cần phải gọi', 'usg', $time)";
-    $db->query($sql);
-  }
-
   $result['messenger'] = "Đã chuyển dữ liệu Excel thành phiếu nhắc";
   return $result;
 }
