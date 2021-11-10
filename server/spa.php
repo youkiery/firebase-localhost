@@ -107,9 +107,9 @@ function uptype() {
   $sql = "select * from pet_test_config where id = $data->id2";
   $c2 = $db->fetch($sql);
 
-  $sql = "update pet_test_config set alt = $c[alt] where id = $data->id2";
+  $sql = "update pet_test_config set value = $c[value] where id = $data->id2";
   $db->query($sql);
-  $sql = "update pet_test_config set alt = $c2[alt] where id = $data->id";
+  $sql = "update pet_test_config set value = $c2[value] where id = $data->id";
   $db->query($sql);
 
   $sql = "select id, name, value, alt from pet_test_config where module = 'spa' order by value asc";
@@ -135,9 +135,9 @@ function downtype() {
   $sql = "select * from pet_test_config where id = $data->id2";
   $c2 = $db->fetch($sql);
 
-  $sql = "update pet_test_config set alt = $c[alt] where id = $data->id2";
+  $sql = "update pet_test_config set value = $c[value] where id = $data->id2";
   $db->query($sql);
-  $sql = "update pet_test_config set alt = $c2[alt] where id = $data->id";
+  $sql = "update pet_test_config set value = $c2[value] where id = $data->id";
   $db->query($sql);
 
   $sql = "select id, name, value, alt from pet_test_config where module = 'spa' order by value asc";
