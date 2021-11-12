@@ -17,7 +17,7 @@ function add() {
 function update() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_xray_row set eye = '$data->eye', temperate = '$data->temperate', other = '$data->other', treat = '$data->treat', status = '$data->status' where id = $data->detailid";
+  $sql = "update pet_test_xray_row set eye = '$data->eye', temperate = '$data->temperate', other = '$data->other', treat = '$data->treat', status = '$data->status', image = '". implode(', ', $data->image) ."' where id = $data->detailid";
   $db->query($sql);
   
   $result['status'] = 1;
@@ -42,9 +42,10 @@ function statistic() {
   $data = array();
   
   foreach ($list as $key => $value) {
-    if (empty($data[$value['doctorid']])) $data[$value['doctorid']] = array(0 => 0, 1 => 0, 2 => 0, 3 => 0, 'name' => $value['doctor']);
+    if (empty($data[$value['doctorid']])) $data[$value['doctorid']] = array(0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 0, 'name' => $value['doctor']);
     $data[$value['doctorid']] [$value['insult']] ++;
     $data[$value['doctorid']] [3] ++;
+    $data[$value['doctorid']] [4] += $value['rate'];
   }
   
   $stat = array();
@@ -56,10 +57,16 @@ function statistic() {
     $stat []= $data[$key];
   }
   
+  usort($data, "ratest");
+
   $result['status'] = 1;
   $result['data'] = $stat;
   
   return $result;
+}
+
+function ratest($a, $b) {
+  return $a[4] > $b[4];
 }
 
 function returned() {
@@ -125,7 +132,7 @@ function insert() {
   $sql = "insert into pet_test_xray(petid, doctorid, insult, time) values($petid, $userid, 0, ". time() .")";
   $id = $db->insertid($sql);
   
-  $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, image, status, time) values($id, $userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '', '$data->status', ". time() .")";
+  $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, image, status, time) values($id, $userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '". implode(', ', $data->image) ."', '$data->status', ". time() .")";
   $db->query($sql);
   
   $result['status'] = 1;
@@ -149,7 +156,7 @@ function detail() {
   $time = time();
   $userid = checkuserid();
 
-  $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, image, status, time) values($data->id, $userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '', '$data->status', $time)";
+  $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, status, time, image) values($data->id, $userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '$data->status', $time, '". implode(', ', $data->image) ."')";
   $id = $db->insertid($sql);
   
   $sql = "select a.*, b.name as doctor, a.time from pet_test_xray_row a inner join pet_users b on a.doctorid = b.userid where a.id = $id order by time asc";
@@ -188,17 +195,33 @@ function getlist($id = 0) {
     $row = $db->all($sql);
     foreach ($row as $index => $detail) {
       $row[$index]['time'] = date('d/m/Y', $detail['time']);
+      $image = explode(', ', $detail['image']);
+      if (count($image) == 1 && $image[0] == '') $row[$index]['image'] = array();
+      else $row[$index]['image'] = $image;
     }
   
     $sql = "select * from pet_test_xray_his where petid = $value[petid]";
     $his = $db->obj($sql, 'id', 'his');
   
     $list[$key]['status'] = $row[count($row) - 1]['status'];
+    $list[$key]['rate'] = intval($value['rate']);
     $list[$key]['detail'] = $row;
     $list[$key]['time'] = date('d/m/Y', $value['time']);
     $list[$key]['his'] = implode(', ', $his);
   }
   return $list;
+}
+
+function statrate() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_xray set rate = $data->rate where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = getlist();
+
+  return $result;
 }
 
 function checkpet() {
@@ -210,7 +233,7 @@ function checkpet() {
     $c['id'] = $db->insertid($sql);
   }
   
-  $sql = "select * from pet_test_pet where name = '$data->pet'";
+  $sql = "select * from pet_test_pet where name = '$data->pet' and customerid = '$c[id]'";
   if (empty($p = $db->fetch($sql))) {
     $sql = "insert into pet_test_pet (name, customerid) values('$data->pet', $c[id])";
     $p['id'] = $db->insertid($sql);
