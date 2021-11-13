@@ -130,7 +130,7 @@ function managerData() {
   $endtime = $starttime + 60 * 60 * 24 * 7 - 1;
   $time = time();
 
-  $sql = "select b.userid, b.name from pet_test_user_per a inner join pet_users b on a.userid = b.userid where module = 'doctor' and type = 1";
+  $sql = "select b.userid, b.name from pet_test_user_per a inner join pet_users b on a.userid = b.userid where module = 'schedule' and type > 0";
   $ul = $db->all($sql);
 
   for ($i = 0; $i < 7; $i++) { 

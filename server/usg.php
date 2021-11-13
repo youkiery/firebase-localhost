@@ -45,7 +45,7 @@ function gettemplist() {
   global $db, $data;
   $userid = checkuserid();
 
-  $sql = "select * from pet_test_user_per where userid = $userid and module = 'usg'";
+  $sql = "select * from pet_test_user_per where userid = $userid and module = 'vaccine'";
   $role = $db->fetch($sql);
   $docs = implode(', ', $data->docs);
 
@@ -112,7 +112,7 @@ function getlist($today = false) {
   global $db, $data, $userid;
 
   $userid = checkuserid();
-  $sql = "select * from pet_test_user_per where userid = $userid and module = 'usg'";
+  $sql = "select * from pet_test_user_per where userid = $userid and module = 'vaccine'";
   $role = $db->fetch($sql);
   $docs = implode(', ', $data->docs);
 
