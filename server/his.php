@@ -181,13 +181,29 @@ function dead() {
   return $result;
 }
 
+function share() {
+  global $db, $data, $result;
+
+  $sql = "update pet_test_xray set share = ". intval(!$data->share) ." where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = getList();
+  return $result;
+}
+
 function getlist($id = 0) {
   global $db, $data;
 
   $data->from = isodatetotime($data->from);
   $data->end = isodatetotime($data->end) + 60 * 60 * 24 - 1;
+  $userid = checkUserid();
 
-  $sql = "select a.*, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where (a.time between $data->from and $data->end) or (a.time < $data->from and a.insult = 0) ". ($id ? " and a.id = $id " : '') ." order by id desc";
+  $sql = "select * from pet_test_user_per where module = 'his' and userid = $userid";
+  if (empty($p = $db->fetch($sql))) $xtra = " (a.userid = $userid or a.share = 1) and ";
+  else $xtra = '';
+
+  $sql = "select a.*, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where $xtra (a.time between $data->from and $data->end) or (a.time < $data->from and a.insult = 0) ". ($id ? " and a.id = $id " : '') ." order by id desc";
   $list = $db->all($sql);
   
   foreach ($list as $key => $value) {
