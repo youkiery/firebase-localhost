@@ -3,6 +3,7 @@ function init() {
   global $data, $db, $result;
 
   $result['status'] = 1;
+  $result['clock'] = getclock();
   $result['list'] = getlist();
   return $result;
 }
@@ -10,11 +11,56 @@ function init() {
 function remove() {
   global $data, $db, $result;
 
-  if ($data->segment == '0') $sql = "delete from pet_test_";
+  if ($data->segment == '0') $sql = "delete from pet_test_ride where id = $data->id";
+  else $sql = "delete from pet_test_import where id = $data->id";
+  $db->query($sql);
 
   $result['status'] = 1;
   $result['list'] = getlist();
   return $result;
+}
+
+function cole() {
+  global $data, $db, $result;
+
+  $userid = checkUserid();
+  $money = str_replace(',', '', $data->money);
+  $time = time();
+  $sql = "insert into pet_test_ride (userid, clockf, clocke, money, destination, note, time) values($userid, $data->clockf, $data->clocke, $money, '$data->destination', '$data->note', $time)";
+  $db->query($sql);
+
+  $sql = "update pet_test_config set name = '$data->clocke' where module = 'clock'";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = getlist();
+  return $result;
+}
+
+function pay() {
+  global $data, $db, $result;
+
+  $userid = checkUserid();
+  $money = str_replace(',', '', $data->money);
+  $time = time();
+  $sql = "insert into pet_test_import (userid, price, module, note, time) values($userid, $money, 'ride', '$data->note', $time)";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = getlist();
+  return $result;
+}
+
+function getclock() {
+  global $db, $data;
+
+  $sql = "select * from pet_test_config where module = 'clock'";
+  if (empty($c = $db->fetch($sql))) {
+    $sql = "insert into pet_test_config (module, name, value) values ('clock', '0','')";
+    $db->query($sql);
+    return 0;
+  }
+  return $c['name'];
 }
 
 function getlist($today = false) {
@@ -22,8 +68,8 @@ function getlist($today = false) {
 
   $data->start = isodatetotime($data->start);
   $data->end = isodatetotime($data->end);
-  $ride = "select * from pet_test_ride where (time between $data->start and $data->end)";
-  $pay = "select * from pet_test_import where module = 'ride' and (time between $data->start and $data->end)";
+  $ride = "select a.*, b.name as user from pet_test_ride a inner join pet_users b on a.userid = b.userid where (a.time between $data->start and $data->end)";
+  $pay = "select a.*, b.name as user from pet_test_import a inner join pet_users b on a.userid = b.userid where a.module = 'ride' and (a.time between $data->start and $data->end)";
 
   return array(
     0 => $db->all($ride),
