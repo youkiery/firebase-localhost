@@ -76,3 +76,55 @@ function getlist($today = false) {
     $db->all($pay),
   );
 }
+
+function statistic() {
+  global $data, $db, $result;
+
+  $data->start = isodatetotime($data->start);
+  $data->end = isodatetotime($data->end) + 60 * 60 * 24 - 1;
+
+  $userid = checkuserid();
+  $sql = "select * from pet_test_user_per where userid = $userid and module = 'ride' and type = 2";
+  $xtra = "";
+  if (empty($p = $db->fetch($sql))) $xtra = "a.userid = $userid and";
+
+  $sql = "select * from pet_test_ride where $xtra (time between $data->start and $data->end) order by id desc";
+  $cole = $db->all($sql);
+  $sql = "select * from pet_test_import where $xtra module = 'ride' and (time between $data->start and $data->end) order by id desc";
+  $pay = $db->all($sql);
+  $data = array(
+    'cole' => 0, 'pay' => 0, 'count' => 0, 'list' => array()
+  );
+  $temp = array();
+
+  foreach ($cole as $row) {
+    $data['cole'] += $row['money'];
+    $data['count'] ++;
+    if (empty($temp[$row['userid']])) {
+      $sql = "select name from pet_users where userid = $row[userid]";
+      $u = $db->fetch($sql);
+      $temp[$row['userid']] = array('name' => $u['name'], 'clock' => 0, 'cole' => 0, 'pay' => 0, 'count' => 0);
+    }
+    $temp[$row['userid']]['clock'] = $row['clocke'] - $row['clockf'];
+    $temp[$row['userid']]['cole'] = $row['money'];
+    $temp[$row['userid']]['count'] ++;
+  }
+
+  foreach ($pay as $row) {
+    $data['pay'] += $row['price'];
+    if (empty($temp[$row['userid']])) {
+      $sql = "select name from pet_users where userid = $row[userid]";
+      $u = $db->fetch($sql);
+      $temp[$row['userid']] = array('name' => $u['name'], 'clock' => 0, 'cole' => 0, 'pay' => 0, 'count' => 0);
+    }
+    $temp[$row['userid']]['pay'] = $row['price'];
+  }
+
+  foreach ($temp as $row) {
+    $data['list'][] = $row;
+  }
+  
+  $result['status'] = 1;
+  $result['data'] = $data;
+  return $result;
+}
