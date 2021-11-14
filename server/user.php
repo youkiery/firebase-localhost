@@ -40,7 +40,7 @@ function getinitdata($userid) {
   $admin = 0;
   if ($userid == 1 || $userid == 5) $admin = 1;
   else {
-    $sql = "select * from pet_test_user_per where userid = $userid and module = 'admin' and type = 2";
+    $sql = "select * from pet_test_user_per where userid = $userid and module = 'admin' and type = 1";
     if (!empty($db->fetch($sql))) $admin = 1;
   }
 

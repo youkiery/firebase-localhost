@@ -29,7 +29,7 @@ function update() {
 function statistic() {
   global $data, $db, $result;
 
-  $data->from = isodatetotime($data->from);
+  $$data->start = isodatetotime($$data->start);
   $data->end = isodatetotime($data->end) + 60 * 60 * 24 - 1;
 
   $userid = checkuserid();
@@ -37,7 +37,7 @@ function statistic() {
   $xtra = "";
   if (empty($p = $db->fetch($sql))) $xtra = "a.doctorid = $userid and";
 
-  $sql = "select a.*, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where $xtra (a.time between $data->from and $data->end) order by id desc";
+  $sql = "select a.*, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where $xtra (a.time between $$data->start and $data->end) order by id desc";
   $list = $db->all($sql);
   $data = array();
   
@@ -181,6 +181,17 @@ function dead() {
   return $result;
 }
 
+function hopital() {
+  global $db, $data, $result;
+
+  $sql = "update pet_test_xray set insult = 0, rate = 0 where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = getList();
+  return $result;
+}
+
 function share() {
   global $db, $data, $result;
 
@@ -195,7 +206,7 @@ function share() {
 function getlist($id = 0) {
   global $db, $data;
 
-  $data->from = isodatetotime($data->from);
+  $$data->start = isodatetotime($$data->start);
   $data->end = isodatetotime($data->end) + 60 * 60 * 24 - 1;
   $userid = checkUserid();
 
@@ -203,7 +214,7 @@ function getlist($id = 0) {
   if (empty($p = $db->fetch($sql))) $xtra = " (a.userid = $userid or a.share = 1) and ";
   else $xtra = '';
 
-  $sql = "select a.*, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where $xtra (a.time between $data->from and $data->end) or (a.time < $data->from and a.insult = 0) ". ($id ? " and a.id = $id " : '') ." order by id desc";
+  $sql = "select a.*, b.id as petid, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where $xtra (a.time between $$data->start and $data->end) or (a.time < $$data->start and a.insult = 0) ". ($id ? " and a.id = $id " : '') ." order by id desc";
   $list = $db->all($sql);
   
   foreach ($list as $key => $value) {
@@ -245,14 +256,25 @@ function checkpet() {
   $sql = "select * from pet_test_customer where phone = '$data->phone'";
 
   if (empty($c = $db->fetch($sql))) {
-    $sql = "insert into pet_test_customer (name, phone, addess) values('$data->name', '$data->phone', '')";
+    $sql = "insert into pet_test_customer (name, phone, address) values('$data->name', '$data->phone', '')";
     $c['id'] = $db->insertid($sql);
   }
-  
-  $sql = "select * from pet_test_pet where name = '$data->pet' and customerid = '$c[id]'";
-  if (empty($p = $db->fetch($sql))) {
-    $sql = "insert into pet_test_pet (name, customerid) values('$data->pet', $c[id])";
-    $p['id'] = $db->insertid($sql);
+  else {
+    $sql = "update pet_test_customer set name = '$data->name' where id = $c[id]";
+    $db->query($sql);
   }
-  return $p['id'];
+
+  if (empty($data->petid)) {
+    $sql = "select * from pet_test_pet where name = '$data->pet' and customerid = '$c[id]'";
+    if (empty($p = $db->fetch($sql))) {
+      $sql = "insert into pet_test_pet (name, customerid) values('$data->pet', $c[id])";
+      $p['id'] = $db->insertid($sql);
+    }
+    return $p['id'];
+  }
+  else {
+    $sql = "update pet_test_pet set name = '$data->pet' where id = $data->petid";
+    $db->query($sql);
+    return $data->petid;
+  }
 }
