@@ -29,7 +29,7 @@ function update() {
 function statistic() {
   global $data, $db, $result;
 
-  $$data->start = isodatetotime($$data->start);
+  $data->start = isodatetotime($data->start);
   $data->end = isodatetotime($data->end) + 60 * 60 * 24 - 1;
 
   $userid = checkuserid();
@@ -37,7 +37,7 @@ function statistic() {
   $xtra = "";
   if (empty($p = $db->fetch($sql))) $xtra = "a.doctorid = $userid and";
 
-  $sql = "select a.*, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where $xtra (a.time between $$data->start and $data->end) order by id desc";
+  $sql = "select a.*, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where $xtra (a.time between $data->start and $data->end) order by id desc";
   $list = $db->all($sql);
   $data = array();
   
@@ -206,15 +206,28 @@ function share() {
 function getlist($id = 0) {
   global $db, $data;
 
-  $$data->start = isodatetotime($$data->start);
+  $data->start = isodatetotime($data->start);
   $data->end = isodatetotime($data->end) + 60 * 60 * 24 - 1;
   $userid = checkUserid();
+  $xtra = array();
 
-  $sql = "select * from pet_test_user_per where module = 'his' and userid = $userid";
-  if (empty($p = $db->fetch($sql))) $xtra = " (a.userid = $userid or a.share = 1) and ";
-  else $xtra = '';
+  $sql = "select * from pet_test_user_per where userid = $userid and module = 'his'";
+  $role = $db->fetch($sql);
+  if ($role['type'] < 2) $xtra []= " (a.doctorid = $userid or a.share = 1) ";
+  else if (isset($data->{'docs'}) && !empty($data->docs)) {
+    if (empty($data->docscover)) $data->docscover = '';
+    $docs = implode(', ', $data->docs);
+    $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
+    $db->query($sql);
+    $sql = "update pet_test_config set value = '$data->docscover' where module = 'docscover' and name = '$userid'";
+    $db->query($sql);
+    $xtra []= " a.doctorid in ($docs) ";
+  }
 
-  $sql = "select a.*, b.id as petid, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where $xtra (a.time between $$data->start and $data->end) or (a.time < $$data->start and a.insult = 0) ". ($id ? " and a.id = $id " : '') ." order by id desc";
+  if (count($xtra)) $xtra = implode(" and ", $xtra) . "and";
+  else $xtra = "";
+
+  $sql = "select a.*, b.id as petid, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where $xtra ((a.time between $data->start and $data->end) or (a.time < $data->start and a.insult = 0)) ". ($id ? " and a.id = $id " : '') ." order by id desc";
   $list = $db->all($sql);
   
   foreach ($list as $key => $value) {
