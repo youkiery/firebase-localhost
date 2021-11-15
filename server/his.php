@@ -17,7 +17,9 @@ function add() {
 function update() {
   global $data, $db, $result;
 
-  $sql = "update pet_test_xray_row set eye = '$data->eye', temperate = '$data->temperate', other = '$data->other', treat = '$data->treat', status = '$data->status', image = '". implode(', ', $data->image) ."' where id = $data->detailid";
+  $data->time = isodatetotime($data->time);
+
+  $sql = "update pet_test_xray_row set eye = '$data->eye', temperate = '$data->temperate', other = '$data->other', treat = '$data->treat', status = '$data->status', image = '". implode(', ', $data->image) ."', time = $data->time where id = $data->detailid";
   $db->query($sql);
   
   $result['status'] = 1;
@@ -128,11 +130,11 @@ function insert() {
 
   $petid = checkpet();
   $userid = checkuserid();
-  
-  $sql = "insert into pet_test_xray(petid, doctorid, insult, time) values($petid, $userid, 0, ". time() .")";
+  $data->time = isodatetotime($data->time);
+  $sql = "insert into pet_test_xray(petid, doctorid, insult, time) values($petid, $userid, 0, $data->time)";
   $id = $db->insertid($sql);
   
-  $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, image, status, time) values($id, $userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '". implode(', ', $data->image) ."', '$data->status', ". time() .")";
+  $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, image, status, time) values($id, $userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '". implode(', ', $data->image) ."', '$data->status', $data->time)";
   $db->query($sql);
   
   $result['status'] = 1;
@@ -153,10 +155,10 @@ function filter() {
 function detail() {
   global $data, $db, $result;
 
-  $time = time();
   $userid = checkuserid();
+  $data->time = isodatetotime($data->time);
 
-  $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, status, time, image) values($data->id, $userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '$data->status', $time, '". implode(', ', $data->image) ."')";
+  $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, status, time, image) values($data->id, $userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '$data->status', $data->time, '". implode(', ', $data->image) ."')";
   $id = $db->insertid($sql);
   
   $sql = "select a.*, b.name as doctor, a.time from pet_test_xray_row a inner join pet_users b on a.doctorid = b.userid where a.id = $id order by time asc";
@@ -231,7 +233,7 @@ function getlist($id = 0) {
   $list = $db->all($sql);
   
   foreach ($list as $key => $value) {
-    $sql = "select a.*, b.name as doctor, a.time from pet_test_xray_row a inner join pet_users b on a.doctorid = b.userid where a.xrayid = $value[id] order by time asc";
+    $sql = "select a.*, b.name as doctor from pet_test_xray_row a inner join pet_users b on a.doctorid = b.userid where a.xrayid = $value[id] order by time asc";
     $row = $db->all($sql);
     foreach ($row as $index => $detail) {
       $row[$index]['time'] = date('d/m/Y', $detail['time']);
@@ -242,11 +244,11 @@ function getlist($id = 0) {
   
     $sql = "select * from pet_test_xray_his where petid = $value[petid]";
     $his = $db->obj($sql, 'id', 'his');
-  
+
     $list[$key]['status'] = $row[count($row) - 1]['status'];
     $list[$key]['rate'] = intval($value['rate']);
     $list[$key]['detail'] = $row;
-    $list[$key]['time'] = date('d/m/Y', $value['time']);
+    $list[$key]['time'] = $row[0]['time'];
     $list[$key]['his'] = implode(', ', $his);
   }
   return $list;
