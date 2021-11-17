@@ -277,6 +277,7 @@ function getList() {
   $list = $db->all($sql);
 
   foreach ($list as $key => $value) {
+    $list[$key]['alias'] = lower($value['name']);
     $list[$key]['image'] = explode(', ', $value['image']);
 
     $sql = "select a.id, a.name from pet_test_item_pos a inner join pet_test_item_pos_item b on a.id = b.posid where b.itemid = $value[id]";
