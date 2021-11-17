@@ -217,25 +217,36 @@ function init() {
 
 function auto() {
   global $data, $db, $result;
-    
-  $sql = "select a.id, a.name, a.customer, a.phone, a.time, c.name as doctor from pet_test_profile a inner join pet_users c on a.doctor = c.userid where a.phone like '%$data->key%' or a.customer like '%$data->key%' order by id desc limit 10 offset ". ($data->page - 1) * 10;
-  $query = $db->query($sql);
-  $list = array();
-  
-  while ($row = $query->fetch_assoc()) {
-    $row['time'] = date('d/m/Y', $row['time']);
-    $list []= $row;
+
+  $result['status'] = 1;
+  $result['list'] = getlist();
+  return $result;
+}
+
+function updateprofile() {
+  global $data, $db, $result;
+
+  $userid = checkuserid();
+
+  $time = time();
+  $sql = "update pet_test_profile set customer = '$data->name', phone = '$data->phone', address = '$data->address', name = '$data->petname', weight = '$data->weight', age = '$data->age', gender = $data->gender, species = '$data->species', serial = '$data->serial', sampletype = '$data->sampletype', samplenumber = '$data->samplenumber', samplesymbol = '$data->samplesymbol', samplestatus = '$data->samplestatus', symptom = '$data->symptom' where id = $data->id";
+  $db->query($sql);
+
+  foreach ($data->target as $tid => $target) {
+    $sql = "select * from pet_test_profile_data where pid = $data->id and tid = $tid";
+    if (empty($d = $db->fetch($sql))) $sql = "insert into pet_test_profile_data (pid, tid, value) values ($data->id, $tid, '$target')";
+    else $sql = "update pet_test_profile_data set value = $target where id = $d[id]";
+    $db->query($sql);
   }
 
   $result['status'] = 1;
-  $result['list'] = $list;
+  $result['list'] = getlist();
+
   return $result;
 }
 
 function insert() {
   global $data, $db, $result;
-
-  $customerid = checkcustomer();
 
   $sql = "select * from pet_test_target where active = 1 and module = 'profile' order by id asc";
   $query = $db->query($sql);
@@ -479,11 +490,13 @@ function checkcustomer() {
 function getlist() {
   global $db, $data;
 
-  $sql = "select a.id, a.name, a.customer, a.phone, a.time, c.name as doctor from pet_test_profile a inner join pet_users c on a.doctor = c.userid where a.phone like '%$data->key%' or a.customer like '%$data->key%' order by id desc limit 10 offset 0";
+  $sql = "select a.*, c.name as doctor from pet_test_profile a inner join pet_users c on a.doctor = c.userid where a.phone like '%$data->key%' or a.customer like '%$data->key%' order by id desc limit 10 offset 0";
   $query = $db->query($sql);
   $list = array();
   
   while ($row = $query->fetch_assoc()) {
+    $sql = "select tid, value from pet_test_profile_data where pid = $row[id]";
+    $row['target'] = $db->obj($sql, 'tid', 'value');
     $row['time'] = date('d/m/Y', $row['time']);
     $list []= $row;
   }
