@@ -336,3 +336,95 @@ function getImagePos() {
   $sql = "select id, image from pet_test_item_pos order by name asc";
   return $db->obj($sql, 'id', 'image');
 }
+
+function excel() {
+  global $data, $db, $result, $_FILES;
+
+  $dir = str_replace('/server', '/', ROOTDIR);
+  // $des = $dir ."export/DanhSachChiTietHoaDon_KV09102021-222822-523-1633793524.xlsx";
+
+  $raw = $_FILES['file']['tmp_name'];
+  $ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
+  $name = pathinfo($_FILES['file']['name'], PATHINFO_FILENAME);
+  $file_name = $name . "-". time() . ".". $ext;
+  $des = $dir ."export/$file_name";
+
+  move_uploaded_file($raw, $des);
+
+  $x = array();
+  $xr = array(0 => 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AM', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD', 'BE', 'BF', 'BG', 'BH', 'HI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO');
+  foreach ($xr as $key => $value) {
+    $x[$value] = $key;
+  }
+
+  include $dir .'PHPExcel/IOFactory.php';
+    
+  $inputFileType = PHPExcel_IOFactory::identify($des);
+  $objReader = PHPExcel_IOFactory::createReader($inputFileType);
+  $objReader->setReadDataOnly(true);
+  $objPHPExcel = $objReader->load($des);
+  
+  $sheet = $objPHPExcel->getSheet(0); 
+
+  $highestRow = $sheet->getHighestRow(); 
+  $highestColumn = $sheet->getHighestColumn();
+
+  $sql = "select * from pet_test_doctor";
+  $doctor = $db->obj($sql, 'name', 'userid');
+
+  $sql = "select * from pet_test_type where active = 1";
+  $type = $db->obj($sql, 'code', 'id');
+
+  $sql = "select id, name from pet_test_config where module = 'usg'";
+  $usg = $db->obj($sql, 'name', 'id');
+
+  $col = array(
+    'Mã hàng' => '', // 0
+    'Tên hàng' => '', // 1
+    'Bệnh viện' => '', // 2
+    'Kho' => '', // 3
+  );
+
+  for ($j = 0; $j <= $x[$highestColumn]; $j ++) {
+    $val = $sheet->getCell($xr[$j] . '1')->getValue();
+    foreach ($col as $key => $value) {
+      if ($key == $val) $col[$key] = $j;
+    }
+  }
+
+  $exdata = array();
+  for ($i = 2; $i <= $highestRow; $i ++) { 
+    $temp = array();
+    foreach ($col as $key => $j) {
+      $val = $sheet->getCell($xr[$j] . $i)->getValue();
+      $temp []= $val;
+    }
+    $exdata []= $temp;
+  }
+
+  $res = array(
+    'total' => 0, 'insert' => 0
+  );
+  $l = array();
+
+  $sql = "select * from pet_test_item";
+  $item = $db->all($sql);
+  foreach ($exdata as $row) {
+    foreach ($item as $i) {
+      if ($i['code'] == $row[0]) {
+        $l []= $row;
+        break;
+      }
+    }
+  }
+
+  foreach ($l as $row) {
+    $res['total'] ++;
+    $sql = "update pet_test_item set shop = $row[2], storage = $row[3] where code = '$row[code]'";
+    if ($db->query($sql)) $res['insert'] ++;
+  }
+
+  $result['messenger'] = "Đã chuyển dữ liệu Excel thành phiếu nhắc";
+  $result['data'] = $res;
+  return $result;
+}
