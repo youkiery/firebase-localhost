@@ -380,7 +380,6 @@ function excel() {
 
   $col = array(
     'Mã hàng' => '', // 0
-    'Tên hàng' => '', // 1
     'Bệnh viện' => '', // 2
     'Kho' => '', // 3
   );
@@ -403,6 +402,7 @@ function excel() {
   }
 
   $res = array(
+    'on' => 1,
     'total' => 0, 'insert' => 0
   );
   $l = array();
@@ -420,12 +420,12 @@ function excel() {
 
   foreach ($l as $row) {
     $res['total'] ++;
-    $sql = "update pet_test_item set shop = $row[2], storage = $row[3] where code = '$row[code]'";
+    $sql = "update pet_test_item set shop = $row[1], storage = $row[2] where code = '$row[0]'";
     if ($db->query($sql)) $res['insert'] ++;
   }
 
   if (file_exists($des)) {
-    unlink("$des");
+    unlink($des);
   }
 
   $result['messenger'] = "Đã chuyển dữ liệu Excel thành phiếu nhắc";
