@@ -413,6 +413,10 @@ function excel() {
     }
   }
 
+  if (file_exists($des)) {
+    unlink("$des");
+  }
+
   $result['messenger'] = "Đã chuyển dữ liệu Excel thành phiếu nhắc";
   $result['data'] = $res;
   return $result;

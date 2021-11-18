@@ -1,6 +1,6 @@
 <?php
-$dir = str_replace('/server', '/', ROOTDIR);
-include $dir .'PHPExcel/IOFactory.php';
+$dir = str_replace('/server', '', ROOTDIR);
+include $dir .'/PHPExcel/IOFactory.php';
 
 $x = array();
 $xr = array(0 => 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AM', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD', 'BE', 'BF', 'BG', 'BH', 'HI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO');
@@ -13,8 +13,10 @@ function excel() {
 
   // $des = $dir ."export/DanhSachChiTietHoaDon_KV09102021-222822-523-1633793524.xlsx";
 
-  $kiottemp = getData($_FILES['file']);
-  $vietcomtemp = getData($_FILES['file2']);
+  $name1 = pathinfo($_FILES['file']['name'], PATHINFO_FILENAME) ."-". time() .".". pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
+  $name2 = pathinfo($_FILES['file2']['name'], PATHINFO_FILENAME) ."-". time() .".". pathinfo($_FILES['file2']['name'], PATHINFO_EXTENSION);
+  $kiottemp = getData($_FILES['file'], $name1);
+  $vietcomtemp = getData($_FILES['file2'], $name2);
 
   // kiểm tra thời gian
   $res = array(
@@ -51,19 +53,25 @@ function excel() {
     $res['kiot'] []= $money;
   }
 
+  if (file_exists("$dir/export/$name1")) {
+    unlink("$dir/export/$name1");
+  }
+  if (file_exists("$dir/export/$name2")) {
+    unlink("$dir/export/$name2");
+  }
+
   $result['data'] = $res;
   $result['messenger'] = 'Đã tải file Excel lên';
   $result['status'] = 1;
   return $result;
 }
 
-function getData($file) {
+function getData($file, $tar) {
   global $x, $xr, $dir;
   $raw = $file['tmp_name'];
   $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
   $name = pathinfo($file['name'], PATHINFO_FILENAME);
-  $file_name = $name . "-". time() . ".". $ext;
-  $des = $dir ."export/$file_name";
+  $des = "$dir/export/$tar";
 
   move_uploaded_file($raw, $des);
 

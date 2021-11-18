@@ -424,6 +424,10 @@ function excel() {
     if ($db->query($sql)) $res['insert'] ++;
   }
 
+  if (file_exists($des)) {
+    unlink("$des");
+  }
+
   $result['messenger'] = "Đã chuyển dữ liệu Excel thành phiếu nhắc";
   $result['data'] = $res;
   return $result;
