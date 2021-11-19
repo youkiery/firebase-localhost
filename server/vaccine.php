@@ -924,13 +924,13 @@ function getusgtemplist() {
   global $db, $data;
   $userid = checkuserid();
 
-  $sql = "select * from pet_test_user_per where userid = $userid and module = 'usg'";
+  $sql = "select * from pet_test_user_per where userid = $userid and module = 'vaccine'";
   $role = $db->fetch($sql);
   $docs = implode(', ', $data->docs);
 
   $xtra = array();
   if ($role['type'] < 2) $xtra []= " a.userid = $userid ";
-  if (!empty($data->docs)) {
+  else if (!empty($data->docs)) {
     $xtra []= " a.userid in ($docs) ";
   }
   $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
@@ -953,7 +953,7 @@ function getusgtemplist() {
   );
 
   foreach ($v as $row) {
-    $temp = tempdatacover($row);
+    $temp = usgdataCover($row);
     if (empty($temp['phone']) || !$row['calltime']) $e []= $temp;
     else $l []= $temp;
   }
@@ -965,7 +965,7 @@ function getusgtemplist() {
   $l = $db->all($sql);
 
   foreach ($l as $row) {
-    $list[1] []= tempdatacover($row);
+    $list[1] []= usgdataCover($row);
   }
   return $list;
 }
