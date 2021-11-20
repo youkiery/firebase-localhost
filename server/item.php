@@ -82,7 +82,45 @@ function init() {
   $result['all'] = getSuggestList();
   $result['image'] = getImagePos();
   $result['list'] = getList();
+  $result['user'] = getUserList();
   
+  return $result;
+}
+
+function getUserList() {
+  global $db;
+
+  $sql = "select a.userid, b.name, b.username, b.fullname from pet_test_user_per a inner join pet_users b on a.userid = b.userid where a.module = 'item' and a.type > 0";
+  $list = $db->all($sql);
+  foreach ($list as $key => $row) {
+    $sql = "select b.name from pet_test_config a inner join pet_test_item_cat b on a.value = b.id where a.module = 'itemper' and a.name = $row[userid]";
+    $list[$key]['storage'] = implode(', ', $db->arr($sql, 'name'));
+    $sql = "select b.id, b.name from pet_test_config a inner join pet_test_item_cat b on a.value = b.id where a.module = 'itemper' and a.name = $row[userid]";
+    $list[$key]['per'] = $db->all($sql);
+  }
+  return $list;
+}
+
+function per() {
+  global $data, $db, $result;
+
+  $cats = implode(', ', $data->cat);
+  $sql = "delete from pet_test_config where module = 'itemper' and name = $data->userid and value not in ($cats)";
+  $db->query($sql);
+  foreach ($data->cat as $cat) {
+    $sql = "select * from pet_test_config where module = 'itemper' and name = $data->userid and value = $cat";
+    if (empty($db->fetch($sql))) {
+      $sql = "insert into pet_test_config (module, name, value) values('itemper', $data->userid, $cat)";
+      $db->query($sql);
+    }
+  }
+  
+  $sql = "select b.name from pet_test_config a inner join pet_test_item_cat b on a.value = b.id where a.module = 'itemper' and a.name = $data->userid";
+  $result['storage'] = implode(', ', $db->arr($sql, 'name'));
+  $sql = "select b.id, b.name from pet_test_config a inner join pet_test_item_cat b on a.value = b.id where a.module = 'itemper' and a.name = $data->userid";
+  $result['per'] = $db->all($sql);
+
+  $result['status'] = 1;
   return $result;
 }
 
@@ -245,14 +283,27 @@ function update() {
   if (!empty($db->fetch($name_sql))) $result['messenger'] = 'Tên mặt hàng đã tồn tại'; 
   else if (!empty($db->fetch($code_sql))) $result['messenger'] = 'Mã mặt hàng đã tồn tại'; 
   else {
-    $sql = "update pet_test_item set name = '$data->name', code = '$data->code', border = '$data->border', image = '". implode(', ', $data->image) ."' where id = $data->id";
+    $sql = "update pet_test_item set catid = $data->cat, name = '$data->name', code = '$data->code', border = '$data->border', image = '". implode(', ', $data->image) ."' where id = $data->id";
     $db->query($sql);
   
     $result['status'] = 1;
-    $result['list'] = getList();
+    $result['data'] = getItemInfo($data->id);
   }
   
   return $result;
+}
+
+function getItemInfo($id) {
+  global $db;
+
+  $sql = "select * from pet_test_item where id = $id";
+  $row = $db->fetch($sql);
+
+  $row['alias'] = lower($row['name']);
+  $row['image'] = explode(', ', $row['image']);
+  $sql = "select a.id, a.name from pet_test_item_pos a inner join pet_test_item_pos_item b on a.id = b.posid where b.itemid = $id";
+  $row['position'] = $db->all($sql);
+  return $row;
 }
 
 function uppos() {
@@ -273,7 +324,12 @@ function uppos() {
 function getList() {
   global $data, $db;
   
-  $sql = "select * from pet_test_item where name like '%$data->keyword%' order by name asc";
+  $userid = checkUserid();
+  $sql = "select value from pet_test_config where name = $userid and module = 'itemper'";
+  $per = $db->arr($sql, 'value');
+  if (count($per)) $xtra = ' and a.catid in ('. implode(', ', $per) .')';
+  else $xtra = '';
+  $sql = "select a.*, b.name as cat from pet_test_item a inner join pet_test_item_cat b on a.catid = b.id where a.name like '%$data->keyword%' $xtra order by a.name asc";
   $list = $db->all($sql);
 
   foreach ($list as $key => $value) {
@@ -315,8 +371,9 @@ function getExpire() {
 function getCatList() {
   global $data, $db;
   
+  $userid = checkUserid();
   $sql = "select * from pet_test_item_cat order by name asc";
-  return array_merge(array(array('id' => "0", 'name' => 'Chưa phân loại')), $db->all($sql));
+  return $db->all($sql);
 }
 
 function getSuggestList() {
