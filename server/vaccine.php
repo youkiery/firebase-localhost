@@ -953,7 +953,7 @@ function getusgtemplist() {
   );
 
   foreach ($v as $row) {
-    $temp = usgdataCover($row);
+    $temp = tempdatacover($row);
     if (empty($temp['phone']) || !$row['calltime']) $e []= $temp;
     else $l []= $temp;
   }
@@ -965,7 +965,7 @@ function getusgtemplist() {
   $l = $db->all($sql);
 
   foreach ($l as $row) {
-    $list[1] []= usgdataCover($row);
+    $list[1] []= tempdatacover($row);
   }
   return $list;
 }
