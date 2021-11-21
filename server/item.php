@@ -74,6 +74,7 @@ function incat() {
 function init() {
   global $data, $db, $result;
 
+  $userid = checkUserid();
   $result['status'] = 1;
   $result['purchase'] = getPurchase();
   $result['transfer'] = getTransfer();
@@ -83,9 +84,31 @@ function init() {
   $result['image'] = getImagePos();
   $result['list'] = getList();
   $result['user'] = getUserList();
+  $result['cat'] = getUserCat($userid);
+  $result['cats'] = getUserCats($userid);
+  $result['usercat'] = getUserCatlist($userid);
   
   return $result;
 }
+
+function getUserCat($userid) {
+  global $db;
+  $sql = "select value from pet_test_config where module = 'itemcat' and name = $userid";
+  return $db->arr($sql, 'value');
+}
+
+function getUserCats($userid) {
+  global $db;
+  $sql = "select b.name from pet_test_config a inner join pet_test_item_cat b on a.value = b.id where a.module = 'itemcat' and a.name = $userid";
+  return implode(', ', $db->arr($sql, 'name'));
+}
+
+function getUserCatlist($userid) {
+  global $db;
+  $sql = "select b.* from pet_test_config a inner join pet_test_item_cat b on a.value = b.id where a.module = 'itemper' and a.name = $userid";
+  return $db->all($sql);
+}
+
 
 function getUserList() {
   global $db;
@@ -234,8 +257,6 @@ function remove() {
   $db->query($sql);
 
   $result['status'] = 1;
-  $result['list'] = getList();
-
   return $result;
 }
 
@@ -324,12 +345,38 @@ function uppos() {
 function getList() {
   global $data, $db;
   
+  /**
+   * kiểm tra có cat không
+   * nếu có, cập nhật csdl
+   * nếu không, lấy từ csdl
+   * kết quả xtra phải trừ bỏ không có trong config
+   */
+  
   $userid = checkUserid();
-  $sql = "select value from pet_test_config where name = $userid and module = 'itemper'";
-  $per = $db->arr($sql, 'value');
-  if (count($per)) $xtra = ' and a.catid in ('. implode(', ', $per) .')';
-  else $xtra = '';
-  $sql = "select a.*, b.name as cat from pet_test_item a inner join pet_test_item_cat b on a.catid = b.id where a.name like '%$data->keyword%' $xtra order by a.name asc";
+  $check = true;
+  if (isset($data->cat) && !empty($data->cat)) {
+    // lọc danh loại hàng từ config
+    $cat = implode(', ', $data->cat);
+    $sql = "select * from pet_test_config where module = 'itemper' and name = $userid and value in ($cat)";
+    $cat = $db->arr($sql, 'value');
+    if (count($cat)) {
+      // có danh sách, hiển thị & cập nhật
+      $check = false;
+      $cats = implode(', ', $cat);
+      $xtra = " a.catid in ($cats)";
+      $sql = "update pet_test_config set value = '$cats'";
+      $db->query($sql);
+    }
+  }
+  if ($check) {
+    // không có, lấy từ csdl
+    $sql = "select * from pet_test_config where module = 'itemper' and name = $userid";
+    $cat = $db->arr($sql, 'value');
+    if (count($cat)) $xtra = ' a.catid in ('. implode(', ', $cat) .')';
+    else $xtra = ' 0 ';
+  }
+
+  $sql = "select a.*, b.name as cat from pet_test_item a inner join pet_test_item_cat b on a.catid = b.id where $xtra order by a.name asc";
   $list = $db->all($sql);
 
   foreach ($list as $key => $value) {
@@ -477,7 +524,7 @@ function excel() {
 
   foreach ($l as $row) {
     $res['total'] ++;
-    $sql = "update pet_test_item set shop = $row[1], storage = $row[2] where code = '$row[0]'";
+    $sql = "update pet_test_item set shop = $row[1], storage = $row[2] where code = '$row[0]' limit";
     if ($db->query($sql)) $res['insert'] ++;
   }
 
