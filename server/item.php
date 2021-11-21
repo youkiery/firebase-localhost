@@ -3,7 +3,7 @@
 function expire() {
   global $data, $db, $result;
 
-  $sql = "select * from pet_test_item where code = '$data->name'";
+  $sql = "select * from pet_test_item where name = '$data->name'";
   if (empty($item = $db->fetch($sql))) {
     $sql = "insert into pet_test_item (name, code, shop, storage, catid, border, image) values('$data->name', '$data->code', 0, 0, 0, 10, '')";
     $item['id'] = $db->insertid($sql);
@@ -372,7 +372,7 @@ function getCatList() {
   global $data, $db;
   
   $userid = checkUserid();
-  $sql = "select * from pet_test_item_cat order by name asc";
+  $sql = "select * from pet_test_item_cat order by id asc";
   return $db->all($sql);
 }
 

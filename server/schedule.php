@@ -109,7 +109,7 @@ function userData() {
       else if (strpos($temp['list'][$j]['name'], $data->name) !== false) $temp['list'][$j]['color'] = 'orange'; // nếu có tên người dùng, cho hủy đăng ký
       else {
         // kiểm tra nếu nhân viên thuộc diện cá biệt, bỏ qua
-        if ($p['type'] == '0') {
+        if ($p['type'] == '0' && $j > 1) {
           if ($checkprevent[date('N', $ct)] <= count($l)) $temp['list'][$j]['color'] = 'gray';
         }
       }
@@ -180,7 +180,6 @@ function insert($userid, $time, $type, $action) {
 
   if ($action == 'insert') {
     $sql = "select * from pet_test_row where user_id = $userid and type = $type and (time between $start and $end)";
-    // $result['sql'] []= $sql;
     $r = $db->fetch($sql);
     if (empty($r)) {
       $sql = 'insert into pet_test_row (user_id, type, time, reg_time) values('. $userid .', '. $type .', '. $time .', '. time() .')';
