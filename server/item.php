@@ -127,8 +127,11 @@ function getUserList() {
 function per() {
   global $data, $db, $result;
 
-  $cats = implode(', ', $data->cat);
-  $sql = "delete from pet_test_config where module = 'itemper' and name = $data->userid and value not in ($cats)";
+  if (count($data->cat)) {
+    $cats = implode(', ', $data->cat);
+    $sql = "delete from pet_test_config where module = 'itemper' and name = $data->userid and value not in ($cats)";
+  }
+  else $sql = "delete from pet_test_config where module = 'itemper' and name = $data->userid";
   $db->query($sql);
   foreach ($data->cat as $cat) {
     $sql = "select * from pet_test_config where module = 'itemper' and name = $data->userid and value = $cat";

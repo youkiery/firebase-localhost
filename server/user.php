@@ -50,7 +50,7 @@ function getinitdata($userid) {
   $sql = "select username, name, fullname from pet_users where userid = $userid";
   $userinfo = $db->fetch($sql);
 
-  $sql = "select a.*, b.username from pet_test_doctor a inner join pet_users b on a.userid = b.userid";
+  $sql = "select userid, name, fullname, username from pet_users where userid in (select userid from pet_test_user_per where module = 'doctor' and type = 1)";
   $doctor = $db->all($sql);
 
   $sql = "select * from pet_test_type where active = 1";
