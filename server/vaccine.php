@@ -555,6 +555,55 @@ function update() {
   return $result;
 }
 
+function vaccined() {
+  global $data, $db, $result;
+
+  $start = isodatetotime($data->start);
+  $end = isodatetotime($data->end);
+  $userid = checkUserid();
+
+  $sql = "select * from pet_test_user_per where module = 'vaccine' and userid = $userid and type = 2";
+  $p = $db->fetch($sql);
+  $xtra = "";
+  if (empty($p)) {
+    $xtra = "and a.userid = $userid;";
+  }
+  
+  $sql = "select a.*, c.name as doctor, g.name as petname, g.customerid, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_pet g on a.petid = g.id inner join pet_test_customer b on g.customerid = b.id inner join pet_test_type d on a.typeid = d.id where (a.calltime between $start and $end) and status = 3 $xtra order by a.calltime desc, a.recall desc limit 50";
+  $list = dataCover($db->all($sql));
+  $result['status'] = 1;
+  $result['list'] = $list;
+  return $result;
+}
+
+function resetvaccine() {
+  global $data, $db, $result;
+
+  $sql = "select * from pet_test_vaccine where id = $data->id";
+  $v = $db->fetch($sql);
+
+  if ($v['called']) $sql = "update pet_test_vaccine set status = 1 where id = $data->id";
+  else $sql = "update pet_test_vaccine set status = 0 where id = $data->id";
+  $db->query($sql);
+
+  $start = isodatetotime($data->start);
+  $end = isodatetotime($data->end);
+  $userid = checkUserid();
+
+  $sql = "select * from pet_test_user_per where module = 'vaccine' and userid = $userid and type = 2";
+  $p = $db->fetch($sql);
+  $xtra = "";
+  if (empty($p)) {
+    $xtra = "and a.userid = $userid;";
+  }
+
+  $sql = "select a.*, c.name as doctor, g.name as petname, g.customerid, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_pet g on a.petid = g.id inner join pet_test_customer b on g.customerid = b.id inner join pet_test_type d on a.typeid = d.id where (a.calltime between $start and $end) and status = 3 $xtra order by a.calltime desc, a.recall desc limit 50";
+  $list = dataCover($db->all($sql));
+  $result['status'] = 1;
+  $result['list'] = $list;
+  return $result;
+}
+
 function updatedoctor() {
   global $data, $db, $result;
 
