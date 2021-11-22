@@ -33,7 +33,10 @@ function excel() {
 
   $vietcom = array();
   for($i = 14; $i < count($vietcomtemp[1]); $i ++) {
-    if ($vietcomtemp[2][$i] == '+') {
+    if ($vietcomtemp[2][$i] == "-") {
+      // do nothing
+    }
+    else if ($vietcomtemp[2][$i] == '+') {
       $money = str_replace(',', '', $vietcomtemp[3][$i]);
       $check = false;
       foreach ($kiot as $key => $value) {

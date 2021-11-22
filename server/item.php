@@ -353,30 +353,30 @@ function getList() {
    */
   
   $userid = checkUserid();
-  $check = true;
-  if (isset($data->cat) && !empty($data->cat)) {
-    // lọc danh loại hàng từ config
-    $cat = implode(', ', $data->cat);
-    $sql = "select * from pet_test_config where module = 'itemper' and name = $userid and value in ($cat)";
-    $cat = $db->arr($sql, 'value');
-    if (count($cat)) {
-      // có danh sách, hiển thị & cập nhật
-      $check = false;
-      $cats = implode(', ', $cat);
-      $xtra = " a.catid in ($cats)";
-      $sql = "update pet_test_config set value = '$cats'";
-      $db->query($sql);
-    }
-  }
-  if ($check) {
-    // không có, lấy từ csdl
-    $sql = "select * from pet_test_config where module = 'itemper' and name = $userid";
-    $cat = $db->arr($sql, 'value');
-    if (count($cat)) $xtra = ' a.catid in ('. implode(', ', $cat) .')';
-    else $xtra = ' 0 ';
-  }
+  // $check = true;
+  // if (isset($data->cat) && !empty($data->cat)) {
+  //   // lọc danh loại hàng từ config
+  //   $cat = implode(', ', $data->cat);
+  //   $sql = "select * from pet_test_config where module = 'itemper' and name = $userid and value in ($cat)";
+  //   $cat = $db->arr($sql, 'value');
+  //   if (count($cat)) {
+  //     // có danh sách, hiển thị & cập nhật
+  //     $check = false;
+  //     $cats = implode(', ', $cat);
+  //     $xtra = " a.catid in ($cats)";
+  //     $sql = "update pet_test_config set value = '$cats'";
+  //     $db->query($sql);
+  //   }
+  // }
+  // if ($check) {
+  //   // không có, lấy từ csdl
+  //   $sql = "select * from pet_test_config where module = 'itemper' and name = $userid";
+  //   $cat = $db->arr($sql, 'value');
+  //   if (count($cat)) $xtra = ' a.catid in ('. implode(', ', $cat) .')';
+  //   else $xtra = ' 0 ';
+  // }
 
-  $sql = "select a.*, b.name as cat from pet_test_item a inner join pet_test_item_cat b on a.catid = b.id where $xtra order by a.name asc";
+  $sql = "select a.*, b.name as cat from pet_test_item a inner join pet_test_item_cat b on a.catid = b.id order by a.name asc";
   $list = $db->all($sql);
 
   foreach ($list as $key => $value) {
