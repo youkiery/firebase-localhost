@@ -141,7 +141,7 @@ function remove() {
   $sql = "update pet_users set active = 0 where userid = $data->userid";
   $db->query($sql);
 
-  $sql = "update pet_test_config set type = 0 where userid = $data->userid";
+  $sql = "update pet_test_user_per set type = 0 where userid = $data->userid";
   $db->query($sql);
     
   $result['status'] = 1;
