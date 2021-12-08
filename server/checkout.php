@@ -27,8 +27,12 @@ function excel() {
   );
 
   $kiot = array();
+  $total = array('vietcom' => 0, 'kiot' => 0);
   for($i = 2; $i < count($kiottemp[1]); $i ++) {
-    if ($kiottemp[7][$i]) $kiot []= $kiottemp[7][$i];
+    if ($kiottemp[7][$i]) {
+      $m = str_replace(',', '', $kiottemp[7][$i]);
+      $kiot []= array('money' => $m, 'time' => $kiottemp[1][$i], 'note' => $kiottemp[6][$i]);
+    } 
   }
 
   $vietcom = array();
@@ -40,19 +44,24 @@ function excel() {
       $money = str_replace(',', '', $vietcomtemp[3][$i]);
       $check = false;
       foreach ($kiot as $key => $value) {
-        if ($value == $money) {
+        if ($value['money'] == $money) {
           $check = true;
           unset($kiot[$key]);
+          $total['kiot'] += $money;
+          $total['vietcom'] += $money;
           $res['pair'] []= array('money' => $money, 'info' => $vietcomtemp[4][$i]);
           break;
         }
       }
-      if (!$check) $res['vietcom'] []= array('money' => $money, 'info' => $vietcomtemp[4][$i]);
+      if (!$check) {
+        $total['vietcom'] += $money;
+        $res['vietcom'] []= array('time' => $vietcomtemp[0][$i], 'money' => $money, 'info' => $vietcomtemp[4][$i]);
+      }
     }
-    else break;
   }
 
   foreach ($kiot as $money) {
+    $total['kiot'] += $money['money'];
     $res['kiot'] []= $money;
   }
 
@@ -64,6 +73,7 @@ function excel() {
   }
 
   $result['data'] = $res;
+  $result['total'] = $total;
   $result['messenger'] = 'Đã tải file Excel lên';
   $result['status'] = 1;
   return $result;
