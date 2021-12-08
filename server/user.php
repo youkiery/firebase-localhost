@@ -44,9 +44,6 @@ function getinitdata($userid) {
     if (!empty($db->fetch($sql))) $admin = 1;
   }
 
-  $sql = "select * from pet_test_user";
-  $list = $db->all($sql);
-
   $sql = "select username, name, fullname from pet_users where userid = $userid";
   $userinfo = $db->fetch($sql);
 
@@ -101,7 +98,6 @@ function getinitdata($userid) {
     'name' => $userinfo['name'],
     'fullname' => $userinfo['fullname'],
     'admin' => $admin,
-    'users' => $list,
     'doctor' => $doctor,
     'type' => $type,
     'spa' => $spa,

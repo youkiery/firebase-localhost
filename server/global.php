@@ -7,6 +7,13 @@ function checkuserid() {
   return $user['userid'];
 }
 
+function checkUserById($userid) {
+  global $db;
+
+  $sql = "select * from pet_users where userid = $userid";
+  return $db->fetch($sql);
+}
+
 function totime($date) {
   if (preg_match("/^([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{4})$/", $date, $m)) {
     $date = mktime(0, 0, 0, $m[2], $m[1], $m[3]);
