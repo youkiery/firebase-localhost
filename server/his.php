@@ -14,6 +14,73 @@ function add() {
   return $result;
 }
 
+function confirm() {
+  global $data, $db, $result;
+
+  // thêm vào liệu trình
+  $time = isodatetotime($data->time);
+  if ($data->id) {
+    $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, image, status, time) values($data->id, $data->userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '". implode(', ', $data->image) ."', '$data->status', $time)";
+    $db->query($sql);
+  }
+  else {
+    $petid = checkpet();
+    $sql = "insert into pet_test_xray(petid, doctorid, insult, time) values($petid, $data->userid, 0, $time)";
+    $id = $db->insertid($sql);
+    
+    $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, image, status, time) values($id, $data->userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '". implode(', ', $data->image) ."', '$data->status', $time)";
+    $db->query($sql);
+  }
+
+  // xóa phiếu tạm
+  $sql = "delete from pet_test_his_temp where id = $data->tempid";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = getManager();
+  return $result;
+}
+
+function temp() {
+  global $data, $db, $result;
+
+  $sql = "select a.*, b.id as petid, b.name as pet, c.name as customer, c.phone, d.name as doctor from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id inner join pet_users d on a.doctorid = d.userid where a.insult = 0 order by id desc";
+  $list = $db->all($sql);
+
+  foreach ($list as $key => $row) {
+    $sql = "select * from pet_test_xray_row where xrayid = $row[id] order by id desc limit 1";
+    $r = $db->fetch($sql);
+    $list[$key]['eye'] = $r['eye'];
+    $list[$key]['temperate'] = $r['temperate'];
+    $list[$key]['other'] = $r['other'];
+    $list[$key]['status'] = $r['status'];
+  }
+
+  $result['status'] = 1;
+  $result['list'] = $list;
+  return $result;
+}
+
+function manager() {
+  global $data, $db, $result;
+
+  $result['status'] = 1;
+  $result['list'] = getManager();
+  return $result;
+}
+
+function getManager() {
+  global $data, $db;
+
+  $userid = checkUserid();
+  $sql = "select * from pet_test_user_per where userid = $userid and module = 'his'";
+  $role = $db->fetch($sql);
+  if ($role['type'] > 1) $sql = "select a.*, b.name as user from pet_test_his_temp a inner join pet_users b on a.userid = b.userid";
+  else $sql = "select a.*, b.name as user from pet_test_his_temp a inner join pet_users b on a.userid = b.userid where a.userid = $userid";
+
+  return $db->all($sql);
+}
+
 function update() {
   global $data, $db, $result;
 
@@ -245,10 +312,16 @@ function getlist($id = 0) {
     $sql = "select * from pet_test_xray_his where petid = $value[petid]";
     $his = $db->obj($sql, 'id', 'his');
 
-    $list[$key]['status'] = $row[count($row) - 1]['status'];
+    if (count($row)) {
+      $list[$key]['status'] = $row[count($row) - 1]['status'];
+      $list[$key]['time'] = $row[0]['time'];
+    }
+    else {
+      $list[$key]['status'] = 0;
+      $list[$key]['time'] = date('d/m/Y');
+    }
     $list[$key]['rate'] = intval($value['rate']);
     $list[$key]['detail'] = $row;
-    $list[$key]['time'] = $row[0]['time'];
     $list[$key]['his'] = implode(', ', $his);
   }
   return $list;

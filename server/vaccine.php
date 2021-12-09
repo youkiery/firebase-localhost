@@ -303,7 +303,9 @@ function excel() {
     'Điện thoại' => '', // 2
     'Tên khách hàng' => '', // 3
     'Thời gian' => '', // 4 01/10/2021 18:58:47
-    'Ghi chú' => '' // 5
+    'Ghi chú' => '', // 5
+    'Tên hàng' => '', // 6
+    'Số lượng' => '' // 7
   );
 
   for ($j = 0; $j <= $x[$highestColumn]; $j ++) {
@@ -326,6 +328,8 @@ function excel() {
   $res = array(
     'on' => 1, 'total' => 0, 'vaccine' => 0, 'insert' => '', 'error' => array()
   );
+
+  $his = array();
 
   $l = array();
   foreach ($exdata as $row) {
@@ -410,6 +414,21 @@ function excel() {
           'note' => $row[5],
         );
       }
+    }
+    else if ($row[5] == '1') {
+      if (empty($his[$row[2]])) $his[$row[2]] = array('name' => $row['3'], 'phone' => $row['2'], 'user' => $row['1'], 'time' => $row['4'], 'treat' => array());
+      $his[$row[2]]['treat'] []= $row['6'] . ": ". $row['7'];
+    }
+  }
+
+  if (count($his)) {
+    // lấy id người làm
+    
+    foreach ($his as $row) {
+      $userid = checkExcept($doctor[$row['user']]);
+      $time = time();
+      $sql = "insert into pet_test_his_temp (name, phone, treat, userid, time) values('$row[name]', '$row[phone]', '". implode(', ', $row['treat']) ."', $userid, $time)";
+      $db->query($sql);
     }
   }
 
