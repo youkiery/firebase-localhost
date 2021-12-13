@@ -50,14 +50,26 @@ function temp() {
   foreach ($list as $key => $row) {
     $sql = "select * from pet_test_xray_row where xrayid = $row[id] order by id desc limit 1";
     $r = $db->fetch($sql);
-    $list[$key]['eye'] = $r['eye'];
-    $list[$key]['temperate'] = $r['temperate'];
-    $list[$key]['other'] = $r['other'];
-    $list[$key]['status'] = $r['status'];
+    $list[$key]['eye'] = (empty($r['eye']) ? '' : $r['eye']);
+    $list[$key]['temperate'] = (empty($r['temperate']) ? '' : $r['temperate']);
+    $list[$key]['other'] = (empty($r['other']) ? '' : $r['other']);
+    $list[$key]['status'] = (empty($r['status']) ? 0 : $r['status']);
+  }
+
+  $temp = array();
+  $left = array();
+  foreach ($list as $row) {
+    // echo $row['phone'] . ": $data->phone <br>";
+    if ($row['phone'] == $data->phone) $temp []= $row;
+    else $left []= $row;
+  }
+
+  foreach ($left as $row) {
+    $temp []= $row;
   }
 
   $result['status'] = 1;
-  $result['list'] = $list;
+  $result['list'] = $temp;
   return $result;
 }
 
