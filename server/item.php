@@ -71,26 +71,52 @@ function incat() {
   return $result;
 }
 
+function getPurchaseList() {
+  global $db, $data;
+  $sql1 = "select id, name from pet_test_item where outstock = 1";
+  $sql2 = "select a.*, b.name as user from pet_test_item_recommend a inner join pet_users b on a.userid = b.userid where a.status = 0";
+  
+  return array('item' => $db->all($sql1), 'recommend' => $db->all($sql2));
+}
+
 function purchase() {
   global $data, $db, $result;
 
-  $sql = "select id, name from pet_test_item where outstock = 1";
   $result['status'] = 1;
-  $result['list'] = $db->all($sql);
+  $result['list'] = getPurchaseList();
+  return $result;
+}
+
+function recommend() {
+  global $data, $db, $result;
+
+  $data->number = intval($data->number);
+  $userid = checkUserid();
+  $time = time();
+
+  $sql = "insert into pet_test_item_recommend (content, number, name, phone, userid, time) values('$data->content', $data->number, '$data->name', '$data->phone', $userid, $time)";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = getPurchaseList();
   return $result;
 }
 
 function purchased() {
   global $data, $db, $result;
 
-  foreach ($data->list as $id) {
+  foreach ($data->list->item as $id) {
     $sql = "update pet_test_item set outstock = 0 where id = $id";
     $db->query($sql);
   }
 
-  $sql = "select id, name from pet_test_item where outstock = 1";
+  foreach ($data->list->recommend as $id) {
+    $sql = "update pet_test_item_recommend set status = 1 where id = $id";
+    $db->query($sql);
+  }
+
   $result['status'] = 1;
-  $result['list'] = $db->all($sql);
+  $result['list'] = getPurchaseList();
   return $result;
 }
 
@@ -111,6 +137,7 @@ function init() {
   $result['cat'] = getUserCat($userid);
   $result['cats'] = getUserCats($userid);
   $result['usercat'] = getUserCatlist($userid);
+  $result['purchase'] = getPurchaseList();
   
   return $result;
 }
