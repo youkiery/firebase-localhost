@@ -71,6 +71,29 @@ function incat() {
   return $result;
 }
 
+function purchase() {
+  global $data, $db, $result;
+
+  $sql = "select id, name from pet_test_item where outstock = 1";
+  $result['status'] = 1;
+  $result['list'] = $db->all($sql);
+  return $result;
+}
+
+function purchased() {
+  global $data, $db, $result;
+
+  foreach ($data->list as $id) {
+    $sql = "update pet_test_item set outstock = 0 where id = $id";
+    $db->query($sql);
+  }
+
+  $sql = "select id, name from pet_test_item where outstock = 1";
+  $result['status'] = 1;
+  $result['list'] = $db->all($sql);
+  return $result;
+}
+
 function init() {
   global $data, $db, $result;
 
@@ -83,12 +106,24 @@ function init() {
   $result['all'] = getSuggestList();
   $result['image'] = getImagePos();
   $result['list'] = getList();
+  $result['position'] = getPosList();
   $result['user'] = getUserList();
   $result['cat'] = getUserCat($userid);
   $result['cats'] = getUserCats($userid);
   $result['usercat'] = getUserCatlist($userid);
   
   return $result;
+}
+
+function getPosList() {
+  global $db, $data;
+
+  $sql = "select id, name from pet_test_item_pos order by name asc";
+  $list = $db->all($sql);
+  foreach ($list as $key => $row) {
+    $list[$key]['alias'] = lower($row['name']);
+  }
+  return $list;
 }
 
 function getUserCat($userid) {
@@ -214,7 +249,11 @@ function insert() {
   else if (!empty($db->fetch($code_sql))) $result['messenger'] = 'Mã mặt hàng đã tồn tại'; 
   else {
     $sql = "insert into pet_test_item (name, code, shop, storage, catid, border, image) values('$data->name', '$data->code', 0, 0, $data->cat, 10, '". implode(', ', $data->image) ."')";
-    $db->query($sql);
+    $id = $db->insertid($sql);
+    foreach ($data->position as $key => $row) {
+      $sql = "insert into pet_test_item_pos_item (itemid, posid) values($id, $row->id)";
+      $db->query($sql);
+    }
   
     $result['status'] = 1;
     $result['list'] = getList();
@@ -257,6 +296,16 @@ function remove() {
   global $data, $db, $result;
 
   $sql = "delete from pet_test_item where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  return $result;
+}
+
+function removeexpire() {
+  global $data, $db, $result;
+
+  $sql = "delete from pet_test_item_expire where id = $data->id";
   $db->query($sql);
 
   $result['status'] = 1;
@@ -310,6 +359,16 @@ function update() {
     $sql = "update pet_test_item set catid = $data->cat, name = '$data->name', code = '$data->code', border = '$data->border', image = '". implode(', ', $data->image) ."' where id = $data->id";
     $db->query($sql);
   
+    $poslist = array();
+    foreach ($data->position as $key => $row) {
+      $poslist []= $row->id;
+      $sql = "insert into pet_test_item_pos_item (itemid, posid) values ($data->id, $row->id) on duplicate key update itemid = $data->id and posid = $row->id";
+      $db->query($sql);
+    }
+    // xóa những vị trí không có trong danh sách
+    $sql = "delete from pet_test_item_pos_item where itemid = $data->id and posid not in (". implode(', ', $poslist) .")";
+    $db->query($sql);
+
     $result['status'] = 1;
     $result['data'] = getItemInfo($data->id);
   }
@@ -325,6 +384,7 @@ function getItemInfo($id) {
 
   $row['alias'] = lower($row['name']);
   $row['image'] = explode(', ', $row['image']);
+  $row['expired'] = checkExpire($row['id']);
   $sql = "select a.id, a.name from pet_test_item_pos a inner join pet_test_item_pos_item b on a.id = b.posid where b.itemid = $id";
   $row['position'] = $db->all($sql);
   return $row;
@@ -385,11 +445,36 @@ function getList() {
   foreach ($list as $key => $value) {
     $list[$key]['alias'] = lower($value['name']);
     $list[$key]['image'] = explode(', ', $value['image']);
+    $list[$key]['expired'] = checkExpire($value['id']);
 
     $sql = "select a.id, a.name from pet_test_item_pos a inner join pet_test_item_pos_item b on a.id = b.posid where b.itemid = $value[id]";
     $list[$key]['position'] = $db->all($sql);
   }
 
+  return $list;
+}
+
+function changeOver() {
+  global $db, $data, $result;
+  
+  $type = ($data->type == 1 ? 0 : 1); 
+  $sql = "update pet_test_item set outstock = $type where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['value'] = $type;
+  return $result;
+}
+
+function checkExpire($itemid) {
+  global $db, $data;
+
+  $sql = "select id, time as name from pet_test_item_expire where rid = $itemid";
+  $list = $db->all($sql);
+
+  foreach ($list as $key => $value) {
+    $list[$key]['name'] = date('d/m/Y', $value['name']);
+  }
   return $list;
 }
 
