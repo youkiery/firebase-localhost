@@ -37,10 +37,10 @@ function excel() {
 
   $vietcom = array();
   for($i = 14; $i < count($vietcomtemp[1]); $i ++) {
-    if ($vietcomtemp[2][$i] == "-") {
-      // do nothing
+    if ($vietcomtemp[3][$i] == null) {
+      break;
     }
-    else if ($vietcomtemp[2][$i] == '+') {
+    else {
       $money = str_replace(',', '', $vietcomtemp[3][$i]);
       $check = false;
       foreach ($kiot as $key => $value) {
@@ -49,13 +49,13 @@ function excel() {
           unset($kiot[$key]);
           $total['kiot'] += $money;
           $total['vietcom'] += $money;
-          $res['pair'] []= array('money' => $money, 'info' => $vietcomtemp[4][$i]);
+          $res['pair'] []= array('money' => $money, 'info' => $vietcomtemp[5][$i]);
           break;
         }
       }
       if (!$check) {
         $total['vietcom'] += $money;
-        $res['vietcom'] []= array('time' => $vietcomtemp[0][$i], 'money' => $money, 'info' => $vietcomtemp[4][$i]);
+        $res['vietcom'] []= array('time' => $vietcomtemp[1][$i], 'money' => $money, 'info' => $vietcomtemp[5][$i]);
       }
     }
   }
