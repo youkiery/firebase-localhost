@@ -8,15 +8,65 @@ foreach ($xr as $key => $value) {
   $x[$value] = $key;
 }
 
+function init() {
+  global $db, $data, $result;
+
+  $result['data'] = array('kiot' => array(), 'vietcom' => array());
+  $sql = "select * from pet_test_config where module = 'kiot'";
+  $query = $db->query($sql);
+
+  while ($row = $query->fetch_assoc()) {
+    $result['data']['kiot'][$row['name']] = $row['value'];
+  }
+  
+  $sql = "select * from pet_test_config where module = 'vietcom'";
+  $query = $db->query($sql);
+
+  while ($row = $query->fetch_assoc()) {
+    $result['data']['vietcom'][$row['name']] = $row['value'];
+  }
+  $result['status'] = 1;
+  return $result;
+}
+
+function parseAllKey($data) {
+  $data['content'] = parseKey($data['content']);
+  $data['time'] = parseKey($data['time']);
+  $data['money'] = parseKey($data['money']);
+  return $data;
+} 
+
+function parseKey($text) {
+  $keyA = $text[0];
+  $keyB = substr($text, 1);
+  return array('a' => $keyA, 'b' => $keyB);
+}
+
+function save() {
+  global $db, $data, $result;
+
+  $sql = "select * from pet_test_config where module = '$data->module' and name = '$data->name'";
+  if (empty($db->fetch($sql))) {
+    $sql = "insert into pet_test_config (module, name, value) values('$data->module', '$data->name', '$data->value')";
+  }
+  else {
+    $sql = "update pet_test_config set value = '$data->value' where module = '$data->module' and name = '$data->name'";
+  }
+  $db->query($sql);
+  $result['status'] = 1;
+  return $result;
+}
+
 function excel() {
   global $data, $db, $result, $dir, $x, $xr, $_FILES;
 
   // $des = $dir ."export/DanhSachChiTietHoaDon_KV09102021-222822-523-1633793524.xlsx";
-
   $name1 = pathinfo($_FILES['file']['name'], PATHINFO_FILENAME) ."-". time() .".". pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
   $name2 = pathinfo($_FILES['file2']['name'], PATHINFO_FILENAME) ."-". time() .".". pathinfo($_FILES['file2']['name'], PATHINFO_EXTENSION);
-  $kiottemp = getData($_FILES['file'], $name1);
-  $vietcomtemp = getData($_FILES['file2'], $name2);
+  $kiotkey = parseAllKey($data->kiot);
+  $vietkey = parseAllKey($data->vietcom);
+  $vietcomtemp = getData($_FILES['file2'], $name2, $vietkey);
+  $kiottemp = getData($_FILES['file'], $name1, $kiotkey);
 
   // kiểm tra thời gian
   $res = array(
@@ -26,43 +76,33 @@ function excel() {
     'vietcom' => array()
   );
 
+  // echo json_encode($kiottemp);die();
+  // echo "<br>";
+  // echo json_encode($vietcomtemp);die();
   $kiot = array();
   $total = array('vietcom' => 0, 'kiot' => 0);
-  for($i = 2; $i < count($kiottemp[1]); $i ++) {
-    if ($kiottemp[7][$i]) {
-      $m = str_replace(',', '', $kiottemp[7][$i]);
-      $kiot []= array('money' => $m, 'time' => $kiottemp[1][$i], 'note' => $kiottemp[6][$i]);
-    } 
-  }
+  foreach ($kiottemp as $row) {
+    $check = false;
 
-  $vietcom = array();
-  for($i = 14; $i < count($vietcomtemp[1]); $i ++) {
-    if ($vietcomtemp[3][$i] == null) {
-      break;
+    foreach ($vietcomtemp as $key => $value) {
+      if ($value['money'] == $row['money']) {
+        $check = true;
+        unset($vietcomtemp[$key]);
+        $total['kiot'] += $row['money'];
+        $total['vietcom'] += $row['money'];
+        $res['pair'] []= $row;
+        break;
+      }
     }
-    else {
-      $money = str_replace(',', '', $vietcomtemp[3][$i]);
-      $check = false;
-      foreach ($kiot as $key => $value) {
-        if ($value['money'] == $money) {
-          $check = true;
-          unset($kiot[$key]);
-          $total['kiot'] += $money;
-          $total['vietcom'] += $money;
-          $res['pair'] []= array('money' => $money, 'info' => $vietcomtemp[5][$i]);
-          break;
-        }
-      }
-      if (!$check) {
-        $total['vietcom'] += $money;
-        $res['vietcom'] []= array('time' => $vietcomtemp[1][$i], 'money' => $money, 'info' => $vietcomtemp[5][$i]);
-      }
+    if (!$check) {
+      $total['kiot'] += $row['money'];
+      $res['kiot'] []= $row;
     }
   }
 
-  foreach ($kiot as $money) {
-    $total['kiot'] += $money['money'];
-    $res['kiot'] []= $money;
+  foreach ($vietcomtemp as $row) {
+    $total['vietcom'] += $row['money'];
+    $res['vietcom'] []= $row;
   }
 
   if (file_exists("$dir/export/$name1")) {
@@ -79,7 +119,7 @@ function excel() {
   return $result;
 }
 
-function getData($file, $tar) {
+function getData($file, $tar, $key) {
   global $x, $xr, $dir;
   $raw = $file['tmp_name'];
   $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
@@ -99,11 +139,22 @@ function getData($file, $tar) {
   $highestColumn = $sheet->getHighestColumn();
 
   $excel = array();
-  for ($j = 0; $j <= $x[$highestColumn]; $j ++) {
-    $excel[$j] = array();
-    for ($i = 1; $i < $highestRow; $i++) { 
-      $excel[$j][$i] = $sheet->getCell($xr[$j] . $i)->getValue();
+  for ($j = intval($key['content']['b']); $j <= $highestRow; $j ++) {
+    $temp = array();
+    $check = false;
+    foreach ($key as $name => $data) {
+      if ($name == 'money') {
+        $val = str_replace(',', '', $sheet->getCell($data['a'] . $j)->getValue());
+        if (empty($val)) $check = true;
+        $temp[$name] = $val;
+      }
+      else {
+        $val = $sheet->getCell($data['a'] . $j)->getValue();
+        $temp[$name] = $val;
+      }
     }
+    if ($check) break;
+    $excel []= $temp;
   }
 
   return $excel;
