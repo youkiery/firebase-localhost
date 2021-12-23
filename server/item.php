@@ -74,19 +74,29 @@ function incat() {
 
 function getPurchaseList() {
   global $db, $data;
-  $sql1 = "select a.image, a.id, a.name, a.outstock, a.shop + a.storage as remain, a.rectime as time, b.name as user from pet_test_item a inner join pet_users b on a.recuserid = b.userid where a.outstock > 0";
+  $sql1 = "select a.image, a.id, a.name, a.outstock, a.shop + a.storage as remain, a.recuserid as userid, a.rectime as time, b.name as user from pet_test_item a inner join pet_users b on a.recuserid = b.userid where a.outstock > 0";
   $sql2 = "select a.*, b.name as user from pet_test_item_recommend a inner join pet_users b on a.userid = b.userid where a.status = 0";
   
-  $res = array('item' => $db->all($sql1), 'recommend' => $db->all($sql2));
+  $res = array('item' => array(), 'recommend' => $db->all($sql2));
   foreach ($res['recommend'] as $key => $row) {
     $image = explode(',', $row['image']);
     if (count($image) == 1 && strlen($image[0]) == 0) $image = array();
     $res['recommend'][$key]['image'] = $image;
   }
-  foreach ($res['item'] as $key => $row) {
+
+  $list = $db->all($sql1);
+  $temp = array();
+
+  foreach ($list as $key => $row) {
+    if (empty($temp[$row['user']])) $temp[$row['user']] = array();
     $image = explode(',', $row['image']);
     if (count($image) == 1 && strlen($image[0]) == 0) $image = array();
-    $res['item'][$key]['image'] = $image;
+    $row['image'] = $image;
+    $temp[$row['user']] []= $row;
+  }
+
+  foreach ($temp as $user => $list) {
+    $res['item'] []= array('user' => $user, 'list' => $list);
   }
 
   return $res;
@@ -552,7 +562,7 @@ function removestock() {
   $db->query($sql);
 
   $result['status'] = 1;
-  $result['data'] = getPurchaseList();
+  $result['list'] = getPurchaseList();
   return $result;
 }
 
