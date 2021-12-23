@@ -14,6 +14,7 @@ function expire() {
   $db->query($sql);
   $result['status'] = 1;
   $result['messenger'] = 'Đã thêm hạn sử dụng';
+  $result['data'] = checkExpire($data->id);
 
   return $result;
 }
@@ -73,10 +74,22 @@ function incat() {
 
 function getPurchaseList() {
   global $db, $data;
-  $sql1 = "select id, name from pet_test_item where outstock = 1";
+  $sql1 = "select a.image, a.id, a.name, a.outstock, a.shop + a.storage as remain, a.rectime as time, b.name as user from pet_test_item a inner join pet_users b on a.recuserid = b.userid where a.outstock > 0";
   $sql2 = "select a.*, b.name as user from pet_test_item_recommend a inner join pet_users b on a.userid = b.userid where a.status = 0";
   
-  return array('item' => $db->all($sql1), 'recommend' => $db->all($sql2));
+  $res = array('item' => $db->all($sql1), 'recommend' => $db->all($sql2));
+  foreach ($res['recommend'] as $key => $row) {
+    $image = explode(',', $row['image']);
+    if (count($image) == 1 && strlen($image[0]) == 0) $image = array();
+    $res['recommend'][$key]['image'] = $image;
+  }
+  foreach ($res['item'] as $key => $row) {
+    $image = explode(',', $row['image']);
+    if (count($image) == 1 && strlen($image[0]) == 0) $image = array();
+    $res['item'][$key]['image'] = $image;
+  }
+
+  return $res;
 }
 
 function purchase() {
@@ -92,9 +105,25 @@ function recommend() {
 
   $data->number = intval($data->number);
   $userid = checkUserid();
+  $image = implode(',', $data->image);
   $time = time();
 
-  $sql = "insert into pet_test_item_recommend (content, number, name, phone, userid, time) values('$data->content', $data->number, '$data->name', '$data->phone', $userid, $time)";
+  $sql = "insert into pet_test_item_recommend (content, number, name, phone, image, userid, time) values('$data->content', $data->number, '$data->name', '$data->phone', '$image', $userid, $time)";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = getPurchaseList();
+  return $result;
+}
+
+function updaterecommend() {
+  global $data, $db, $result;
+
+  $data->number = intval($data->number);
+  $image = implode(',', $data->image);
+  $time = time();
+
+  $sql = "update pet_test_item_recommend set content = '$data->content', number = '$data->number', name = '$data->name', phone = '$data->phone', image = '$image' where id = $data->id";
   $db->query($sql);
 
   $result['status'] = 1;
@@ -481,15 +510,62 @@ function getList() {
   return $list;
 }
 
-function changeOver() {
+function removerecommend() {
   global $db, $data, $result;
-  
-  $type = ($data->type == 1 ? 0 : 1); 
-  $sql = "update pet_test_item set outstock = $type where id = $data->id";
+
+  $sql = "delete from pet_test_item_recommend where id = $data->id";
   $db->query($sql);
 
   $result['status'] = 1;
-  $result['value'] = $type;
+  $result['list'] = getPurchaseList();
+  return $result;
+}
+
+function outstock() {
+  global $db, $data, $result;
+ 
+  $userid = checkUserid();
+  $time = time();
+  $sql = "update pet_test_item set outstock = $data->number, recuserid = $userid, rectime = $time where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['value'] = $data->number;
+  return $result;
+}
+
+function updateoutstock() {
+  global $db, $data, $result;
+ 
+  $sql = "update pet_test_item set outstock = $data->number where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['value'] = $data->number;
+  return $result;
+}
+
+function removestock() {
+  global $db, $data, $result;
+  
+  $sql = "update pet_test_item set outstock = 0, recuserid = 0, rectime = 0 where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['data'] = getPurchaseList();
+  return $result;
+}
+
+function changeover() {
+  global $db, $data, $result;
+  
+  $userid = checkUserid();
+  $time = time();
+  $sql = "update pet_test_item set outstock = 0, recuserid = 0, rectime = 0 where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['value'] = 0;
   return $result;
 }
 
@@ -588,15 +664,6 @@ function excel() {
   $highestRow = $sheet->getHighestRow(); 
   $highestColumn = $sheet->getHighestColumn();
 
-  $sql = "select * from pet_test_doctor";
-  $doctor = $db->obj($sql, 'name', 'userid');
-
-  $sql = "select * from pet_test_type where active = 1";
-  $type = $db->obj($sql, 'code', 'id');
-
-  $sql = "select id, name from pet_test_config where module = 'usg'";
-  $usg = $db->obj($sql, 'name', 'id');
-
   $col = array(
     'Mã hàng' => '', // 0
     'Bệnh viện' => '', // 2
@@ -639,7 +706,7 @@ function excel() {
 
   foreach ($l as $row) {
     $res['total'] ++;
-    $sql = "update pet_test_item set shop = $row[1], storage = $row[2] where code = '$row[0]' limit";
+    $sql = "update pet_test_item set shop = $row[1], storage = $row[2] where code = '$row[0]'";
     if ($db->query($sql)) $res['insert'] ++;
   }
 
