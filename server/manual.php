@@ -10,7 +10,7 @@ function init() {
 function getList() {
   global $db, $data;
 
-  $sql = 'select * from pet_test_manual order by module asc, id asc';
+  $sql = 'select * from pet_test_manual order by module desc, title asc';
   $list = $db->all($sql);
 
   foreach ($list as $key => $row) {
@@ -37,15 +37,15 @@ function remove() {
 function save() {
   global $data, $db, $result;
 
-  if ($data->id) {
+  if (isset($data->id)) {
     $sql = "update pet_test_manual set title = '$data->title', module = '$data->module' where id = $data->id";
-    $id = $db->query($sql);
+    $db->query($sql);
 
     $sql = "delete from pet_test_manual_row where manualid = $data->id";
     $db->query($sql);
 
     foreach ($data->list as $key => $row) {
-      $sql = "insert into pet_test_manual_row (content, type, manualid) values('$row->content', '$row->type', $id)";
+      $sql = "insert into pet_test_manual_row (content, type, manualid) values('$row->content', '$row->type', $data->id)";
       $db->query($sql);
     }
   }
