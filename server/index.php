@@ -42,11 +42,11 @@ else {
 
   if (in_array($data->action, $allow) == false) {
     if ($data->type !== 'user') include_once(ROOTDIR. "/user.php");
-    if (check()) {
-      $result['nogin'] = true;
-      echo json_encode($result);
-      die();
-    }
+    // if (check()) {
+    //   $result['nogin'] = true;
+    //   echo json_encode($result);
+    //   die();
+    // }
   }
 
   $sql = "select * from pet_test_config where module = 'version'";
