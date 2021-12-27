@@ -112,11 +112,55 @@ function excel() {
     unlink("$dir/export/$name2");
   }
 
+  $time = time();
+  $content = addslashes(json_encode(array(
+    'data' => $res,
+    'total' => $total
+  ), JSON_UNESCAPED_UNICODE));
+  $sql = "insert into pet_test_account (time, content) values ($time, '$content')";
+  $db->query($sql);
+
   $result['data'] = $res;
   $result['total'] = $total;
   $result['messenger'] = 'Đã tải file Excel lên';
   $result['status'] = 1;
   return $result;
+}
+
+function remove() {
+  global $db, $data, $result;
+
+  $sql = "delete from pet_test_account where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = getOld();
+  return $result;
+}
+
+function old() {
+  global $db, $data, $result;
+
+  $result['status'] = 1;
+  $result['list'] = getOld();
+  return $result;
+}
+
+function getOld() {
+  global $data, $db;
+
+  $data->start = isodatetotime($data->start);
+  $data->end = isodatetotime($data->end) + 60 * 60 * 24 - 1;
+
+  $sql = "select * from pet_test_account where time between $data->start and $data->end order by id desc";
+  $list = $db->all($sql);
+
+  foreach ($list as $key => $row) {
+    $list[$key]['time'] = date('d/m/Y', $row['time']);
+    $list[$key]['content'] = str_replace('\n', ' ', $row['content']);
+  }
+
+  return $list;
 }
 
 function getData($file, $tar, $key) {
