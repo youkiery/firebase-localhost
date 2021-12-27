@@ -20,6 +20,9 @@ foreach ($list as $row) {
 die();
 */
 
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+
 define('ROOTDIR', pathinfo(str_replace(DIRECTORY_SEPARATOR, '/', __file__), PATHINFO_DIRNAME));
 define('DIR', str_replace('/server', '/', ROOTDIR));
 date_default_timezone_set('Asia/Ho_Chi_Minh');
