@@ -330,13 +330,16 @@ function excel() {
   );
 
   $his = array();
+  $sql = "select * from pet_test_config where name = 'vaccine-comma'";
+  $c = $db->fetch($sql);
+
 
   $l = array();
   foreach ($exdata as $row) {
     $res['total'] ++;
     if (isset($type[$row[0]])) {
       $res['vaccine'] ++;
-      $dat = explode(';', $row[5]);
+      $dat = explode($c['value'], $row[5]);
       if (!isset($dat[1])) $dat[1] = '';
       if (!isset($dat[2])) $dat[2] = '';
       $dat[1] = trim($dat[1]);
@@ -381,7 +384,7 @@ function excel() {
     }
     else if (isset($usg[$row[0]])) {
       $res['vaccine'] ++;
-      $dat = explode(';', $row[5]);
+      $dat = explode($c['value'], $row[5]);
       if (!isset($dat[1])) $dat[1] = '';
       if (!isset($dat[2])) $dat[2] = '';
       $dat[1] = trim($dat[1]);
