@@ -78,7 +78,7 @@ function excel() {
 
   // echo json_encode($kiottemp);die();
   // echo "<br>";
-  // echo json_encode($vietcomtemp);die();
+//   echo json_encode($vietcomtemp);die();
   $kiot = array();
   $total = array('vietcom' => 0, 'kiot' => 0);
   foreach ($kiottemp as $row) {
@@ -189,11 +189,11 @@ function getData($file, $tar, $key) {
     foreach ($key as $name => $data) {
       if ($name == 'money') {
         $val = str_replace(',', '', $sheet->getCell($data['a'] . $j)->getValue());
-        if (empty($val)) $check = true;
         $temp[$name] = $val;
       }
       else {
         $val = $sheet->getCell($data['a'] . $j)->getValue();
+        if ($name == 'time' && empty($val)) $check = true;
         $temp[$name] = $val;
       }
     }
