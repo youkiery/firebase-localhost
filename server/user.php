@@ -22,12 +22,24 @@ function notify() {
 function session() {
   global $data, $db, $result;
 
-  $sql = "select * from pet_users where session = '$data->sess'";
+  $sql = "select * from pet_test_session where session = '$data->sess'";
+  $user = $db->fetch($sql);
+  $time = time();
+  $end = $time - 60 * 60 * 24 * 7; // 7 days
 
-  if (!empty($user = $db->fetch($sql))) {
-    $result['status'] = 1;
-    $result['data'] = getinitdata($user['userid']);
-    $result['config'] = permission($user['userid']);
+  if (!empty($user)) {
+    if ($user['time'] > $end) {
+      $result['status'] = 1;
+      $sql = "update pet_test_session set time = $time where id = $user[id]";
+      $db->query($sql);
+      $result['data'] = getinitdata($user['userid']);
+      $result['config'] = permission($user['userid']);
+    }
+    else {
+      $sql = "delete from pet_test_session where id = $user[id]";
+      $db->query($sql);
+      $result['messenger'] = "Phiên đăng nhập hết hạn";
+    }
   }
   else {
     $result['messenger'] = "Phiên đăng nhập hết hạn";
@@ -128,13 +140,24 @@ function login() {
   else if (!$crypt->validate_password($password, $user['password'])) $result['messenger'] = 'Sai mật khẩu';
   else {
     $session = randomString();
-    $sql = "update pet_users set session = '$session' where userid = $user[userid]";
+    $time = time();
+    $sql = "insert into pet_test_session (userid, session, time) values($user[userid], '$session', $time)";
     $db->query($sql);
     $result['status'] = 1;
     $result['session'] = $session;
     $result['data'] = getinitdata($user['userid']);
     $result['config'] = permission($user['userid']);
   }
+  return $result;
+}
+
+function logout() {
+  global $data, $db, $result;
+
+  $sql = "delete from pet_test_session where session = '$data->session'";
+  $db->query($sql);
+
+  $result['status'] = 1;
   return $result;
 }
 
@@ -155,7 +178,8 @@ function signin() {
     $userid = $db->insertid($sql);
     
     $session = randomString();
-    $sql = "update pet_users set session = '$session' where userid = $userid";
+    $time = time();
+    $sql = "insert into pet_test_session (userid, session, time) values($userid, '$session', $time)";
     $db->query($sql);
 
     $result['status'] = 1;
