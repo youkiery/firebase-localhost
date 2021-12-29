@@ -8,6 +8,31 @@ function auto() {
   return $result;
 }
 
+function vaccine() {
+  global $db, $data, $result;
+  
+  $sql = "select * from pet_test_config where name = 'vaccine-comma'";
+  if (empty($c = $db->fetch($sql))) {
+    $sql = "insert into pet_test_config (module, name, value) values ('vaccine', 'vaccine-comma', ';')";
+    $db->query($sql);
+    $c['value'] = '-';
+  }
+
+  $result['status'] = 1;
+  $result['code'] = $c['value'];
+  return $result;
+}
+
+function savevaccine() {
+  global $db, $data, $result;
+  
+  $sql = "update pet_test_config set value = '$data->comma' where name = 'vaccine-comma'";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  return $result;
+}
+
 function spa() {
   global $db, $data, $result;
   $sql = "select id, name, value, alt from pet_test_config where module = 'spa' order by value asc";
