@@ -193,7 +193,7 @@ function getData($file, $tar, $key) {
       }
       else {
         $val = $sheet->getCell($data['a'] . $j)->getValue();
-        if ($name == 'time' && empty($val)) $check = true;
+        if ($name == 'time' && (empty($val) || $val == 'Tổng số')) $check = true;
         $temp[$name] = $val;
       }
     }

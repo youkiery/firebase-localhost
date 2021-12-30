@@ -279,7 +279,7 @@ function inpositem() {
     }
   }
   
-  $sql = "select b.id, a.name from pet_test_item a inner join pet_test_item_pos_item b on a.id = b.itemid where b.posid = $data->posid";
+  $sql = "select b.*, a.name from pet_test_item a inner join pet_test_item_pos_item b on a.id = b.itemid where b.posid = $data->posid";
   $result['list'] = $db->all($sql);
   $result['status'] = 1;
   
@@ -335,7 +335,7 @@ function position_init() {
   $list = $db->all($sql);
   
   foreach ($list as $key => $value) {
-    $sql = "select * from pet_test_item a inner join pet_test_item_pos_item b on a.id = b.itemid where b.posid = $value[id]";
+    $sql = "select b.*, a.name from pet_test_item a inner join pet_test_item_pos_item b on a.id = b.itemid where b.posid = $value[id]";
     $list[$key]['position'] = $db->all($sql);
   }
   
@@ -381,10 +381,10 @@ function removeexpire() {
 function repos() {
   global $data, $db, $result;
 
-  $sql = "delete from pet_test_item_pos_item where id = $data->itemid";
+  $sql = "delete from pet_test_item_pos_item where posid = $data->posid and itemid = $data->itemid";
   $db->query($sql);
   
-  $sql = "select b.id, a.name from pet_test_item a inner join pet_test_item_pos_item b on a.id = b.itemid where b.posid = $data->posid";
+  $sql = "select b.*, a.name from pet_test_item a inner join pet_test_item_pos_item b on a.id = b.itemid where b.posid = $data->posid";
   $result['list'] = $db->all($sql);
   $result['status'] = 1;
   
