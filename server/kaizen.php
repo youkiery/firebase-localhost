@@ -65,8 +65,6 @@ function initList() {
     'undone' => array(),
   );
   $xtra = array();
-  $xtra []= '(edit_time between '. $filter->starttime .' and '. $filter->endtime .')';
-
   $userid = checkUserid();
   $role = checkRole();
 
@@ -75,24 +73,7 @@ function initList() {
   if (count($xtra)) $xtra = ' and ' . implode(' and ', $xtra);
   else $xtra = '';
   
-  $sql = 'select * from pet_test_kaizen where active = 1 ' . $xtra . ' and done = 1 order by edit_time ' . $filter->sort . ' limit '. $filter->done * 10;
-  $query = $db->query($sql);
-  
-  while ($row = $query->fetch_assoc()) {
-    $user = checkUserById($row['userid']);
-    $data = array(
-      'id' => $row['id'],
-      'name' => $user['name'],
-      'done' => intval($row['done']),
-      'problem' => $row['problem'],
-      'solution' => $row['solution'],
-      'result' => $row['result'],
-      'time' => date('d/m/Y', $row['edit_time'])
-    );
-    $list['done'] []= $data;
-  }
-  
-  $sql = 'select * from pet_test_kaizen where active = 1 ' . $xtra . ' and done = 0 order by edit_time ' . $filter->sort . ' limit '. $filter->undone * 10;
+  $sql = 'select * from pet_test_kaizen where active = 1 ' . $xtra . ' and done = 0 order by edit_time desc limit '. $filter->undone * 10;
   $query = $db->query($sql);
   
   while ($row = $query->fetch_assoc()) {
@@ -107,6 +88,23 @@ function initList() {
       'time' => date('d/m/Y', $row['edit_time'])
     );
     $list['undone'] []= $data;
+  }
+  
+  $sql = 'select * from pet_test_kaizen where active = 1 ' . $xtra . ' and done = 1 and (edit_time between '. $filter->starttime .' and '. $filter->endtime .') order by edit_time desc limit '. $filter->done * 10;
+  $query = $db->query($sql);
+  
+  while ($row = $query->fetch_assoc()) {
+    $user = checkUserById($row['userid']);
+    $data = array(
+      'id' => $row['id'],
+      'name' => $user['name'],
+      'done' => intval($row['done']),
+      'problem' => $row['problem'],
+      'solution' => $row['solution'],
+      'result' => $row['result'],
+      'time' => date('d/m/Y', $row['edit_time'])
+    );
+    $list['done'] []= $data;
   }
   return $list;    
 }
