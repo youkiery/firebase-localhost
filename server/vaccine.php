@@ -288,7 +288,7 @@ function excel() {
   $highestRow = $sheet->getHighestRow(); 
   $highestColumn = $sheet->getHighestColumn();
 
-  $sql = "select a.userid, b.name from pet_test_user_per a inner join pet_users b on a.userid = b.userid where a.module = 'doctor' and a.type = 1";
+  $sql = "select a.userid, b.fullname as name from pet_test_user_per a inner join pet_users b on a.userid = b.userid where a.module = 'doctor' and a.type = 1";
   $doctor = $db->obj($sql, 'name', 'userid');
 
   $sql = "select * from pet_test_type where active = 1";
@@ -369,7 +369,7 @@ function excel() {
       $datetime = explode(' ', $row[4]);
       $date = explode('/', $datetime[0]);
       $cometime = strtotime("$date[2]/$date[1]/$date[0]");
-      $userid = checkExcept($doctor[$row[1]]);
+      $userid = checkExcept($doctor, $row[1]);
 
       $sql = "insert into pet_test_vaccine (petid, typeid, cometime, calltime, note, status, recall, userid, time, called) values($p[id], ". $type[$row[0]] .", $cometime, $calltime, '$dat[2]', 5, $calltime, $userid, ". time() .", 0)";
       if ($db->query($sql)) $res['insert'] ++;
@@ -405,7 +405,7 @@ function excel() {
       $datetime = explode(' ', $row[4]);
       $date = explode('/', $datetime[0]);
       $cometime = strtotime("$date[2]/$date[1]/$date[0]");
-      $userid = checkExcept($doctor[$row[1]]);
+      $userid = checkExcept($doctor, $row[1]);
 
       $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], $userid, $cometime, $calltime, $calltime, '$number', 9, '$dat[2]', ". time() .", 0)";
       if ($db->query($sql)) $res['insert'] ++;
@@ -426,7 +426,7 @@ function excel() {
   if (count($his)) {
     // lấy id người làm
     foreach ($his as $row) {
-      $userid = checkExcept($doctor[$row['user']]);
+      $userid = checkExcept($doctor, $row['user']);
       $time = time();
       $sql = "select a.* from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id where c.phone = '$row[phone]' and insult = 1 order by time desc";
       $treating = implode(', ', $row['treat']);
@@ -479,9 +479,11 @@ function checkpet($data) {
   return $p['id'];
 }
 
-function checkExcept($userid) {
+function checkExcept($list, $name) {
   global $db;
 
+  if (!isset($list[$name])) $userid = $list[array_rand($list)];
+  else $userid = $list[$name];
   // kiểm tra userid có trong danh sách manager hay không
   $sql = "select * from pet_test_user_per where module = 'doctor' and type = 1 and userid = $userid";
   if (empty($p = $db->fetch($sql))) {
