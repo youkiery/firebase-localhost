@@ -19,6 +19,21 @@ function expire() {
   return $result;
 }
 
+function outstocks() {
+  global $data, $db, $result;
+
+  $userid = checkUserid();
+  $time = time();
+  foreach ($data->data as $item) {
+    $sql = "update pet_test_item set outstock = $item->number, recuserid = $userid, rectime = $time where id = $item->id";
+    $db->query($sql);
+  }
+
+  $result['status'] = 1;
+  $result['list'] = getList();
+  return $result;
+}
+
 function expire_done() {
   global $data, $db, $result;
 
@@ -110,6 +125,18 @@ function purchase() {
   return $result;
 }
 
+function insertsource() {
+  global $data, $db, $result;
+
+  $name = mb_strtolower($data->name);
+  $sql = "insert into pet_test_item_source (name) values ('$name')";
+  $id = $db->insertid($sql);
+
+  $result['status'] = 1;
+  $result['data'] = array('id' => $id, 'name' => $data->name);
+  return $result;
+}
+
 function recommend() {
   global $data, $db, $result;
 
@@ -172,19 +199,50 @@ function init() {
   $result['image'] = getImagePos();
   $result['list'] = getList();
   $result['position'] = getPosList();
+  $result['source'] = getSourceList();
   $result['user'] = getUserList();
   $result['cat'] = getUserCat($userid);
   $result['cats'] = getUserCats($userid);
   $result['usercat'] = getUserCatlist($userid);
   $result['purchase'] = getPurchaseList();
+  // $result['outstock'] = getOutstock();
+  // $result['expired'] = getExpired();
   
   return $result;
 }
+
+// function getOutstock() {
+//   global $data, $db, $result;
+  
+//   $sql = "select * from pet_test_item where shop + storage < border";
+//   $number = $db->count($sql);
+//   return $number;
+// }
+
+// function getExpired() {
+//   global $data, $db, $result;
+
+//   $time = time();
+//   $sql = "select * from pet_test_item_expire where expire < $time";
+//   $number = $db->count($sql);
+//   return $number;
+// }
 
 function getPosList() {
   global $db, $data;
 
   $sql = "select id, name from pet_test_item_pos order by name asc";
+  $list = $db->all($sql);
+  foreach ($list as $key => $row) {
+    $list[$key]['alias'] = lower($row['name']);
+  }
+  return $list;
+}
+
+function getSourceList() {
+  global $db, $data;
+
+  $sql = "select id, name from pet_test_item_source order by name asc";
   $list = $db->all($sql);
   foreach ($list as $key => $row) {
     $list[$key]['alias'] = lower($row['name']);
@@ -320,6 +378,11 @@ function insert() {
       $sql = "insert into pet_test_item_pos_item (itemid, posid) values($id, $row->id)";
       $db->query($sql);
     }
+
+    foreach ($data->source as $key => $row) {
+      $sql = "insert into pet_test_item_source_item (itemid, sourceid) values($id, $row->id)";
+      $db->query($sql);
+    }
   
     $result['status'] = 1;
     $result['list'] = getList();
@@ -435,6 +498,16 @@ function update() {
     $sql = "delete from pet_test_item_pos_item where itemid = $data->id and posid not in (". implode(', ', $poslist) .")";
     $db->query($sql);
 
+    $sourcelist = array();
+    foreach ($data->source as $key => $row) {
+      $sourcelist []= $row->id;
+      $sql = "insert into pet_test_item_source_item (itemid, sourceid) values ($data->id, $row->id) on duplicate key update itemid = $data->id and sourceid = $row->id";
+      $db->query($sql);
+    }
+    // xóa những vị trí không có trong danh sách
+    $sql = "delete from pet_test_item_source_item where itemid = $data->id and sourceid not in (". implode(', ', $poslist) .")";
+    $db->query($sql);
+
     $result['status'] = 1;
     $result['data'] = getItemInfo($data->id);
   }
@@ -515,6 +588,9 @@ function getList() {
 
     $sql = "select a.id, a.name from pet_test_item_pos a inner join pet_test_item_pos_item b on a.id = b.posid where b.itemid = $value[id]";
     $list[$key]['position'] = $db->all($sql);
+
+    $sql = "select a.id, a.name from pet_test_item_source a inner join pet_test_item_source_item b on a.id = b.sourceid where b.itemid = $value[id]";
+    $list[$key]['source'] = $db->all($sql);
   }
 
   return $list;
@@ -678,6 +754,7 @@ function excel() {
     'Mã hàng' => '', // 0
     'Bệnh viện' => '', // 2
     'Kho' => '', // 3
+    'Hình ảnh' => '', // 4
   );
 
   for ($j = 0; $j <= $x[$highestColumn]; $j ++) {
@@ -716,7 +793,14 @@ function excel() {
 
   foreach ($l as $row) {
     $res['total'] ++;
-    $sql = "update pet_test_item set shop = $row[1], storage = $row[2] where code = '$row[0]'";
+    $xtra = '';
+    if (!empty($row[3])) $xtra = ", image = '$row[3]'";
+    $n = $row[1] + $row[2];
+    $sql = "update pet_test_item set lowonnumber = 1 where $n >= border";
+    $db->query($sql);
+    $sql = "update pet_test_item set lowonnumber = 0 where $n < border";
+    $db->query($sql);
+    $sql = "update pet_test_item set shop = $row[1], storage = $row[2] $xtra where code = '$row[0]'";
     if ($db->query($sql)) $res['insert'] ++;
   }
 
