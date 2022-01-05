@@ -378,12 +378,14 @@ function insert() {
 
   $userid = checkuserid();
   
-  $sql = "insert into pet_test_spa (customerid, customerid2, doctorid, note, time, utime, weight, image) values($customer[id], $customer2[id], $userid, '$data->note', '" . time() . "', '" . time() . "', $data->weight, '". implode(', ', $data->image)."')";
+  $sql = "insert into pet_test_spa (customerid, customerid2, doctorid, note, time, utime, weight, image, treat) values($customer[id], $customer2[id], $userid, '$data->note', '" . time() . "', '" . time() . "', $data->weight, '". implode(', ', $data->image)."', $data->treat)";
   $id = $db->insertid($sql);
-  
-  foreach ($data->option as $value) {
-    $sql = "insert into pet_test_spa_row (spaid, typeid) values($id, $value)";
-    $db->query($sql);
+
+  if (!$data->treat) {
+    foreach ($data->option as $value) {
+      $sql = "insert into pet_test_spa_row (spaid, typeid) values($id, $value)";
+      $db->query($sql);
+    }
   }
   
   $result['time'] = time();
@@ -421,15 +423,17 @@ function update() {
   
   $userid = checkuserid();
 
-  $sql = "update pet_test_spa set customerid = $customer[id], customerid2 = $customer2[id], doctorid = $userid, note = '$data->note', image = '". implode(', ', $data->image)."', weight = $data->weight, utime = ". time() .", luser = $userid, ltime = ". time() .", status = 0, duser = 0 where id = $data->id";
+  $sql = "update pet_test_spa set customerid = $customer[id], customerid2 = $customer2[id], doctorid = $userid, note = '$data->note', image = '". implode(', ', $data->image)."', weight = $data->weight, utime = ". time() .", luser = $userid, ltime = ". time() .", status = 0, duser = 0, treat = $data->treat where id = $data->id";
   $db->query($sql);  
   
   $sql = "delete from pet_test_spa_row where spaid = $data->id";
   $db->query($sql);
   
-  foreach ($data->option as $value) {
-    $sql = "insert into pet_test_spa_row (spaid, typeid) values($data->id, $value)";
-    $db->query($sql);
+  if ($data->treat) {
+    foreach ($data->option as $value) {
+      $sql = "insert into pet_test_spa_row (spaid, typeid) values($data->id, $value)";
+      $db->query($sql);
+    }
   }
   
   $result['time'] = time();
@@ -485,6 +489,7 @@ function getList() {
       'duser' => (empty($d['name']) ? '' : $d['name']),
       'duserid' => $row['duser'],
       'status' => $row['status'],
+      'treat' => $row['treat'],
       'weight' => $row['weight'],
       'image' => (count($image) && !empty($image[0]) ? $image : array()),
       'dimage' => (count($dimage) && !empty($dimage[0]) ? $dimage : array()),
