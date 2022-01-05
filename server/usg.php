@@ -470,7 +470,7 @@ function transfer() {
     $sql = "update pet_test_usg set userid = $data->uid where id = $id";
     $db->query($sql);
   }
-  $sql = "select * from pet_test_doctor where userid = $data->uid";
+  $sql = "select a.userid, b.name from pet_test_user_per a inner join pet_users b on a.userid = b.userid where a.module = 'doctor' and a.type = 1 and a.userid = $data->uid";
   $d = $db->fetch($sql);
   $result['status'] = 1;
   $result['messenger'] = "Đã chuyển phiếu nhắc sang cho nhân viên: $d[name]";

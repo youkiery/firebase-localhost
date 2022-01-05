@@ -15,7 +15,7 @@ function init() {
 
   $sql = "select * from pet_test_user_per where module = 'spa' and type = 2 and userid = $userid";
   if (!empty($db->fetch($sql))) {
-    $sql = "select * from pet_test_doctor";
+    $sql = "select a.userid, b.name from pet_test_user_per a inner join pet_users b on a.userid = b.userid where a.module = 'doctor' and a.type = 1";
     $result['doctor'] = $db->all($sql);
   }
   else $result['doctor'] = array();

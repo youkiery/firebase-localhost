@@ -189,7 +189,7 @@ function transfer() {
     $sql = "update pet_test_vaccine set userid = $data->uid where id = $id";
     $db->query($sql);
   }
-  $sql = "select * from pet_test_doctor where userid = $data->uid";
+  $sql = "select a.userid, b.name from pet_test_user_per a inner join pet_users b on a.userid = b.userid where a.module = 'doctor' and a.type = 1 and a.userid = $data->uid";
   $d = $db->fetch($sql);
   $result['status'] = 1;
   $result['messenger'] = "Đã chuyển phiếu nhắc sang cho nhân viên: $d[name]";
@@ -288,7 +288,7 @@ function excel() {
   $highestRow = $sheet->getHighestRow(); 
   $highestColumn = $sheet->getHighestColumn();
 
-  $sql = "select * from pet_test_doctor";
+  $sql = "select a.userid, b.name from pet_test_user_per a inner join pet_users b on a.userid = b.userid where a.module = 'doctor' and a.type = 1";
   $doctor = $db->obj($sql, 'name', 'userid');
 
   $sql = "select * from pet_test_type where active = 1";
@@ -331,15 +331,14 @@ function excel() {
 
   $his = array();
   $sql = "select * from pet_test_config where name = 'vaccine-comma'";
-  $c = $db->fetch($sql);
-
+  $com = $db->fetch($sql);
 
   $l = array();
   foreach ($exdata as $row) {
     $res['total'] ++;
     if (isset($type[$row[0]])) {
       $res['vaccine'] ++;
-      $dat = explode($c['value'], $row[5]);
+      $dat = explode($com['value'], $row[5]);
       if (!isset($dat[1])) $dat[1] = '';
       if (!isset($dat[2])) $dat[2] = '';
       $dat[1] = trim($dat[1]);
@@ -384,7 +383,7 @@ function excel() {
     }
     else if (isset($usg[$row[0]])) {
       $res['vaccine'] ++;
-      $dat = explode($c['value'], $row[5]);
+      $dat = explode($com['value'], $row[5]);
       if (!isset($dat[1])) $dat[1] = '';
       if (!isset($dat[2])) $dat[2] = '';
       $dat[1] = trim($dat[1]);
@@ -426,12 +425,27 @@ function excel() {
 
   if (count($his)) {
     // lấy id người làm
-    
     foreach ($his as $row) {
       $userid = checkExcept($doctor[$row['user']]);
       $time = time();
-      $sql = "insert into pet_test_his_temp (name, phone, treat, userid, time) values('$row[name]', '$row[phone]', '". implode(', ', $row['treat']) ."', $userid, $time)";
-      $db->query($sql);
+      $sql = "select a.* from pet_test_xray a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id where c.phone = '$row[phone]' and insult = 1 order by time desc";
+      $treating = implode(', ', $row['treat']);
+      if (!empty($treat = $db->fetch($sql))) {
+        // có danh sách trước đó => thêm vào lịch sử
+        $sql = "select * from pet_test_xray_row where xrayid = $treat[id] order by time desc limit 1";
+        $r = $db->fetch($sql);
+        $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, image, status, time) values($treat[id], $userid, '$r[eye]', '$r[temperate]', '$r[other]', '$treating', '', '$r[status]', $time)";
+        $db->query($sql);
+      }
+      else {
+        // không có danh sách => thêm hồ sơ mới
+        $petid = checkpet($row);
+        $sql = "insert into pet_test_xray(petid, doctorid, insult, time) values($petid, $userid, 0, $time)";
+        $id = $db->insertid($sql);
+        
+        $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, image, status, time) values($id, $userid, '', '', '', '$treating', '', '0', $time)";
+        $db->query($sql);
+      }
     }
   }
 
@@ -442,6 +456,27 @@ function excel() {
   $result['messenger'] = "Đã chuyển dữ liệu Excel thành phiếu nhắc";
   $result['data'] = $res;
   return $result;
+}
+
+function checkpet($data) {
+  global $db;
+  $sql = "select * from pet_test_customer where phone = '$data[phone]'";
+
+  if (empty($c = $db->fetch($sql))) {
+    $sql = "insert into pet_test_customer (name, phone, address) values('$data[name]', '$data[phone]', '')";
+    $c['id'] = $db->insertid($sql);
+  }
+  else {
+    $sql = "update pet_test_customer set name = '$data[name]' where id = $c[id]";
+    $db->query($sql);
+  }
+
+  $sql = "select * from pet_test_pet where name = 'Chưa đặt tên' and customerid = '$c[id]'";
+  if (empty($p = $db->fetch($sql))) {
+    $sql = "insert into pet_test_pet (name, customerid) values('Chưa đặt tên', $c[id])";
+    return $db->insertid($sql);
+  }
+  return $p['id'];
 }
 
 function checkExcept($userid) {
@@ -479,17 +514,6 @@ function insert() {
   $result['new'] = getlist(true);
   $result['old'] = getOlder($petid, $result['vid']);
   $result['messenger'] = "Đã thêm vào danh sách nhắc";
-  return $result;
-}
-
-function insertdoctor() {
-  global $data, $db, $result;
-  $sql = "insert into pet_test_doctor (userid, name) values('$data->user', '$data->name')";
-  $db->query($sql);
-  $result['status'] = 1;
-  $result['list'] = getDoctor();
-  
-  $result['messenger'] = "Đã thêm bác sĩ";
   return $result;
 }
 
@@ -533,30 +557,11 @@ function removetemp() {
   return $result;
 }
 
-function removedoctor() {
-  global $data, $db, $result;
-  $sql = "delete from pet_test_doctor where id = $data->id";
-  $db->query($sql);
-  $result['status'] = 1;
-  $result['list'] = getDoctor();
-  $result['messenger'] = "Đã xóa bác sĩ";
-  return $result;
-}
-
 function search() {
   global $data, $db, $result;
   $result['status'] = 1;
   $result['list'] = getlist();
 
-  return $result;
-}
-
-function searchdoctor() {
-  global $data, $db, $result;
-  $data->keyword = trim($data->keyword);
-  $sql = "select userid, username, concat(last_name, ' ', name) as name from pet_users where (last_name like '%$data->keyword%' or name like '%$data->keyword%' or username like '%$data->keyword%') and userid not in (select userid from pet_test_doctor)";
-  $result['status'] = 1;
-  $result['list'] = $db->all($sql);
   return $result;
 }
 
@@ -623,17 +628,6 @@ function resetvaccine() {
   $list = dataCover($db->all($sql));
   $result['status'] = 1;
   $result['list'] = $list;
-  return $result;
-}
-
-function updatedoctor() {
-  global $data, $db, $result;
-
-  $sql = "update pet_test_doctor set userid = $data->user, name = '$data->name' where id = $data->id";
-  $db->query($sql);
-  $result['status'] = 1;
-  $result['list'] = getDoctor();
-  $result['messenger'] = "Đã cập nhật bác sĩ";
   return $result;
 }
 
@@ -877,7 +871,7 @@ function gettypeobj() {
 function getDoctor() {
   global $db;
 
-  $sql = "select a.id, a.userid, a.name, b.username from pet_test_doctor a inner join pet_users b on a.userid = b.userid";
+  $sql = "select a.userid, b.name, b.username from pet_test_user_per a inner join pet_users b on a.userid = b.userid where a.module = 'doctor' and a.type = 1 and a.userid = $data->uid";
   return $db->all($sql);
 }
 
