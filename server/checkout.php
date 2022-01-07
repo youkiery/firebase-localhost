@@ -80,29 +80,29 @@ function excel() {
   // echo "<br>";
 //   echo json_encode($vietcomtemp);die();
   $kiot = array();
-  $total = array('vietcom' => 0, 'kiot' => 0);
+  $total = array('vietcom' => 0, 'kiot' => 0, 'subtract');
   foreach ($kiottemp as $row) {
     $check = false;
 
     foreach ($vietcomtemp as $key => $value) {
       if ($value['money'] == $row['money']) {
         $check = true;
-        unset($vietcomtemp[$key]);
         $total['kiot'] += $row['money'];
         $total['vietcom'] += $row['money'];
-        $res['pair'] []= $row;
+        $res['pair'] []= array('money' => $row['money'], 'kiot' => $row['content'], 'vietcom' => $value['content']);
+        unset($vietcomtemp[$key]);
         break;
       }
     }
     if (!$check) {
       $total['kiot'] += $row['money'];
-      $res['kiot'] []= $row;
+      $res['kiot'] []= array('money' => $row['money'], 'kiot' => $row['content'], 'vietcom' => '');
     }
   }
 
   foreach ($vietcomtemp as $row) {
     $total['vietcom'] += $row['money'];
-    $res['vietcom'] []= $row;
+    $res['vietcom'] []= array('money' => $row['money'], 'vietcom' => $row['content'], 'kiot' => '');
   }
 
   if (file_exists("$dir/export/$name1")) {
@@ -113,6 +113,7 @@ function excel() {
   }
 
   $time = time();
+  $total['subtract'] = $total['kiot'] - $total['vietcom'];
   $content = addslashes(json_encode(array(
     'data' => $res,
     'total' => $total

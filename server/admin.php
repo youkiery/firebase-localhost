@@ -8,6 +8,64 @@ function auto() {
   return $result;
 }
 
+function reduce() {
+  global $db, $data, $result;
+
+  $sql = "update pet_test_vaccine set status = 4 where calltime < $data->date and status < 3";
+  $db->query($sql);
+  $sql = "update pet_test_usg set status = 8 where calltime < $data->date and status < 7";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  return $result;
+}
+
+function recycle() {
+  global $db, $data, $result;
+
+  // foreach data->option
+  // lấy danh sách data->doctor + db(user not in doctor), chuyển cho danh sách db(doctor - data->doctor)
+  $sql = "select userid from pet_users where userid not in (select userid from pet_test_user_per where module = 'doctor' and type = 1)";
+  $doctor = array_merge($data->doctor, $db->arr($sql, 'userid'));
+  $sql = "select userid from pet_test_user_per where module = 'doctor' and type = 1 and userid not in (". implode(', ', $data->doctor) .")";
+  $target = $db->arr($sql, 'userid');
+
+  if (in_array('vaccine', $data->option) !== false) {
+    $sql = "select a.id, b.name from pet_test_vaccine a inner join pet_users b on a.userid = b.userid where (a.status < 3 or a.status = 5) and a.userid in (". implode(', ', $doctor) .")";
+    $list = $db->all($sql);
+
+    $l = count($list);
+    $d = count($target);
+    $n = (int) ($l / $d);
+
+    $c = 0;
+    for ($i = 0; $i < $l; $i++) { 
+      if ($c < ($d - 1) && $i >= ($c + 1) * $n) $c ++;
+      $sql = "update pet_test_vaccine set userid = $target[$c] where id = ". $list[$i]['id'];
+      $db->query($sql);
+    }
+  }
+
+  if (in_array('vaccine', $data->option) !== false) {
+    $sql = "select a.id, b.name from pet_test_usg a inner join pet_users b on a.userid = b.userid where (a.status < 7 or a.status = 9) and a.userid in (". implode(', ', $doctor) .")";
+    $list = $db->all($sql);
+
+    $l = count($list);
+    $d = count($target);
+    $n = (int) ($l / $d);
+
+    $c = 0;
+    for ($i = 0; $i < $l; $i++) { 
+      if ($c < ($d - 1) && $i >= ($c + 1) * $n) $c ++;
+      $sql = "update pet_test_usg set userid = $target[$c] where id = ". $list[$i]['id'];
+      $db->query($sql);
+    }
+  }
+
+  $result['status'] = 1;
+  return $result;
+}
+
 function vaccine() {
   global $db, $data, $result;
   

@@ -754,7 +754,6 @@ function excel() {
     'Mã hàng' => '', // 0
     'Bệnh viện' => '', // 2
     'Kho' => '', // 3
-    'Hình ảnh' => '', // 4
   );
 
   for ($j = 0; $j <= $x[$highestColumn]; $j ++) {
