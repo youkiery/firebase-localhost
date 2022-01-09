@@ -160,7 +160,7 @@ function called() {
   $db->query($sql);
   $result['status'] = 1;
   $result['messenger'] = "Đã chuyển sang tab 'Đã gọi'";
-  $result['list'] = getlist();
+  $result['list'] = getusglist();
 
   return $result;
 }
@@ -238,7 +238,7 @@ function done() {
   $db->query($sql);
   $result['status'] = 1;
   $result['messenger'] = "Phiếu nhắc đã được đặt thành 'Đã tái chủng'";
-  $result['list'] = getlist();
+  $result['list'] = getusglist();
 
   return $result;
 }
@@ -933,13 +933,13 @@ function getusglist($today = false) {
     // danh sách nhắc hôm nay
     $list = array(0 => array(), array(), array());
     $lim = strtotime(date('Y/m/d')) + 60 * 60 * 24 * 3 - 1;
-    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 1 and a.status < 4) and recall < $lim $xtra order by a.recall asc";
+    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 1 and a.status < 4) $xtra order by a.recall asc";
     $list[0] = usgdataCover($db->all($sql));
     
-    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 3 and a.status < 7) and recall < $lim $xtra order by a.recall asc";
+    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 3 and a.status < 7) $xtra order by a.recall asc";
     $list[1] = usgdataCover($db->all($sql));
     
-    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status < 2 and recall < $lim $xtra order by a.recall asc";
+    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status < 2 $xtra order by a.recall asc";
     $list[2] = usgdataCover($db->all($sql));
   }
   else {
