@@ -335,91 +335,98 @@ function excel() {
 
   $l = array();
   foreach ($exdata as $row) {
-    $res['total'] ++;
-    if (isset($type[$row[0]])) {
-      $res['vaccine'] ++;
-      $dat = explode($com['value'], $row[5]);
-      if (!isset($dat[1])) $dat[1] = '';
-      if (!isset($dat[2])) $dat[2] = '';
-      $dat[1] = trim($dat[1]);
-      $dat[2] = trim($dat[2]);
-      $date = explode('/', trim($dat[0]));
-      if (count($dat) >= 2) $petname = $dat[1];
-      else $petname = "";
-
-      if (count($date) == 3) $calltime = strtotime("$date[2]/$date[1]/$date[0]");
-      else $calltime = 0;
-      
-      $sql = "select * from pet_test_customer where phone = '$row[2]'";
-      if (empty($c = $db->fetch($sql))) {
-        $sql = "insert into pet_test_customer (name, phone, address) values('$row[3]', '$row[2]', '')";
-        $c['id'] = $db->insertid($sql);
-      }
-
-      $sql = "select * from pet_test_pet where customerid = $c[id] and name = '$petname'";
-      if (empty($p = $db->fetch($sql))) {
-        $sql = "insert into pet_test_pet (name, customerid) values ('$petname', $c[id])";
-        $p['id'] = $db->insertid($sql);
-      }
-
-      // thay đổi trạng thái siêu âm
-      $sql = "update pet_test_usg set status = 7 where customerid = $c[id] and status = 6";
-      $db->query($sql);
+    if ($row[2] == '') {
+      // nếu sđt rỗng thì bỏ qua
+    }
+    else {
+      $res['total'] ++;
+      if (isset($type[$row[0]])) {
+        $res['vaccine'] ++;
+        $dat = explode($com['value'], $row[5]);
+        if (!isset($dat[1])) $dat[1] = '';
+        if (!isset($dat[2])) $dat[2] = '';
+        $dat[1] = trim($dat[1]);
+        $dat[2] = trim($dat[2]);
+        $date = explode('/', trim($dat[0]));
+        if (count($dat) >= 2) $petname = $dat[1];
+        else $petname = "";
   
-      $datetime = explode(' ', $row[4]);
-      $date = explode('/', $datetime[0]);
-      $cometime = strtotime("$date[2]/$date[1]/$date[0]");
-      $userid = checkExcept($doctor, $row[1]);
-
-      $sql = "insert into pet_test_vaccine (petid, typeid, cometime, calltime, note, status, recall, userid, time, called) values($p[id], ". $type[$row[0]] .", $cometime, $calltime, '$dat[2]', 5, $calltime, $userid, ". time() .", 0)";
-      if ($db->query($sql)) $res['insert'] ++;
-      else {
-        $res['error'][] = array(
-          'name' => $row[3],
-          'phone' => $row[2],
-          'note' => $row[5],
-        );
+        if (count($date) == 3) $calltime = strtotime("$date[2]/$date[1]/$date[0]");
+        else $calltime = 0;
+        
+        $sql = "select * from pet_test_customer where phone = '$row[2]'";
+        if (empty($c = $db->fetch($sql))) {
+          $sql = "insert into pet_test_customer (name, phone, address) values('$row[3]', '$row[2]', '')";
+          $c['id'] = $db->insertid($sql);
+        }
+  
+        $sql = "select * from pet_test_pet where customerid = $c[id] and name = '$petname'";
+        if (empty($p = $db->fetch($sql))) {
+          $sql = "insert into pet_test_pet (name, customerid) values ('$petname', $c[id])";
+          $p['id'] = $db->insertid($sql);
+        }
+  
+        // thay đổi trạng thái siêu âm
+        $sql = "update pet_test_usg set status = 7 where customerid = $c[id] and status = 6";
+        $db->query($sql);
+    
+        $datetime = explode(' ', $row[4]);
+        $date = explode('/', $datetime[0]);
+        $cometime = strtotime("$date[2]/$date[1]/$date[0]");
+        $userid = checkExcept($doctor, $row[1]);
+  
+        $sql = "insert into pet_test_vaccine (petid, typeid, cometime, calltime, note, status, recall, userid, time, called) values($p[id], ". $type[$row[0]] .", $cometime, $calltime, '$dat[2]', 5, $calltime, $userid, ". time() .", 0)";
+        if ($db->query($sql)) $res['insert'] ++;
+        else {
+          $res['error'][] = array(
+            'name' => $row[3],
+            'phone' => $row[2],
+            'note' => $row[5],
+          );
+        }
       }
-    }
-    else if (isset($usg[$row[0]])) {
-      $res['vaccine'] ++;
-      $dat = explode($com['value'], $row[5]);
-      if (!isset($dat[1])) $dat[1] = '';
-      if (!isset($dat[2])) $dat[2] = '';
-      $dat[1] = trim($dat[1]);
-      $dat[2] = trim($dat[2]);
-      $date = explode('/', trim($dat[0]));
-      if (count($dat) >= 2) $number = intval($dat[1]);
-      else $number = 0;
-
-      if ($number = 0) $calltime = time();
-      else if (count($date) == 3) $calltime = strtotime("$date[2]/$date[1]/$date[0]");
-      else $calltime = 0;
-      
-      $sql = "select * from pet_test_customer where phone = '$row[2]'";
-      if (empty($c = $db->fetch($sql))) {
-        $sql = "insert into pet_test_customer (name, phone, address) values('$row[3]', '$row[2]', '')";
-        $c['id'] = $db->insertid($sql);
+      else if (isset($usg[$row[0]])) {
+        $res['vaccine'] ++;
+        $dat = explode($com['value'], $row[5]);
+        if (!isset($dat[1])) $dat[1] = '';
+        if (!isset($dat[2])) $dat[2] = '';
+        $dat[1] = trim($dat[1]);
+        $dat[2] = trim($dat[2]);
+        $date = explode('/', trim($dat[0]));
+        if (count($dat) >= 1) $number = intval($dat[1]);
+        else $number = 0;
+  
+        if ($number == 0) $calltime = time();
+        else if (count($date) == 3) $calltime = strtotime("$date[2]/$date[1]/$date[0]");
+        else $calltime = 0;
+        
+        $sql = "select * from pet_test_customer where phone = '$row[2]'";
+        if (empty($c = $db->fetch($sql))) {
+          $sql = "insert into pet_test_customer (name, phone, address) values('$row[3]', '$row[2]', '')";
+          $c['id'] = $db->insertid($sql);
+        }
+  
+        $datetime = explode(' ', $row[4]);
+        $date = explode('/', $datetime[0]);
+        $cometime = strtotime("$date[2]/$date[1]/$date[0]");
+        $userid = checkExcept($doctor, $row[1]);
+  
+        $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], $userid, $cometime, $calltime, $calltime, '$number', 9, '$dat[2]', ". time() .", 0)";
+        echo json_encode($row). "<br>";
+        echo "$sql<br><br>";
+        if ($db->query($sql)) $res['insert'] ++;
+        else {
+          $res['error'][] = array(
+            'name' => $row[3],
+            'phone' => $row[2],
+            'note' => $row[5],
+          );
+        }
       }
-
-      $datetime = explode(' ', $row[4]);
-      $date = explode('/', $datetime[0]);
-      $cometime = strtotime("$date[2]/$date[1]/$date[0]");
-      $userid = checkExcept($doctor, $row[1]);
-
-      $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], $userid, $cometime, $calltime, $calltime, '$number', 9, '$dat[2]', ". time() .", 0)";
-      if ($db->query($sql)) $res['insert'] ++;
-      else {
-        $res['error'][] = array(
-          'name' => $row[3],
-          'phone' => $row[2],
-          'note' => $row[5],
-        );
+      else if ($row[5] == '1') {
+        if (empty($his[$row[2]])) $his[$row[2]] = array('name' => $row['3'], 'phone' => $row['2'], 'user' => $row['1'], 'time' => $row['4'], 'treat' => array());
+        $his[$row[2]]['treat'] []= $row['6'] . ": ". $row['7'];
       }
-    }
-    else if ($row[5] == '1') {
-      if (empty($his[$row[2]])) $his[$row[2]] = array('name' => $row['3'], 'phone' => $row['2'], 'user' => $row['1'], 'time' => $row['4'], 'treat' => array());
-      $his[$row[2]]['treat'] []= $row['6'] . ": ". $row['7'];
     }
   }
 
