@@ -984,8 +984,10 @@ function getusglist($today = false) {
     $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 1 and a.status < 4) $xtra order by a.recall asc";
     $list[0] = usgdataCover($db->all($sql));
     
-    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 3 and a.status < 7) $xtra order by a.recall asc";
+    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where (a.status > 3 and a.status < 6) $xtra order by a.recall asc";
     $list[1] = usgdataCover($db->all($sql));
+    $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status = 6 $xtra order by a.recall asc";
+  	$list[1] = array_merge($list[1], usgdataCover($db->all($sql)));
     
     $sql = "select a.*, c.name as doctor, b.name, b.phone, b.address from pet_test_usg a inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on a.customerid = b.id where a.status < 2 $xtra order by a.recall asc";
     $list[2] = usgdataCover($db->all($sql));
