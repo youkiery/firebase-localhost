@@ -160,7 +160,7 @@ function called() {
   $db->query($sql);
   $result['status'] = 1;
   $result['messenger'] = "Đã chuyển sang tab 'Đã gọi'";
-  $result['list'] = getusglist();
+  $result['list'] = getlist();
 
   return $result;
 }
@@ -240,6 +240,47 @@ function done() {
   $result['messenger'] = "Phiếu nhắc đã được đặt thành 'Đã tái chủng'";
   $result['list'] = getusglist();
 
+  return $result;
+}
+
+function statis() {
+  global $data, $db, $result;
+
+  $sql = "select b.userid, b.name from pet_test_user_per a inner join pet_users b on a.userid = b.userid where a.module = 'doctor'";
+  $doctor = $db->all($sql);
+  $list = array();
+
+  $time = time();
+  foreach ($doctor as $key => $row) {
+    $row['prog'] = array();
+    $row['unbirth'] = array();
+    $row['birth'] = array();
+    $row['usg'] = array();
+    $row['uncall'] = array();
+    $row['vaccine'] = array();
+
+    $sql = "select id from pet_test_vaccine where userid = $row[userid] and status = 5";
+    $row['vaccine'] = $db->all($sql);
+
+    $sql = "select id from pet_test_vaccine where userid = $row[userid] and recall < $time and status = 0";
+    $row['uncall'] = $db->all($sql);
+
+    $sql = "select id from pet_test_usg where userid = $row[userid] and status = 9";
+    $row['usg'] = $db->all($sql);
+
+    $sql = "select id from pet_test_usg where userid = $row[userid] and recall < $time and status in (2, 3)";
+    $row['unbirth'] = $db->all($sql);
+
+    $sql = "select id from pet_test_usg where userid = $row[userid] and recall < $time and status in (4, 5)";
+    $row['birth'] = $db->all($sql);
+
+    $sql = "select id from pet_test_usg where userid = $row[userid] and recall < $time and status in (0, 1)";
+    $row['prog'] = $db->all($sql);
+
+    $doctor[$key] = $row;
+  }
+  $result['status'] = 1;
+  $result['list'] = $doctor;
   return $result;
 }
 

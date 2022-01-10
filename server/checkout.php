@@ -87,21 +87,21 @@ function excel() {
     foreach ($vietcomtemp as $key => $value) {
       if ($value['money'] == $row['money']) {
         $check = true;
-        $total['kiot'] += $row['money'];
-        $total['vietcom'] += $row['money'];
+        $total['kiot'] += intval($row['money']);
+        $total['vietcom'] += intval($row['money']);
         $res['pair'] []= array('money' => $row['money'], 'kiot' => $row['content'], 'vietcom' => $value['content']);
         unset($vietcomtemp[$key]);
         break;
       }
     }
     if (!$check) {
-      $total['kiot'] += $row['money'];
+      $total['kiot'] += intval($row['money']);
       $res['kiot'] []= array('money' => $row['money'], 'kiot' => $row['content'], 'vietcom' => '');
     }
   }
 
   foreach ($vietcomtemp as $row) {
-    $total['vietcom'] += $row['money'];
+    $total['vietcom'] += intval($row['money']);
     $res['vietcom'] []= array('money' => $row['money'], 'vietcom' => $row['content'], 'kiot' => '');
   }
 
@@ -199,7 +199,7 @@ function getData($file, $tar, $key) {
       }
     }
     if ($check) break;
-    $excel []= $temp;
+    if (!empty($temp['money'])) $excel []= $temp;
   }
 
   return $excel;

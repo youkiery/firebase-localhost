@@ -9,6 +9,9 @@ include_once(ROOTDIR . '/server/db.php');
 include_once(ROOTDIR . '/server/global.php');
 $db = new database($config['servername'], $config['username'], $config['password'], $config['database']);
 
+$sql = "select * from pet_rider_row where type = 0 and time > 1609434000 order by id desc";
+echo json_encode($db->all($sql));
+
 // $sql = "select id, name from province";
 // $pl = $db->all($sql);
 

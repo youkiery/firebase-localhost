@@ -105,8 +105,8 @@ function statistic() {
       $u = $db->fetch($sql);
       $temp[$row['userid']] = array('name' => $u['name'], 'clock' => 0, 'cole' => 0, 'pay' => 0, 'count' => 0);
     }
-    $temp[$row['userid']]['clock'] = $row['clocke'] - $row['clockf'];
-    $temp[$row['userid']]['cole'] = $row['money'];
+    $temp[$row['userid']]['clock'] += $row['clocke'] - $row['clockf'];
+    $temp[$row['userid']]['cole'] += $row['money'];
     $temp[$row['userid']]['count'] ++;
   }
 
