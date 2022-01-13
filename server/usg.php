@@ -222,6 +222,7 @@ function insert() {
   $data->cometime = isodatetotime($data->cometime);
   $data->calltime = isodatetotime($data->calltime);
   $userid = checkuserid();
+  if (!isset($data->number)) $data->number = 0;
 
   // nếu số con > 0, đặt trạng thái sắp sinh, ngày nhắc là 1 tuần trước sinh
     // nếu không, đặt 5 tháng sau nhắc kỳ salơ
@@ -250,7 +251,14 @@ function update() {
   // nếu không, đặt 5 tháng sau nhắc kỳ salơ
   $recall = $data->come + 60 * 60 * 24 * 30 * 5; // mặc định 5 tháng sau salơ
   if ($data->number) $recall = $data->calltime - 60 * 60 * 24 * 7; // có con, nhắc trước ngày sinh 1 tuần
-  $status = intval(boolval($data->number)) * 2; // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
+  $sql = "select * from pet_test_usg where id = $data->id";
+  $u = $db->fetch($sql);
+  $status = intval(boolval($data->number)); // nếu có con thì trạng thái = 1, nếu không, trạng thái = 0
+  // kiểm tra kết quả status bên trên có thay đổi hay không
+  // nếu có, reset, nếu không, giữ nguyên
+  if ($status == 1 && $u['status'] < 2) $status = 2; // trạng thái chưa sinh
+  else if ($status == 0 && $u['status'] > 1) $status = 0; // trạng thái nhắc tiêm phòng salơ
+  else $status = $u['status'];
   
   $sql = "update pet_test_usg set customerid = $customerid, note = '$data->note', cometime = $data->cometime, calltime = $data->calltime, recall = $recall, status = $status, number = $data->number where id = $data->id";
   $db->query($sql);
@@ -284,7 +292,7 @@ function birth() {
   $recall = $data->calltime + 60 * 60 * 24 * 7 * 5;
   $status = 4;
 
-  $sql = "update pet_test_usg set status = $status, note = '". $data->note ."', calltime = $data->calltime, recall = $recall where id = $data->id";
+  $sql = "update pet_test_usg set status = $status, note = '". $data->note ."', number = $data->number, calltime = $data->calltime, recall = $recall where id = $data->id";
   $db->query($sql);
   $result['status'] = 1;
   $result['messenger'] = "Đã thay đổi trạng thái";
