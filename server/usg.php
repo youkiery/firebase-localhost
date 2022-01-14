@@ -165,7 +165,7 @@ function getlist($today = false) {
 
 function dataCover($list) {
   global $start;
-  $lim = strtotime(date('Y/m/d')) - 1 + 60 * 60 * 24 * 3;
+  $lim = strtotime(date('Y/m/d')) - 1 + 60 * 60 * 24;
   $v = array();
   $stoday = strtotime(date('Y/m/d'));
   $etoday = $stoday + 60 * 60 * 24  - 1;
@@ -236,6 +236,24 @@ function insert() {
   $result['list'] = getlist();
   $result['new'] = getlist(true);
   $result['messenger'] = "Đã thêm vào danh sách nhắc";
+  return $result;
+}
+
+function uncalled() {
+  global $data, $db, $result;
+
+  $sql = "select * from pet_test_usg where id = $data->id";
+  $v = $db->fetch($sql);
+  $time = time();
+  $recall = $v['recall'] + 60 * 60 * 24;
+  if ($time > $v['recall']) $recall = $time + 60 * 60 * 24;
+
+  $sql = "update pet_test_usg set note = '". $data->note ."', called = $time, recall = $recall where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  $result['messenger'] = "Đã chuyển dời ngày nhắc đến ". date('d/m/Y', $recall);
+  $result['list'] = getlist();
+  
   return $result;
 }
 

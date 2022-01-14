@@ -143,11 +143,8 @@ function removeData() {
 
 function checkData() {
   global $db, $data;
-  if ($data->type == 'done') $type = 1;
-  else $type = 0;
-  $sql = 'update pet_test_kaizen set done = '. $type .' where id = '. $data->id;
+  $sql = 'update pet_test_kaizen set done = 1 where id = '. $data->id;
   $db->query($sql);
-  return $time;
 }
 
 function checkRole() {

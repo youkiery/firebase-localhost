@@ -47,11 +47,16 @@ function expire_done() {
   foreach ($list as $key => $value) {
     $list[$key]['expire'] = date('d/m/Y', $value['expire']);
   }
+}
+
+function done() {
+  global $data, $db, $result;
+
+  $sql = "update pet_test_item_recommend set status = 1 where id = $data->id";
+  $db->query($sql);
   
   $result['status'] = 1;
-  $result['expired'] = getExpire();
-  $result['list'] = $list;
-  
+  $result['list'] = getPurchaseList();
   return $result;
 }
 

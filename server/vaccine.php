@@ -453,8 +453,6 @@ function excel() {
         $userid = checkExcept($doctor, $row[1]);
   
         $sql = "insert into pet_test_usg (customerid, userid, cometime, calltime, recall, number, status, note, time, called) values($c[id], $userid, $cometime, $calltime, $calltime, '$number', 9, '$dat[2]', ". time() .", 0)";
-        echo json_encode($row). "<br>";
-        echo "$sql<br><br>";
         if ($db->query($sql)) $res['insert'] ++;
         else {
           $res['error'][] = array(
@@ -763,7 +761,7 @@ function getOver($status, $xtra) {
 function getOverList() {
   global $db, $data;
 
-  $time = time() - 60 * 60 * 24;
+  $time = strtotime(date('Y/m/d')) + 60 * 60 * 24 - 1;
   $sql = "select a.*, c.name as doctor, g.name as petname, g.customerid, b.name, b.phone, b.address, d.name as type from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_pet g on a.petid = g.id inner join pet_test_customer b on g.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status < 3 and calltime < $time order by a.calltime asc limit 50";
   return dataCover($db->all($sql));
 }
@@ -1004,7 +1002,7 @@ function getusglist($today = false) {
 
 function usgdataCover($list) {
   global $start;
-  $lim = strtotime(date('Y/m/d')) - 1 + 60 * 60 * 24 * 3;
+  $lim = strtotime(date('Y/m/d')) - 1 + 60 * 60 * 24;
   $v = array();
   $stoday = strtotime(date('Y/m/d'));
   $etoday = $stoday + 60 * 60 * 24  - 1;
