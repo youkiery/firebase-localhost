@@ -120,8 +120,13 @@ function getlist($today = false) {
   if ($role['type'] < 2) $xtra []= " a.userid = $userid ";
   else if (!empty($data->docs)) {
     $xtra []= " a.userid in ($docs) ";
+    if (!isset($data->{'docscover'})) $data->docscover = '';
+
+    $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
+    $db->query($sql);
+    $sql = "update pet_test_config set value = '$data->docscover' where module = 'docscover' and name = '$userid'";
+    $db->query($sql);
   }
-  if (!isset($data->{'docscover'})) $data->docscover = '';
 
   $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
   $db->query($sql);

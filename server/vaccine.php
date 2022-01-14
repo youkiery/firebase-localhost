@@ -90,8 +90,9 @@ function doneall() {
     $db->query($sql);
   }
 
-  $sql = "select a.*, c.name as doctor, g.name as petname, g.customerid, d.name as type, b.phone, b.name, b.address from pet_test_vaccine a inner join pet_test_pet g on a.petid = g.id inner join pet_users c on a.userid = c.userid inner join pet_test_customer b on g.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status < 3 and g.customerid in (". implode(', ', $c) .") and a.id not in (". implode(', ', $data->list) .") order by a.id asc";
-  $result['old'] = dataCover($db->all($sql));
+  $sql = "update pet_test_vaccine set status = 3 where id in (select a.id from pet_test_vaccine a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id where (a.status = 1 or a.status = 2) and c.id in (". implode(', ', $c) .") order by a.id asc)";
+  $db->query($sql);
+  $result['old'] = array();
   $result['list'] = gettemplist();
   $result['messenger'] = "Đã xác nhận các phiếu nhắc tạm";
   $result['status'] = 1;
@@ -210,9 +211,13 @@ function confirm() {
 
   $sql = "update pet_test_vaccine set status = 0, utemp = 1, recall = calltime, time = ". time() ." where id = $data->id";
   $db->query($sql);
+
+  $sql = "update pet_test_vaccine set status = 3 where id in (select a.id from pet_test_vaccine a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id where (a.status = 1 or a.status = 2) and c.id = $c[customerid] order by a.id asc)";
+  $db->query($sql);
+
   $result['status'] = 1;
   $result['messenger'] = "Đã xác nhận và chuyển vào danh sách nhắc";
-  $result['old'] = getOlder($c['customerid'], $data->id);  
+  $result['old'] = array();  
   $result['ov'] = $c;
   $result['temp'] = gettemplist();
 
@@ -555,12 +560,15 @@ function insert() {
   $data->calltime = isodatetotime($data->calltime);
   $userid = checkuserid();
 
+  $sql = "update pet_test_vaccine set status = 3 where id in (select a.id from pet_test_vaccine a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id where (a.status = 1 or a.status = 2) and c.phone = '$data->phone' order by a.id asc)";
+  $db->query($sql);
+
   $sql = "insert into pet_test_vaccine (petid, typeid, cometime, calltime, note, status, called, recall, userid, time) values ($petid, $data->typeid, $data->cometime, $data->calltime, '$data->note', 0, 0, $data->calltime, $userid, ". time() .")";
   $result['status'] = 1;
   $result['vid'] = $db->insertid($sql);
   $result['list'] = getlist();
   $result['new'] = getlist(true);
-  $result['old'] = getOlder($petid, $result['vid']);
+  $result['old'] = array();
   $result['messenger'] = "Đã thêm vào danh sách nhắc";
   return $result;
 }
@@ -700,12 +708,16 @@ function getlist($today = false) {
 
   $xtra = array();
   if ($role['type'] < 2) $xtra []= " a.userid = $userid ";
-  else if (!empty($data->docs)) $xtra []= " a.userid in ($docs) ";
-  if (!isset($data->{'docscover'})) $data->docscover = '';
-  $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
-  $db->query($sql);
-  $sql = "update pet_test_config set value = '$data->docscover' where module = 'docscover' and name = '$userid'";
-  $db->query($sql);
+  else if (!empty($data->docs)) {
+    $xtra []= " a.userid in ($docs) ";
+    if (!isset($data->{'docscover'})) $data->docscover = '';
+
+    $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
+    $db->query($sql);
+    $sql = "update pet_test_config set value = '$data->docscover' where module = 'docscover' and name = '$userid'";
+    $db->query($sql);
+  }
+
   if (count($xtra)) $xtra = "and".  implode(" and ", $xtra);
   else $xtra = "";
 
@@ -892,17 +904,6 @@ function gettemplist() {
   return $list;
 }
 
-function getOlder($petid, $vid) {
-  global $db;
-
-  $sql = "select * from pet_test_pet where id = $petid";
-  $p = $db->fetch($sql);
-  $customerid = $p['customerid'];
-
-  $sql = "select a.*, c.name as doctor, g.name as petname, g.customerid, d.name as type, b.phone, b.name, b.address from pet_test_vaccine a inner join pet_users c on a.userid = c.userid inner join pet_test_pet g on a.petid = g.id inner join pet_test_customer b on g.customerid = b.id inner join pet_test_type d on a.typeid = d.id where a.status < 3 and g.customerid = $customerid and a.id <> $vid order by a.id asc";
-  return dataCover($db->all($sql));
-}
-
 function typeList() {
   global $db;
   $sql = 'select * from pet_test_type where active = 1';
@@ -955,15 +956,15 @@ function getusglist($today = false) {
 
   $xtra = array();
   if ($role['type'] < 2) $xtra []= " a.userid = $userid ";
-  if (!empty($data->docs)) {
+  else if (!empty($data->docs)) {
     $xtra []= " a.userid in ($docs) ";
-  }
-  if (!isset($data->{'docscover'})) $data->docscover = '';
+    if (!isset($data->{'docscover'})) $data->docscover = '';
 
-  $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
-  $db->query($sql);
-  $sql = "update pet_test_config set value = '$data->docscover' where module = 'docscover' and name = '$userid'";
-  $db->query($sql);
+    $sql = "update pet_test_config set value = '$docs' where module = 'docs' and name = '$userid'";
+    $db->query($sql);
+    $sql = "update pet_test_config set value = '$data->docscover' where module = 'docscover' and name = '$userid'";
+    $db->query($sql);
+  }
 
   if (count($xtra)) $xtra = "and".  implode(" and ", $xtra);
   else $xtra = "";
