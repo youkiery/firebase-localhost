@@ -141,9 +141,12 @@ function updatehistory() {
   $sql = "update pet_test_vaccine set petid = $petid, typeid = $data->typeid, cometime = $data->cometime, calltime = $data->calltime, status = 0, recall = $data->calltime, note = '$data->note', utemp = 1, time = ". time() ." where id = $data->id";
   $db->query($sql);
 
+  $sql = "update pet_test_vaccine set status = 3 where id in (select a.id from pet_test_vaccine a inner join pet_test_pet b on a.petid = b.id inner join pet_test_customer c on b.customerid = c.id where (a.status = 1 or a.status = 2) and c.phone = '$data->phone' order by a.id asc)";
+  $db->query($sql);
+
   $result['status'] = 1;
   $result['messenger'] = 'Đã xác nhận và thêm vào danh sách nhắc';
-  $result['old'] = getOlder($petid, $data->id);
+  $result['old'] = array();
   $result['list'] = gettemplist();
 
   return $result;
@@ -950,7 +953,7 @@ function getusglist($today = false) {
   global $db, $data, $userid;
 
   $userid = checkuserid();
-  $sql = "select * from pet_test_user_per where userid = $userid and module = 'usg'";
+  $sql = "select * from pet_test_user_per where userid = $userid and module = 'vaccine'";
   $role = $db->fetch($sql);
   $docs = implode(', ', $data->docs);
 

@@ -49,6 +49,46 @@ function expire_done() {
   }
 }
 
+function getpurchased() {
+  global $db, $data, $result;
+
+  $result['status'] = 1;
+  $result['list'] = getPurchasedList();
+  return $result;
+}
+
+function removerecommended() {
+  global $db, $data, $result;
+
+  $sql = "delete from pet_test_item_recommend where id = $data->id";
+  $db->query($sql);
+
+  $result['status'] = 1;
+  $result['list'] = getPurchasedList();
+  return $result;
+}
+
+function getPurchasedList() {
+  global $db, $data;
+  $sql = "select a.*, b.name as user from pet_test_item_recommend a inner join pet_users b on a.userid = b.userid where a.status = 1";
+  
+  $res = $db->all($sql);
+  foreach ($res as $key => $row) {
+    $image = explode(',', $row['image']);
+    if (count($image) == 1 && strlen($image[0]) == 0) $image = array();
+    $res[$key]['image'] = $image;
+  }
+
+  return $res;
+}
+
+function getPurchasedCount() {
+  global $db, $data;
+  $sql = "select id from pet_test_item_recommend where status = 1";
+  $count = $db->count($sql);
+  return $count;
+}
+
 function done() {
   global $data, $db, $result;
 
@@ -197,6 +237,7 @@ function init() {
   $userid = checkUserid();
   $result['status'] = 1;
   $result['purchase'] = getPurchase();
+  $result['purchased'] = getPurchasedCount();
   $result['transfer'] = getTransfer();
   $result['expired'] = getExpire();
   $result['catlist'] = getCatList();
