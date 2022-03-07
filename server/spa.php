@@ -377,6 +377,7 @@ function insert() {
   }
 
   $userid = checkuserid();
+  $data->treat = intval($data->treat);
   
   $sql = "insert into pet_test_spa (customerid, customerid2, doctorid, note, time, utime, weight, image, treat) values($customer[id], $customer2[id], $userid, '$data->note', '" . time() . "', '" . time() . "', $data->weight, '". implode(', ', $data->image)."', $data->treat)";
   $id = $db->insertid($sql);
@@ -422,6 +423,7 @@ function update() {
   }
   
   $userid = checkuserid();
+  $data->treat = intval($data->treat);
 
   $sql = "update pet_test_spa set customerid = $customer[id], customerid2 = $customer2[id], doctorid = $userid, note = '$data->note', image = '". implode(', ', $data->image)."', weight = $data->weight, utime = ". time() .", luser = $userid, ltime = ". time() .", status = 0, duser = 0, treat = $data->treat where id = $data->id";
   $db->query($sql);  

@@ -297,9 +297,7 @@ function birth() {
 
   // nếu có ngày nhắc ngày salơ chó mẹ
   if (!empty($data->repregnant)) {
-    $time = explode('-', $data->repregnant);
-    $data->repregnant = totime("$time[2]/$time[1]/$time[0]");
-    $recall = $data->repregnant + 60 * 60 * 24 * 7 * 5;
+    $recall = isodatetotime($data->repregnant) + 60 * 60 * 24 * 7 * 5;
 
     $userid = checkuserid();
     $time = time();
@@ -310,8 +308,7 @@ function birth() {
     $db->query($sql);
   }
 
-  $time = explode('-', $data->calltime);
-  $data->calltime = totime("$time[2]/$time[1]/$time[0]");
+  $data->calltime = isodatetotime($data->calltime);
   $recall = $data->calltime + 60 * 60 * 24 * 7 * 5;
   $status = 4;
 

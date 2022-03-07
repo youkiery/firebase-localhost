@@ -78,6 +78,8 @@ function initList() {
   
   while ($row = $query->fetch_assoc()) {
     $user = checkUserById($row['userid']);
+    $image = explode(', ', $row['image']);
+    if (count($image) == 1 && $image[0] == '') $image = array();
     $data = array(
       'id' => $row['id'],
       'name' => $user['name'],
@@ -85,6 +87,7 @@ function initList() {
       'problem' => $row['problem'],
       'solution' => $row['solution'],
       'result' => $row['result'],
+      'image' => $image,
       'time' => date('d/m/Y', $row['edit_time'])
     );
     $list['undone'] []= $data;
@@ -121,8 +124,10 @@ function insertData() {
 
   $userid = checkUserid();
   $dat = $data->data;
+  $time = time();
+  $image = implode(', ', $dat->image);
 
-  $sql = 'insert into pet_test_kaizen (userid, problem, solution, result, post_time, edit_time) values('. $userid .', "'. $dat->problem .'", "'. $dat->solution .'", "'. $dat->result .'", '. time() .', '. time() .')';
+  $sql = "insert into pet_test_kaizen (userid, problem, solution, result, post_time, edit_time, image) values($userid, '$dat->problem', '$dat->solution', '$dat->result', $time, $time, '$image')";
   $db->query($sql);
 }
 
@@ -130,8 +135,10 @@ function updateData() {
   global $db, $data;
 
   $data = $data->data;
+  $time = time();
+  $image = implode(', ', $dat->image);
 
-  $sql = 'update pet_test_kaizen set problem = "'. $data->problem .'", solution = "'. $data->solution .'", result = "'. $data->result .'", edit_time = '. time() .' where id = '. $data->id;
+  $sql = "update pet_test_kaizen set problem = '$data->problem', solution = '$data->solution', result = '$data->result', edit_time = $time, image = '$image' where id = $data->id";
   $db->query($sql);
 }
 

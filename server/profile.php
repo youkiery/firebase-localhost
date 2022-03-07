@@ -69,7 +69,7 @@ function download() {
     $newContents = str_replace('{name}', $prof['name'], $newContents);
     $newContents = str_replace('{weight}', $prof['weight'], $newContents);
     $newContents = str_replace('{age}', $prof['age'], $newContents);
-    $newContents = str_replace('{gender}', ($prof['gender'] ? 'Đực' : 'Cái'), $newContents);
+    $newContents = str_replace('{gender}', ($prof['gender'] == 0 ? 'Đực' : 'Cái'), $newContents);
     $newContents = str_replace('{type}', $prof['species'], $newContents);
     $newContents = str_replace('{sampleid}', $prof['id'], $newContents);
     $newContents = str_replace('{serial}', $prof['serial'], $newContents);
@@ -347,7 +347,7 @@ function printword() {
   $html = str_replace('{name}', $prof['name'], $html);
   $html = str_replace('{weight}', $prof['weight'], $html);
   $html = str_replace('{age}', $prof['age'], $html);
-  $html = str_replace('{gender}', ($prof['gender'] ? 'Đực' : 'Cái'), $html);
+  $html = str_replace('{gender}', ($prof['gender'] == 0 ? 'Đực' : 'Cái'), $html);
   $html = str_replace('{type}', $prof['species'], $html);
   $html = str_replace('{sampleid}', $prof['id'], $html);
   $html = str_replace('{serial}', $prof['serial'], $html);
@@ -356,11 +356,10 @@ function printword() {
   $html = str_replace('{samplesymbol}', $prof['samplesymbol'], $html);
   $html = str_replace('{samplestatus}', ($prof['samplestatus'] ? 'Đạt yêu cầu' : 'Không đạt yêu cầu'), $html);
   $html = str_replace('{doctor}', $prof['doctor'], $html);
-  $time = $prof['time'] / 1000;
-  $html = str_replace('{time}', date('d/m/Y', $time), $html);
-  $html = str_replace('{DD}', date('d', $time), $html);
-  $html = str_replace('{MM}', date('m', $time), $html);
-  $html = str_replace('{YYYY}', date('Y', $time), $html);
+  $html = str_replace('{time}', date('d/m/Y', $prof['time']), $html);
+  $html = str_replace('{DD}', date('d', $prof['time']), $html);
+  $html = str_replace('{MM}', date('m', $prof['time']), $html);
+  $html = str_replace('{YYYY}', date('Y', $prof['time']), $html);
 
   for ($i = 1; $i <= 18; $i++) { 
     if (!empty($prof['target'][$i - 1])) {

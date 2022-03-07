@@ -98,6 +98,9 @@ function update() {
 
   $data->time = isodatetotime($data->time);
 
+  $sql = "update pet_test_xray set pos = $data->pos where id = $data->id";
+  $db->query($sql);
+
   $sql = "update pet_test_xray_row set eye = '$data->eye', temperate = '$data->temperate', other = '$data->other', treat = '$data->treat', status = '$data->status', image = '". implode(', ', $data->image) ."', time = $data->time where id = $data->detailid";
   $db->query($sql);
   
@@ -210,7 +213,7 @@ function insert() {
   $petid = checkpet();
   $userid = checkuserid();
   $data->time = isodatetotime($data->time);
-  $sql = "insert into pet_test_xray(petid, doctorid, insult, time) values($petid, $userid, 0, $data->time)";
+  $sql = "insert into pet_test_xray(petid, doctorid, insult, time, pos) values($petid, $userid, 0, $data->time, $data->pos)";
   $id = $db->insertid($sql);
   
   $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, image, status, time) values($id, $userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '". implode(', ', $data->image) ."', '$data->status', $data->time)";
@@ -236,6 +239,9 @@ function detail() {
 
   $userid = checkuserid();
   $data->time = isodatetotime($data->time);
+  
+  $sql = "update pet_test_xray set pos = $data->pos where id = $data->id";
+  $db->query($sql);
 
   $sql = "insert into pet_test_xray_row (xrayid, doctorid, eye, temperate, other, treat, status, time, image) values($data->id, $userid, '$data->eye', '$data->temperate', '$data->other', '$data->treat', '$data->status', $data->time, '". implode(', ', $data->image) ."')";
   $id = $db->insertid($sql);
