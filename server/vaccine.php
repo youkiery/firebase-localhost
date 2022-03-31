@@ -315,7 +315,7 @@ function excel() {
   $ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
   $name = pathinfo($_FILES['file']['name'], PATHINFO_FILENAME);
   $file_name = $name . "-". time() . ".". $ext;
-  $des = $dir ."export/$file_name";
+  $des = $dir ."include/export/$file_name";
 
   move_uploaded_file($raw, $des);
 
@@ -325,7 +325,7 @@ function excel() {
     $x[$value] = $key;
   }
 
-  include $dir .'PHPExcel/IOFactory.php';
+  include $dir .'include/PHPExcel/IOFactory.php';
     
   $inputFileType = PHPExcel_IOFactory::identify($des);
   $objReader = PHPExcel_IOFactory::createReader($inputFileType);

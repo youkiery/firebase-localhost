@@ -123,16 +123,37 @@ function filter() {
   return $result;
 }
 
-function doctor() {
+function toggle() {
   global $db, $data, $result;
 
-  $sql = "select * from pet_test_user_per where userid = $data->userid and module = 'doctor'";
+  $sql = "select * from pet_test_user_per where userid = $data->userid and module = '$data->per'";
   if (empty($p = $db->fetch($sql))){
-    $sql = "insert into pet_test_user_per (userid, module, type) values ($data->userid, 'doctor', 1)";
+    $sql = "insert into pet_test_user_per (userid, module, type) values ($data->userid, '$data->per', 1)";
     $db->query($sql);
   }
   else {
     $sql = "update pet_test_user_per set type = ". intval(!$p['type']) ." where id = $p[id]";
+    $db->query($sql);
+  }
+
+  $result['status'] = 1;
+  $result['config'] = getConfig();
+  $result['list'] = getList();
+  return $result;
+}
+
+function change() {
+  global $db, $data, $result;
+
+  $reversal = array(0 => 1, 2, 0);
+  $sql = "select * from pet_test_user_per where userid = $data->userid and module = '$data->per'";
+  if (empty($p = $db->fetch($sql))) {
+    $sql = "insert into pet_test_user_per (userid, module, type) values ($data->userid, '$data->per', 1)";
+    $db->query($sql);
+  }
+  else {
+    $rev = $reversal[$p['type']];
+    $sql = "update pet_test_user_per set type = $rev where id = $p[id]";
     $db->query($sql);
   }
 
@@ -235,7 +256,21 @@ function remove() {
 function getList() {
   global $db;
 
-  $module = getPer();
+  $module = array(
+    'spa' => 0,
+    'vaccine' => 0,
+    'schedule' => 0,
+    'item' => 0,
+    'kaizen' => 0,
+    'drug' => 0,
+    'price' => 0,
+    'ride' => 0,
+    'profile' => 0,
+    'physical' => 0,
+    'his' => 0,
+    'cart' => 0,
+    'transport' => 0,
+  );
 
   $sql = 'select name, username, fullname, userid from pet_users where active = 1';
   $list = $db->all($sql);

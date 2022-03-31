@@ -46,7 +46,8 @@ class Database {
 
   public function count($sql) {
     $query = $this->db->query($sql);
-    return $query->num_rows;
+    $num = $query->num_rows;
+    return $num;
   }
 
   public function fetch($sql) {

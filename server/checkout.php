@@ -1,6 +1,6 @@
 <?php
 $dir = str_replace('/server', '', ROOTDIR);
-include $dir .'/PHPExcel/IOFactory.php';
+include $dir .'/include/PHPExcel/IOFactory.php';
 
 $x = array();
 $xr = array(0 => 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AM', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD', 'BE', 'BF', 'BG', 'BH', 'HI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO');
@@ -105,11 +105,11 @@ function excel() {
     $res['vietcom'] []= array('money' => $row['money'], 'vietcom' => $row['content'], 'kiot' => '');
   }
 
-  if (file_exists("$dir/export/$name1")) {
-    unlink("$dir/export/$name1");
+  if (file_exists("$dir/include/export/$name1")) {
+    unlink("$dir/include/export/$name1");
   }
-  if (file_exists("$dir/export/$name2")) {
-    unlink("$dir/export/$name2");
+  if (file_exists("$dir/include/export/$name2")) {
+    unlink("$dir/include/export/$name2");
   }
 
   $time = time();
@@ -169,7 +169,7 @@ function getData($file, $tar, $key) {
   $raw = $file['tmp_name'];
   $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
   $name = pathinfo($file['name'], PATHINFO_FILENAME);
-  $des = "$dir/export/$tar";
+  $des = "$dir/include/export/$tar";
 
   move_uploaded_file($raw, $des);
 

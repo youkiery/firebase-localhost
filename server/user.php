@@ -47,6 +47,28 @@ function session() {
   return $result;
 }
 
+function getHisChatCount($userid) {
+  global $db;
+  
+  $sql = "select * from pet_test_xray where doctorid = $userid or pos = 1";
+  $c = $db->all($sql);
+
+  $count = 0;
+  foreach ($c as $row) {
+    $sql = "select * from pet_test_xray_read where side = 0 and userid = $userid and postid = $row[id]";
+    if (empty($r = $db->fetch($sql))) {
+      $sql = "insert into pet_test_xray_read (side, userid, postid, time) values(0, $userid, $row[id], 0)";
+      $db->query($sql);
+      $r = array('time' => 0);
+    }
+
+    $sql = "select id from pet_test_xray_chat where postid = $row[id] and side = 1 and time > $r[time]";
+    $count += intval($db->count($sql));
+  }
+  
+  return $count;
+}
+
 function getinitdata($userid) {
   global $db;
   $admin = 0;
@@ -113,6 +135,7 @@ function getinitdata($userid) {
     'doctor' => $doctor,
     'type' => $type,
     'spa' => $spa,
+    'his' => getHisChatCount($userid),
     'usgcode' => $usgcode,
     'today' => date('d/m/Y'),
     'next' => date('d/m/Y', time() + 60 * 60 * 24 * 21),

@@ -5,9 +5,9 @@ function download() {
   $zip = new ZipArchive;
   
   $fileToModify = 'word/document.xml';
-  $wordDoc = DIR. "/export/template2.docx";
+  $wordDoc = DIR. "/include/export/template2.docx";
   $name = "analysis-". time() .".docx";
-  $exportDoc = DIR. "/export/". $name;
+  $exportDoc = DIR. "/include/export/". $name;
   
   copy($wordDoc, $exportDoc);
   if ($zip->open($exportDoc) === TRUE) {
@@ -124,7 +124,7 @@ function download() {
     $return = $zip->close();
     If ($return==TRUE){
       $result['status'] = 1;
-      $result['link'] = 'http://'. $_SERVER['HTTP_HOST']. '/export/'. $name;
+      $result['link'] = 'http://'. $_SERVER['HTTP_HOST']. '/include/export/'. $name;
     }
   } else {
     $result['messenger'] = 'Không thể xuất file';
@@ -397,7 +397,7 @@ function printword() {
 
   $prof['doctor'] = $doctor['fullname'];
 
-  $html = file_get_contents ( DIR. '/export/template2.php');
+  $html = file_get_contents ( DIR. '/include/export/template2.php');
 
   $html = str_replace('{customer}', $prof['customer'], $html);
   $html = str_replace('{address}', $prof['address'], $html);

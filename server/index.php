@@ -35,7 +35,7 @@ $result = array(
 );
 if (empty($data->type) || !file_exists(ROOTDIR. "/$data->type.php")) $result['messenger'] = 'Lỗi chức năng';
 else {
-  include_once('../config.php');
+  include_once('../include/config.php');
   include_once('db.php');
   include_once('global.php');
   include_once(ROOTDIR. "/$data->type.php");

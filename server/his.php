@@ -1,4 +1,7 @@
 <?php
+define('SERVERSIDE', 0);
+define('CLIENTSIDE', 1);
+
 function add() {
   global $data, $db, $result;
 
@@ -106,8 +109,17 @@ function update() {
   
   $result['status'] = 1;
   $result['data'] = getlist($data->id);
+  $result['count'] = getChatTotalCount($result['data']);
   
   return $result;
+}
+
+function getChatTotalCount($data) {
+  $count = array(0 => 0, 0);
+  foreach ($data as $row) {
+    $count[$row['pos']] += $row['chat'];
+  }
+  return $count;
 }
 
 function statistic() {
@@ -177,6 +189,7 @@ function remove() {
   $result['status'] = 1;
   $result['messenger'] = 'Đã xóa hồ sơ';
   $result['list'] = getlist();
+  $result['count'] = getChatTotalCount($result['list']);
   
   return $result;
 }
@@ -221,6 +234,7 @@ function insert() {
   
   $result['status'] = 1;
   $result['list'] = getlist();
+  $result['count'] = getChatTotalCount($result['list']);
   
   return $result;
 }
@@ -230,6 +244,7 @@ function filter() {
   
   $result['status'] = 1;
   $result['list'] = getlist();
+  $result['count'] = getChatTotalCount($result['list']);
 
   return $result;
 }
@@ -252,6 +267,7 @@ function detail() {
   
   $result['status'] = 1;
   $result['data'] = getlist($data->id);
+  $result['count'] = getChatTotalCount($result['data']);
 
   return $result;
 }
@@ -268,6 +284,28 @@ function dead() {
   return $result;
 }
 
+function pay() {
+  global $db, $data, $result;
+
+  $sql = "update pet_test_xray_row set pay = $data->pay where id = $data->detailid";
+  $db->query($sql);
+  $result['status'] = 1;
+  return $result;
+}
+
+function move() {
+  global $db, $data, $result;
+  $reversal = array(0 => 1, 0);
+  $rev = $reversal[$data->pos];
+
+  $sql = "update pet_test_xray set pos = $rev where id = $data->id";
+  $db->query($sql);
+  $result['status'] = 1;
+  $result['list'] = getList();
+  $result['count'] = getChatTotalCount($result['list']);
+  return $result;
+}
+
 function hopital() {
   global $db, $data, $result;
 
@@ -276,6 +314,7 @@ function hopital() {
 
   $result['status'] = 1;
   $result['list'] = getList();
+  $result['count'] = getChatTotalCount($result['list']);
   return $result;
 }
 
@@ -287,6 +326,7 @@ function share() {
 
   $result['status'] = 1;
   $result['list'] = getList();
+  $result['count'] = getChatTotalCount($result['list']);
   return $result;
 }
 
@@ -300,7 +340,7 @@ function getlist($id = 0) {
 
   $sql = "select * from pet_test_user_per where userid = $userid and module = 'his'";
   $role = $db->fetch($sql);
-  if ($role['type'] < 2) $xtra []= " (a.doctorid = $userid or a.share = 1) ";
+  if ($role['type'] < 2) $xtra []= " (a.doctorid = $userid or a.share = 1 or pos = 1) ";
   else if (isset($data->{'docs'}) && !empty($data->docs)) {
     if (empty($data->docscover)) $data->docscover = '';
     $docs = implode(', ', $data->docs);
@@ -318,6 +358,7 @@ function getlist($id = 0) {
   $list = $db->all($sql);
   
   foreach ($list as $key => $value) {
+    $list[$key]['chat'] = getChatCount($value['id']);
     $sql = "select a.*, b.name as doctor from pet_test_xray_row a inner join pet_users b on a.doctorid = b.userid where a.xrayid = $value[id] order by time asc";
     $row = $db->all($sql);
     foreach ($row as $index => $detail) {
@@ -345,6 +386,56 @@ function getlist($id = 0) {
   return $list;
 }
 
+function getChatList() {
+  global $db, $data;
+
+  $time = time();
+  $sql = "update pet_test_xray_read set time = $time where side = 0 and postid = $data->id";
+  $db->query($sql);
+
+  $sql = "select * from pet_test_xray_chat where postid = $data->id";
+  return $db->all($sql);  
+}
+
+function getReadtime($id, $side) {
+  global $db;
+
+  $sql = "select * from pet_test_xray_read where side = $side and postid = $id";
+  if (empty($r = $db->fetch($sql))) {
+    $sql = "insert into pet_test_xray_read (side, postid, time) values(0, $id, 0)";
+    $db->query($sql);
+    return 0;
+  }
+  return $r['time'];
+}
+
+function getchat() {
+  global $db, $data, $result;
+
+  $result['status'] = 1;
+  $result['list'] = getChatList();
+  return $result;  
+}
+
+function postchat() {
+  global $db, $data, $result;
+
+  $time = time();
+  $sql = "insert into pet_test_xray_chat (postid, side, time, text) values($data->id, 0, $time, '$data->text')";
+  $db->query($sql);
+  $result['status'] = 1;
+  $result['list'] = getChatList();
+  return $result;  
+}
+
+function getChatCount($id) {
+  global $db, $data;
+
+  $readtime = getReadtime($id, SERVERSIDE);
+  $sql = "select id from pet_test_xray_chat where postid = $id and side = 1 and time > $readtime";
+  return $db->count($sql);
+}
+
 function statrate() {
   global $data, $db, $result;
 
@@ -353,6 +444,7 @@ function statrate() {
 
   $result['status'] = 1;
   $result['list'] = getlist();
+  $result['count'] = getChatTotalCount($result['list']);
 
   return $result;
 }
